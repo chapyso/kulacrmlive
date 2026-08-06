@@ -47,7 +47,7 @@
  
      <link rel="stylesheet" href="<?php echo base_url('common/css/toastr.min.css'); ?>">
      <!-- 2026 Donezo Emerald Design System (LAST CSS LOADED) -->
-     <link href="<?php echo base_url('common/css/custom.css'); ?>?v=2026" rel="stylesheet">
+     <link href="<?php echo base_url('common/css/custom.css'); ?>?v=<?php echo time(); ?>" rel="stylesheet">
      <script>
        (function() {
          var theme = localStorage.getItem('kula_theme') || 'light';
@@ -112,7 +112,7 @@
                     <button type="button" class="btn btn-default dropdown-toggle kula-lang-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Change Language">
                         <i class="fa-solid fa-globe kula-lang-globe-icon"></i>
                         <span class="kula-lang-flag"><?php echo $curr_lang_data['flag']; ?></span>
-                        <span class="kula-lang-name hidden-xs"><?php echo $curr_lang_data['native']; ?></span>
+                        <span class="kula-lang-name"><?php echo $curr_lang_data['native']; ?></span>
                         <i class="fa-solid fa-chevron-down kula-lang-arrow"></i>
                     </button>
                     <ul class="dropdown-menu kula-lang-menu">
@@ -165,10 +165,6 @@
                         </div>
                     </div>
 
-                    <!-- Calendar Action Button -->
-                    <button type="button" class="kula-header-icon-btn" title="Calendar">
-                        <i class="fa-regular fa-calendar"></i>
-                    </button>
 
                     <!-- User Profile Dropdown Pill -->
                     <div class="dropdown">
@@ -371,41 +367,37 @@
                  <?php } ?>
 
                  <!-- SECTION 4: ORGANIZATION & USERS -->
-                 <?php if (has_permission('users.view') || has_permission('roles.view') || has_permission('staff.view')) { ?>
-                 <div class="kula-menu-group">
-                     <div class="kula-group-title">Organization &amp; Team</div>
+                  <?php if (has_permission('users.view') || has_permission('roles.view') || has_permission('staff.view')) { ?>
+                  <div class="kula-menu-group">
+                      <div class="kula-group-title">Organization &amp; Team</div>
 
-                     <div class="kula-menu-tree">
-                         <div class="kula-menu-item kula-tree-toggle" data-tooltip="User & Role Management">
-                             <div class="kula-menu-icon"><i class="fa-solid fa-users-gear"></i></div>
-                             <span class="kula-menu-text">Users &amp; Roles</span>
-                             <i class="fa-solid fa-chevron-right tree-arrow"></i>
-                         </div>
-                         <div class="kula-tree-submenu">
-                             <?php if (has_permission('users.view')) { ?>
-                             <a href="<?php echo base_url('users'); ?>">User Directory</a>
-                             <?php } ?>
-                             <?php if (has_permission('roles.view')) { ?>
-                             <a href="<?php echo base_url('users/roles'); ?>">Role Management</a>
-                             <a href="<?php echo base_url('users/permission_matrix'); ?>">Permission Matrix</a>
-                             <?php } ?>
-                             <?php if (has_permission('settings.view')) { ?>
-                             <a href="<?php echo base_url('users/departments'); ?>">Departments</a>
-                             <?php } ?>
-                             <?php if (has_permission('users.view')) { ?>
-                             <a href="<?php echo base_url('users/activity_logs'); ?>">Audit Logs</a>
-                             <?php } ?>
-                         </div>
-                     </div>
-
-                     <?php if (has_permission('staff.view')) { ?>
-                     <a href="<?php echo base_url('staff/listStaff'); ?>" class="kula-menu-item" data-tooltip="<?php echo lang('staff'); ?>">
-                         <div class="kula-menu-icon"><i class="fa-solid fa-user-group"></i></div>
-                         <span class="kula-menu-text"><?php echo lang('staff'); ?></span>
-                     </a>
-                     <?php } ?>
-                 </div>
-                 <?php } ?>
+                      <div class="kula-menu-tree">
+                          <div class="kula-menu-item kula-tree-toggle" data-tooltip="User & Role Management">
+                              <div class="kula-menu-icon"><i class="fa-solid fa-users-gear"></i></div>
+                              <span class="kula-menu-text">Users &amp; Roles</span>
+                              <i class="fa-solid fa-chevron-right tree-arrow"></i>
+                          </div>
+                          <div class="kula-tree-submenu">
+                              <?php if (has_permission('users.view')) { ?>
+                              <a href="<?php echo base_url('users'); ?>">User Directory</a>
+                              <?php } ?>
+                              <?php if (has_permission('staff.view')) { ?>
+                              <a href="<?php echo base_url('staff/listStaff'); ?>"><?php echo lang('staff'); ?></a>
+                              <?php } ?>
+                              <?php if (has_permission('roles.view')) { ?>
+                              <a href="<?php echo base_url('users/roles'); ?>">Role Management</a>
+                              <a href="<?php echo base_url('users/permission_matrix'); ?>">Permission Matrix</a>
+                              <?php } ?>
+                              <?php if (has_permission('settings.view')) { ?>
+                              <a href="<?php echo base_url('users/departments'); ?>">Departments</a>
+                              <?php } ?>
+                              <?php if (has_permission('users.view')) { ?>
+                              <a href="<?php echo base_url('users/activity_logs'); ?>">Audit Logs</a>
+                              <?php } ?>
+                          </div>
+                      </div>
+                  </div>
+                  <?php } ?>
 
                  <!-- SECTION 5: FINANCE & REPORTS -->
                  <?php if (has_permission('expense.view') || has_permission('reports.view') || has_permission('settings.view')) { ?>
@@ -508,26 +500,6 @@
          <!-- Mobile Backdrop Overlay -->
          <div id="kula-mobile-backdrop" onclick="toggleKulaMobileSidebar()"></div>
  
-         <!-- Persistent Mobile Bottom Navigation Bar (4 Items) -->
-         <div class="kula-mobile-bottom-nav">
-             <a href="<?php echo base_url(); ?>" class="bottom-nav-item">
-                 <i class="fa-solid fa-house"></i>
-                 <span>Home</span>
-             </a>
-             <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="bottom-nav-item">
-                 <i class="fa-solid fa-cow"></i>
-                 <span>Livestock</span>
-             </a>
-             <a href="<?php echo base_url('sale/listSale'); ?>" class="bottom-nav-item">
-                 <i class="fa-solid fa-file-invoice-dollar"></i>
-                 <span>Sales</span>
-             </a>
-             <button type="button" class="bottom-nav-item" onclick="toggleKulaMobileSidebar()">
-                 <i class="fa-solid fa-bars"></i>
-                 <span>Menu</span>
-             </button>
-         </div>
- 
          <!-- Modern Sidebar Interactive JS Script -->
          <script>
          function toggleKulaMobileSidebar() {
@@ -586,20 +558,20 @@
              });
  
              // Active Route Highlight
-             var currentUrl = window.location.href.split('#')[0].split('?')[0].replace(/\/$/, "");
-             var menuLinks = document.querySelectorAll('.kula-menu-item[href], .kula-tree-submenu a[href]');
-             menuLinks.forEach(function(link) {
-                 var linkUrl = link.href.split('#')[0].split('?')[0].replace(/\/$/, "");
-                 if (linkUrl && currentUrl === linkUrl) {
-                     link.classList.add('active');
-                     var parentTree = link.closest('.kula-menu-tree');
-                     if (parentTree) {
-                         parentTree.classList.add('open');
-                         var parentToggle = parentTree.querySelector('.kula-tree-toggle');
-                         if (parentToggle) parentToggle.classList.add('active');
-                     }
-                 }
-             });
+              var currentUrl = window.location.href.split('#')[0].split('?')[0].replace(/\/$/, "");
+              var menuLinks = document.querySelectorAll('.kula-menu-item[href], .kula-tree-submenu a[href]');
+              menuLinks.forEach(function(link) {
+                  var linkUrl = link.href.split('#')[0].split('?')[0].replace(/\/$/, "");
+                  if (linkUrl && (currentUrl === linkUrl || currentUrl.indexOf(linkUrl + '/') === 0 || linkUrl.replace(/\/listStaff$/, '/staff') === currentUrl || currentUrl.replace(/\/listStaff$/, '') === linkUrl)) {
+                      link.classList.add('active');
+                      var parentTree = link.closest('.kula-menu-tree');
+                      if (parentTree) {
+                          parentTree.classList.add('open');
+                          var parentToggle = parentTree.querySelector('.kula-tree-toggle');
+                          if (parentToggle) parentToggle.classList.add('active');
+                      }
+                  }
+              });
  
              // User Popover Toggle
              if (userCardTrigger && userPopover) {

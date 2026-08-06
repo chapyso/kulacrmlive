@@ -21,7 +21,7 @@
     <!-- Custom styles -->
     <link href="<?php echo base_url('common/css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('common/css/style-responsive.css'); ?>" rel="stylesheet" />
-    <link href="<?php echo base_url('common/css/custom.css'); ?>?v=2026" rel="stylesheet">
+    <link href="<?php echo base_url('common/css/custom.css'); ?>?v=<?php echo time(); ?>" rel="stylesheet">
 
     <style>
         .superadmin-badge {
@@ -93,7 +93,7 @@
                     <button type="button" class="btn btn-default dropdown-toggle kula-lang-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Change Language">
                         <i class="fa-solid fa-globe kula-lang-globe-icon"></i>
                         <span class="kula-lang-flag"><?php echo $curr_lang_data['flag']; ?></span>
-                        <span class="kula-lang-name hidden-xs"><?php echo $curr_lang_data['native']; ?></span>
+                        <span class="kula-lang-name"><?php echo $curr_lang_data['native']; ?></span>
                         <i class="fa-solid fa-chevron-down kula-lang-arrow"></i>
                     </button>
                     <ul class="dropdown-menu kula-lang-menu">

@@ -49,7 +49,7 @@
          <?php if ($anyAlerts): ?>
          <!-- Alert cards -->
          <div class="row state-overview" style="margin-bottom: 10px;">
-             <div class="col-lg-3 col-sm-6">
+             <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
                  <a href="<?php echo base_url('shed/addShed'); ?>" style="text-decoration:none; display:block; color:inherit;">
                      <section class="panel card__box" style="<?php echo $alertLowStock > 0 ? 'border-left:4px solid #e67e22;' : ''; ?>">
                          <div class="symbol <?php echo $alertLowStock > 0 ? 'red' : 'terques'; ?>">
@@ -62,7 +62,7 @@
                      </section>
                  </a>
              </div>
-             <div class="col-lg-3 col-sm-6">
+             <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
                  <a href="<?php echo base_url('payments/listSupplierPayments'); ?>" style="text-decoration:none; display:block; color:inherit;">
                      <section class="panel card__box" style="<?php echo $alertSupOverdue > 0 ? 'border-left:4px solid #c0392b;' : ''; ?>">
                          <div class="symbol <?php echo $alertSupOverdue > 0 ? 'red' : 'terques'; ?>">
@@ -75,7 +75,7 @@
                      </section>
                  </a>
              </div>
-             <div class="col-lg-3 col-sm-6">
+             <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
                  <a href="<?php echo base_url('payments/listClientPayments'); ?>" style="text-decoration:none; display:block; color:inherit;">
                      <section class="panel card__box" style="<?php echo $alertCliOverdue > 0 ? 'border-left:4px solid #c0392b;' : ''; ?>">
                          <div class="symbol <?php echo $alertCliOverdue > 0 ? 'red' : 'terques'; ?>">
@@ -88,7 +88,7 @@
                      </section>
                  </a>
              </div>
-             <div class="col-lg-3 col-sm-6">
+             <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
                  <a href="<?php echo base_url('vaccine/listVaccinatedShed'); ?>" style="text-decoration:none; display:block; color:inherit;">
                      <section class="panel card__box" style="<?php echo $alertVaccDue > 0 ? 'border-left:4px solid #2980b9;' : ''; ?>">
                          <div class="symbol <?php echo $alertVaccDue > 0 ? 'blue' : 'terques'; ?>">
@@ -321,121 +321,267 @@
          $calculatedIncome = (float)$livestockSaleTotal + (float)$productSaleTotal;
          $totalReceivedAmount = max($calculatedIncome, (float)$clientReceivedTotal);
          ?>
- 
-         <div class="row">
-             <!-- Income Expense Chart (RealEstate Pro Image 1 Aesthetic) -->
-             <div class="col-lg-4 col-md-6">
-                 <section class="panel custom__table">
-                     <div class="panel-body" style="padding: 20px;">
-                         <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 14px 0; text-align: left; letter-spacing: -0.3px; text-transform: none; border: none; padding: 0;">
-                             Expense Breakdown
-                         </h3>
-                         <div id="incomeExpenseStatement"></div>
- 
-                         <!-- RealEstate Pro Pill Legend Grid -->
-                         <div id="incomeExpenseCustomLegend" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px;">
-                             <?php
-                             $sumTotal = (float)$totalPaidAmount + (float)$totalReceivedAmount;
-                             $expPct = $sumTotal > 0 ? round(((float)$totalPaidAmount / $sumTotal) * 100) : 0;
-                             $incPct = $sumTotal > 0 ? round(((float)$totalReceivedAmount / $sumTotal) * 100) : 0;
-                             ?>
-                             <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                                 <span style="background: #ef4444; color: #ffffff; font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 8px; font-family: sans-serif; min-width: 36px; text-align: center; display: inline-block;">
-                                     <?= $expPct; ?>%
-                                 </span>
-                                 <div style="font-size: 11px; color: #64748b; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                     <?= lang('expense'); ?>: <strong style="color: #0f172a; font-weight: 800;"><?= $settings->currency . number_format_currency($totalPaidAmount, 0); ?></strong>
-                                 </div>
-                             </div>
-                             <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 8px 10px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                                 <span style="background: #059669; color: #ffffff; font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 8px; font-family: sans-serif; min-width: 36px; text-align: center; display: inline-block;">
-                                     <?= $incPct; ?>%
-                                 </span>
-                                 <div style="font-size: 11px; color: #64748b; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                     <?= lang('income'); ?>: <strong style="color: #0f172a; font-weight: 800;"><?= $settings->currency . number_format_currency($totalReceivedAmount, 0); ?></strong>
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-                 </section>
-             </div>
-             <!-- Livestock Stock chart (RealEstate Pro Image 1 Aesthetic) -->
-             <div class="col-lg-5 col-md-6">
-                 <section class="panel">
-                     <div class="panel-body" style="padding: 20px;">
-                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                             <div>
-                                 <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; text-transform: none; border: none; padding: 0; letter-spacing: -0.3px;">
-                                     Livestock Stock Analysis
-                                 </h3>
-                                 <div style="display: flex; align-items: center; gap: 12px; font-size: 11px; font-weight: 600; color: #64748b; margin-top: 4px;">
-                                     <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #2563eb; display: inline-block;"></span> <?= lang('purchase'); ?></span>
-                                     <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #eab308; display: inline-block;"></span> <?= lang('sale'); ?></span>
-                                     <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block;"></span> <?= lang('death'); ?></span>
-                                     <span style="display: inline-flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #059669; display: inline-block;"></span> <?= lang('stock'); ?></span>
-                                 </div>
-                             </div>
-                             <div>
-                                 <select style="border-radius: 20px; font-weight: 600; font-size: 12px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; padding: 5px 12px; cursor: pointer; outline: none;">
-                                     <option>This Year</option>
-                                     <option>This Month</option>
-                                 </select>
-</div>
-                         </div>
-                         <div id="livestockStockQuantity"></div>
-                     </div>
-                 </section>
-             </div>
-             <!-- Entities summary table -->
-             <div class="col-lg-3 col-md-12">
-                 <section class="panel">
-                     <div class="panel-body" style="padding: 16px;">
-                         <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0 0 12px 0;">Summary</h3>
-                         <div class="table-responsive" style="overflow-x: auto;">
-                             <table class="table" style="margin-bottom: 0;">
-                                 <thead>
-                                     <tr>
-                                         <th style="padding: 8px 10px; font-size: 12px; border-bottom: 2px solid #e2e8f0;"><?php echo lang('name'); ?></th>
-                                         <th style="padding: 8px 10px; font-size: 12px; text-align: center; border-bottom: 2px solid #e2e8f0;"><?php echo lang('quantity'); ?></th>
-                                         <th style="padding: 8px 10px; font-size: 12px; text-align: right; border-bottom: 2px solid #e2e8f0;"><?php echo lang('actions'); ?></th>
-                                     </tr>
-                                 </thead>
-                                 <tbody>
-                                     <tr>
-                                         <td class="table__cells" style="padding: 10px 8px; font-size: 12px; vertical-align: middle;">
-                                             <?php echo lang('total_supplier'); ?>
-                                         </td>
-                                         <td class="table__cells" style="padding: 10px 8px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle;"><?php echo $this->report_model->getCountRow('supplier', 's_id', ['s_status' => 1]); ?></td>
-                                         <td class="table__cells" style="padding: 10px 8px; text-align: right; vertical-align: middle;"><a href="<?php echo base_url('supplier/listSupplier'); ?>" class="badge btn-primary" style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; text-decoration: none;"><i class="fa-solid fa-eye"></i> <?= lang('view') ?></a></td>
-                                     </tr>
-                                     <tr>
-                                         <td class="table__cells" style="padding: 10px 8px; font-size: 12px; vertical-align: middle;">
-                                             <?php echo lang('total_clients'); ?>
-                                         </td>
-                                         <td class="table__cells" style="padding: 10px 8px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle;"><?php echo $this->report_model->getCountRow('client', 'c_id', ['c_status' => 1]); ?></td>
-                                         <td class="table__cells" style="padding: 10px 8px; text-align: right; vertical-align: middle;"><a href="<?php echo base_url('client/listClient'); ?>" class="badge btn-primary" style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; text-decoration: none;"><i class="fa-solid fa-eye"></i> <?= lang('view') ?></a></td>
-                                     </tr>
-                                     <tr>
-                                         <td class="table__cells" style="padding: 10px 8px; font-size: 12px; vertical-align: middle;">
-                                             <?php echo lang('total_staff'); ?>
-                                         </td>
-                                         <td class="table__cells" style="padding: 10px 8px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle;"><?php echo $this->report_model->getCountRow('staff', 'sf_id', ['sf_status' => 1]); ?></td>
-                                         <td class="table__cells" style="padding: 10px 8px; text-align: right; vertical-align: middle;"><a href="<?php echo base_url('staff/listStaff'); ?>" class="badge btn-primary" style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; text-decoration: none;"><i class="fa-solid fa-eye"></i> <?= lang('view') ?></a></td>
-                                     </tr>
-                                     <tr>
-                                         <td class="table__cells" style="padding: 10px 8px; font-size: 12px; vertical-align: middle;">
-                                             <?php echo lang('total_shed'); ?>
-                                         </td>
-                                         <td class="table__cells" style="padding: 10px 8px; font-size: 13px; font-weight: 700; text-align: center; vertical-align: middle;"><?php echo $this->report_model->getCountRow('shed', 'sh_id', ['sh_status' => 1]); ?></td>
-                                         <td class="table__cells" style="padding: 10px 8px; text-align: right; vertical-align: middle;"><a href="<?php echo base_url('shed/addShed'); ?>" class="badge btn-primary" style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; text-decoration: none;"><i class="fa-solid fa-eye"></i> <?= lang('view') ?></a></td>
-                                     </tr>
-                                 </tbody>
-                             </table>
-                         </div>
-                     </div>
-                 </section>
-             </div>
-         </div>
+
+          <!-- CARD 1: Full-Width Expense & Income Breakdown -->
+          <div class="row" style="margin-bottom: 24px;">
+              <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <section class="panel custom__table" style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 0;">
+                      <div class="panel-body kula-dashboard-card-body" style="padding: 24px;">
+                          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
+                              <div>
+                                  <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px; border: none; padding: 0; text-transform: none; letter-spacing: -0.3px;">
+                                      <i class="fa-solid fa-chart-pie" style="color: #059669;"></i> Expense &amp; Financial Breakdown
+                                  </h3>
+                                  <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 500;">Comparison of total operational expenses vs cumulative farm revenue</p>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 10px;">
+                                  <span style="background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                      <i class="fa-regular fa-clock" style="margin-right: 5px;"></i> Lifetime Statements
+                                  </span>
+                              </div>
+                          </div>
+
+                          <div class="row" style="margin-top: 10px;">
+                              <!-- Donut Chart Column -->
+                              <div class="col-lg-5 col-md-5 col-sm-12" style="margin-bottom: 20px;">
+                                  <div style="width: 100%; display: flex; justify-content: center; align-items: center;">
+                                      <div id="incomeExpenseStatement" style="width: 100%; max-width: 280px;"></div>
+                                  </div>
+                              </div>
+
+                              <!-- Financial Details & Metrics Grid Column -->
+                              <div class="col-lg-7 col-md-7 col-sm-12">
+                                  <?php
+                                  $sumTotal = (float)$totalPaidAmount + (float)$totalReceivedAmount;
+                                  $expPct = $sumTotal > 0 ? round(((float)$totalPaidAmount / $sumTotal) * 100) : 0;
+                                  $incPct = $sumTotal > 0 ? round(((float)$totalReceivedAmount / $sumTotal) * 100) : 0;
+                                  $netBalance = (float)$totalReceivedAmount - (float)$totalPaidAmount;
+                                  ?>
+                                  
+                                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+                                      <!-- Expenses Card -->
+                                      <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 14px; padding: 14px;">
+                                          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                              <span style="font-size: 12px; font-weight: 700; color: #991b1b; display: flex; align-items: center; gap: 6px;">
+                                                  <i class="fa-solid fa-arrow-down-long"></i> Total Expenses
+                                              </span>
+                                              <span style="background: #ef4444; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $expPct; ?>%</span>
+                                          </div>
+                                          <h4 style="font-size: 19px; font-weight: 800; color: #7f1d1d; margin: 0 0 6px 0;">
+                                              <?= $settings->currency . number_format_currency($totalPaidAmount, 2); ?>
+                                          </h4>
+                                          <div style="height: 6px; background: #fee2e2; border-radius: 4px; overflow: hidden;">
+                                              <div style="width: <?= $expPct; ?>%; height: 100%; background: #ef4444; border-radius: 4px;"></div>
+                                          </div>
+                                      </div>
+
+                                      <!-- Income Card -->
+                                      <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 14px; padding: 14px;">
+                                          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                              <span style="font-size: 12px; font-weight: 700; color: #065f46; display: flex; align-items: center; gap: 6px;">
+                                                  <i class="fa-solid fa-arrow-up-long"></i> Total Revenue
+                                              </span>
+                                              <span style="background: #059669; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $incPct; ?>%</span>
+                                          </div>
+                                          <h4 style="font-size: 19px; font-weight: 800; color: #064e3b; margin: 0 0 6px 0;">
+                                              <?= $settings->currency . number_format_currency($totalReceivedAmount, 2); ?>
+                                          </h4>
+                                          <div style="height: 6px; background: #d1fae5; border-radius: 4px; overflow: hidden;">
+                                              <div style="width: <?= $incPct; ?>%; height: 100%; background: #059669; border-radius: 4px;"></div>
+                                          </div>
+                                      </div>
+
+                                      <!-- Net Balance Card -->
+                                      <div class="kula-span-mobile-1" style="background: <?= $netBalance >= 0 ? '#f0fdf4' : '#fff1f2'; ?>; border: 1px solid <?= $netBalance >= 0 ? '#bbf7d0' : '#fecdd3'; ?>; border-radius: 14px; padding: 14px; grid-column: span 2;">
+                                          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                                              <div>
+                                                  <span style="font-size: 12px; font-weight: 700; color: <?= $netBalance >= 0 ? '#166534' : '#9f1239'; ?>;">
+                                                      Net Operating Profit / Balance
+                                                  </span>
+                                                  <h4 style="font-size: 20px; font-weight: 800; color: <?= $netBalance >= 0 ? '#14532d' : '#881337'; ?>; margin: 4px 0 0 0;">
+                                                      <?= ($netBalance >= 0 ? '+' : '-') . $settings->currency . number_format_currency(abs($netBalance), 2); ?>
+                                                  </h4>
+                                              </div>
+                                              <span style="background: <?= $netBalance >= 0 ? '#166534' : '#9f1239'; ?>; color: #ffffff; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px;">
+                                                  <?= $netBalance >= 0 ? '<i class="fa-solid fa-circle-check"></i> Profitable' : '<i class="fa-solid fa-circle-exclamation"></i> Deficit' ?>
+                                              </span>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </section>
+              </div>
+          </div>
+
+          <!-- CARD 2: Full-Width Livestock Stock Analysis -->
+          <div class="row" style="margin-bottom: 24px;">
+              <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <section class="panel" style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 0;">
+                      <div class="panel-body kula-dashboard-card-body" style="padding: 24px;">
+                          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
+                              <div>
+                                  <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px; border: none; padding: 0; text-transform: none; letter-spacing: -0.3px;">
+                                      <i class="fa-solid fa-chart-line" style="color: #2563eb;"></i> Livestock Stock Analysis &amp; Trends
+                                  </h3>
+                                  <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 500;">Multi-wave tracking of purchases, sales, mortality rates, and net inventory</p>
+                              </div>
+                              <div style="display: flex; align-items: center; gap: 10px;">
+                                  <select style="border-radius: 10px; font-weight: 700; font-size: 12px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; padding: 6px 14px; cursor: pointer; outline: none;">
+                                      <option>This Year</option>
+                                      <option>This Month</option>
+                                  </select>
+                              </div>
+                          </div>
+
+                          <!-- Interactive Stat Legend Chips -->
+                          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                              <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                                  <div style="width: 36px; height: 36px; border-radius: 10px; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+                                      <i class="fa-solid fa-cart-shopping"></i>
+                                  </div>
+                                  <div>
+                                      <span style="font-size: 11px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;"><?= lang('purchase'); ?></span>
+                                      <h4 style="margin: 2px 0 0 0; font-size: 18px; font-weight: 800; color: #1e3a8a;"><?php echo (int)($purQ ? $purQ : 0); ?></h4>
+                                  </div>
+                              </div>
+
+                              <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                                  <div style="width: 36px; height: 36px; border-radius: 10px; background: #eab308; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+                                      <i class="fa-solid fa-file-invoice-dollar"></i>
+                                  </div>
+                                  <div>
+                                      <span style="font-size: 11px; font-weight: 700; color: #854d0e; text-transform: uppercase; letter-spacing: 0.5px;"><?= lang('sale'); ?></span>
+                                      <h4 style="margin: 2px 0 0 0; font-size: 18px; font-weight: 800; color: #713f12;"><?php echo (int)($saleQ ? $saleQ : 0); ?></h4>
+                                  </div>
+                              </div>
+
+                              <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                                  <div style="width: 36px; height: 36px; border-radius: 10px; background: #ef4444; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+                                      <i class="fa-solid fa-skull-crossbones"></i>
+                                  </div>
+                                  <div>
+                                      <span style="font-size: 11px; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 0.5px;"><?= lang('death'); ?></span>
+                                      <h4 style="margin: 2px 0 0 0; font-size: 18px; font-weight: 800; color: #7f1d1d;"><?php echo (int)($deathQ ? $deathQ : 0); ?></h4>
+                                  </div>
+                              </div>
+
+                              <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                                  <div style="width: 36px; height: 36px; border-radius: 10px; background: #059669; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+                                      <i class="fa-solid fa-warehouse"></i>
+                                  </div>
+                                  <div>
+                                      <span style="font-size: 11px; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 0.5px;"><?= lang('stock'); ?></span>
+                                      <h4 style="margin: 2px 0 0 0; font-size: 18px; font-weight: 800; color: #064e3b;"><?php echo (int)($inStockQuantity ? $inStockQuantity : 0); ?></h4>
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div id="livestockStockQuantity" style="width: 100%; min-height: 320px;"></div>
+                      </div>
+                  </section>
+              </div>
+          </div>
+
+          <!-- CARD 3: Full-Width Farm Entities Summary -->
+          <div class="row" style="margin-bottom: 24px;">
+              <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <section class="panel" style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 0;">
+                      <div class="panel-body kula-dashboard-card-body" style="padding: 24px;">
+                          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
+                              <div>
+                                  <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px; border: none; padding: 0; text-transform: none; letter-spacing: -0.3px;">
+                                      <i class="fa-solid fa-layer-group" style="color: #6366f1;"></i> Farm Entities Directory Summary
+                                  </h3>
+                                  <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 500;">Overview of active suppliers, client network, staff workforce, and shed infrastructure</p>
+                              </div>
+                              <span style="background: #eef2ff; color: #4338ca; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px; border: 1px solid #c7d2fe;">
+                                  <i class="fa-solid fa-network-wired" style="margin-right: 5px;"></i> Core Modules
+                              </span>
+                          </div>
+
+                          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
+                              <!-- Suppliers Card -->
+                              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                      <div style="width: 44px; height: 44px; border-radius: 12px; background: #0284c7; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);">
+                                          <i class="fa-solid fa-truck-field"></i>
+                                      </div>
+                                      <span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 9999px;">SUPPLIERS</span>
+                                  </div>
+                                  <div>
+                                      <h4 style="margin: 0 0 4px 0; font-size: 26px; font-weight: 800; color: #0f172a;">
+                                          <?php echo $this->report_model->getCountRow('supplier', 's_id', ['s_status' => 1]); ?>
+                                      </h4>
+                                      <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748b; font-weight: 600;"><?php echo lang('total_supplier'); ?></p>
+                                  </div>
+                                  <a href="<?php echo base_url('supplier/listSupplier'); ?>" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #047857; color: #ffffff; font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 10px; text-decoration: none;">
+                                      <i class="fa-solid fa-eye"></i> View Suppliers Directory
+                                  </a>
+                              </div>
+
+                              <!-- Clients Card -->
+                              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                      <div style="width: 44px; height: 44px; border-radius: 12px; background: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);">
+                                          <i class="fa-solid fa-address-book"></i>
+                                      </div>
+                                      <span style="background: #dbeafe; color: #1d4ed8; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 9999px;">CLIENTS</span>
+                                  </div>
+                                  <div>
+                                      <h4 style="margin: 0 0 4px 0; font-size: 26px; font-weight: 800; color: #0f172a;">
+                                          <?php echo $this->report_model->getCountRow('client', 'c_id', ['c_status' => 1]); ?>
+                                      </h4>
+                                      <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748b; font-weight: 600;"><?php echo lang('total_clients'); ?></p>
+                                  </div>
+                                  <a href="<?php echo base_url('client/listClient'); ?>" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #047857; color: #ffffff; font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 10px; text-decoration: none;">
+                                      <i class="fa-solid fa-eye"></i> View Clients Directory
+                                  </a>
+                              </div>
+
+                              <!-- Staff Card -->
+                              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                      <div style="width: 44px; height: 44px; border-radius: 12px; background: #059669; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);">
+                                          <i class="fa-solid fa-user-group"></i>
+                                      </div>
+                                      <span style="background: #d1fae5; color: #047857; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 9999px;">STAFF</span>
+                                  </div>
+                                  <div>
+                                      <h4 style="margin: 0 0 4px 0; font-size: 26px; font-weight: 800; color: #0f172a;">
+                                          <?php echo $this->report_model->getCountRow('staff', 'sf_id', ['sf_status' => 1]); ?>
+                                      </h4>
+                                      <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748b; font-weight: 600;"><?php echo lang('total_staff'); ?></p>
+                                  </div>
+                                  <a href="<?php echo base_url('staff/listStaff'); ?>" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #047857; color: #ffffff; font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 10px; text-decoration: none;">
+                                      <i class="fa-solid fa-eye"></i> View Staff Members
+                                  </a>
+                              </div>
+
+                              <!-- Sheds Card -->
+                              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                      <div style="width: 44px; height: 44px; border-radius: 12px; background: #8b5cf6; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);">
+                                          <i class="fa-solid fa-warehouse"></i>
+                                      </div>
+                                      <span style="background: #ede9fe; color: #6d28d9; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 9999px;">SHEDS</span>
+                                  </div>
+                                  <div>
+                                      <h4 style="margin: 0 0 4px 0; font-size: 26px; font-weight: 800; color: #0f172a;">
+                                          <?php echo $this->report_model->getCountRow('shed', 'sh_id', ['sh_status' => 1]); ?>
+                                      </h4>
+                                      <p style="margin: 0 0 16px 0; font-size: 12px; color: #64748b; font-weight: 600;"><?php echo lang('total_shed'); ?></p>
+                                  </div>
+                                  <a href="<?php echo base_url('shed/addShed'); ?>" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #047857; color: #ffffff; font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 10px; text-decoration: none;">
+                                      <i class="fa-solid fa-eye"></i> View Sheds Infrastructure
+                                  </a>
+                              </div>
+                          </div>
+                      </div>
+                  </section>
+              </div>
+          </div>
  
  
          <!-- Recent activity (v1.3.0) -->
@@ -447,32 +593,34 @@
                          <i class="fa-solid fa-clock-rotate-left"></i> <?php echo lang('recent_activity'); ?>
                      </header>
                      <div class="panel-body" style="padding:0;">
-                         <table class="table table-striped table-hover" style="margin-bottom:0;">
-                             <thead>
-                                 <tr>
-                                     <th style="width:140px;"><?php echo lang('kind'); ?></th>
-                                     <th><?php echo lang('details'); ?></th>
-                                     <th style="width:180px;"><?php echo lang('by'); ?></th>
-                                     <th style="width:170px;"><?php echo lang('when'); ?></th>
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                 <?php foreach ($recent_activity as $a):
-                                     $uname = '—';
-                                     if ($a->uid) {
-                                         $u = $this->ion_auth->user($a->uid)->row();
-                                         if ($u && isset($u->username)) { $uname = $u->username; }
-                                     }
-                                 ?>
+                         <div class="table-responsive" style="overflow-x:auto;">
+                             <table class="table table-striped table-hover" style="margin-bottom:0;">
+                                 <thead>
                                      <tr>
-                                         <td><span class="label label-info"><?php echo htmlspecialchars($a->kind); ?></span></td>
-                                         <td><a href="<?php echo base_url($a->url); ?>"><?php echo htmlspecialchars($a->label); ?></a></td>
-                                         <td><?php echo htmlspecialchars($uname); ?></td>
-                                         <td><?php echo htmlspecialchars($a->at); ?></td>
+                                         <th style="width:140px;"><?php echo lang('kind'); ?></th>
+                                         <th><?php echo lang('details'); ?></th>
+                                         <th style="width:180px;"><?php echo lang('by'); ?></th>
+                                         <th style="width:170px;"><?php echo lang('when'); ?></th>
                                      </tr>
-                                 <?php endforeach; ?>
-                             </tbody>
-                         </table>
+                                 </thead>
+                                 <tbody>
+                                     <?php foreach ($recent_activity as $a):
+                                         $uname = '—';
+                                         if ($a->uid) {
+                                             $u = $this->ion_auth->user($a->uid)->row();
+                                             if ($u && isset($u->username)) { $uname = $u->username; }
+                                         }
+                                     ?>
+                                         <tr>
+                                             <td><span class="label label-info"><?php echo htmlspecialchars($a->kind); ?></span></td>
+                                             <td><a href="<?php echo base_url($a->url); ?>"><?php echo htmlspecialchars($a->label); ?></a></td>
+                                             <td><?php echo htmlspecialchars($uname); ?></td>
+                                             <td><?php echo htmlspecialchars($a->at); ?></td>
+                                         </tr>
+                                     <?php endforeach; ?>
+                                 </tbody>
+                             </table>
+                         </div>
                      </div>
                  </section>
              </div>
@@ -766,11 +914,11 @@
              }
          ],
          chart: {
-             type: 'area',
-             height: 250,
-             toolbar: { show: false },
-             zoom: { enabled: false }
-         },
+            type: 'area',
+            height: 320,
+            toolbar: { show: false },
+            zoom: { enabled: false }
+        },
          colors: ['#2563eb', '#eab308', '#ef4444', '#059669'],
          stroke: {
              curve: 'smooth',

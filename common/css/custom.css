@@ -3767,11 +3767,25 @@ header .top-nav .dropdown-toggle img {
   }
 }
 
-/* Responsive Top Header - Ensure Left Hamburger & Dark Mode Button are Visible on Mobile */
+/* Responsive Top Header - Enterprise Mobile De-congestion System */
+header.header.white-bg {
+  background: #ffffff !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  height: 68px !important;
+  padding: 0 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  width: 100% !important;
+  position: relative !important;
+  z-index: 1000 !important;
+}
+
 @media (max-width: 768px) {
-  .kula-top-header-left {
-    display: flex !important;
-    align-items: center !important;
+  header.header.white-bg {
+    height: 60px !important;
+    padding: 0 12px !important;
     gap: 8px !important;
     float: left !important;
   }
@@ -5414,6 +5428,112 @@ html.dark-theme .kula-lang-menu > li > a:hover {
 }
 
 /* ==========================================================================
+   2026 ENTERPRISE PWA & MOBILE-FIRST RESPONSIVE DESIGN SYSTEM
+   ========================================================================== */
+.kula-mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 62px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+  z-index: 99999;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 8px;
+}
+
+@media (max-width: 768px) {
+  .kula-mobile-bottom-nav {
+    display: flex !important;
+  }
+}
+
+.dark-theme .kula-mobile-bottom-nav {
+  background: #0f172a;
+  border-top-color: #1e293b;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.kula-mobile-nav-item,
+button.kula-mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none !important;
+  min-width: 56px;
+  min-height: 48px;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.kula-mobile-nav-item i {
+  font-size: 19px;
+  margin-bottom: 2px;
+  transition: transform 0.2s ease;
+}
+
+.kula-mobile-nav-item.active,
+.kula-mobile-nav-item:hover {
+  color: #059669;
+}
+
+.dark-theme .kula-mobile-nav-item {
+  color: #94a3b8;
+}
+
+.dark-theme .kula-mobile-nav-item.active,
+.dark-theme .kula-mobile-nav-item:hover {
+  color: #34d399;
+}
+
+/* Middle Floating Quick Action FAB (+) */
+.kula-mobile-quick-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none !important;
+  margin-top: -16px;
+  z-index: 100000;
+}
+
+.kula-fab-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+  border: 3px solid #ffffff;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-theme .kula-fab-circle {
+  border-color: #0f172a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.kula-mobile-quick-action:hover .kula-fab-circle {
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+}
+
+/* ==========================================================================
    MASTER DASHBOARD HERO WELCOME CARD MOBILE UI FIX (MOBILE FIRST & DYNAMIC)
    ========================================================================== */
 .kula-hero-card {
@@ -5629,3 +5749,311 @@ html.dark-theme .kula-hero-card .hero-date-pill {
     flex: 0 0 auto !important;
   }
 }
+
+/* ==========================================================================
+   2026 MOBILE TOPBAR DE-CONGESTION & RESPONSIVE HEADER ENGINE (FINAL OVERRIDE)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* Header Container */
+  header.header.white-bg,
+  header.header {
+    height: 58px !important;
+    min-height: 58px !important;
+    padding: 0 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    width: 100% !important;
+    gap: 6px !important;
+  }
+
+  /* Left Header Group */
+  .kula-top-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    float: none !important;
+    flex-shrink: 1 !important;
+    min-width: 0 !important;
+  }
+
+  /* Right Header Group */
+  .header .top-nav,
+  .top-nav {
+    margin-top: 0 !important;
+    float: none !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  .kula-header-actions,
+  .top-nav ul.top-menu {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 1. Mobile Hamburger Button */
+  .btn-mobile-hamburger,
+  #kula-mobile-hamburger {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 2. Mobile Theme Toggle: HIDE text label, make compact 36x36px icon pill */
+  #kula-theme-text,
+  .btn-theme-toggle span,
+  #kula-theme-toggle span {
+    display: none !important;
+  }
+
+  .btn-theme-toggle,
+  #kula-theme-toggle {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 3. Mobile Language Dropdown: Show Country Flag AND Language Name */
+  .kula-lang-dropdown .kula-lang-btn,
+  .kula-lang-btn {
+    padding: 4px 8px !important;
+    height: 36px !important;
+    font-size: 13px !important;
+    border-radius: 10px !important;
+    gap: 4px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .kula-lang-globe-icon {
+    display: none !important;
+  }
+
+  .kula-lang-flag {
+    font-size: 16px !important;
+    line-height: 1 !important;
+  }
+
+  .kula-lang-name {
+    display: inline-block !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    max-width: 80px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1 !important;
+  }
+
+  .dark-theme .kula-lang-name {
+    color: #f8fafc !important;
+  }
+
+  .kula-lang-arrow {
+    font-size: 9px !important;
+    margin-left: 1px !important;
+  }
+
+  /* 4. Hide titles and superadmin badges on mobile topbar */
+  .superadmin-badge,
+  .kula-top-vendor-title {
+    display: none !important;
+  }
+
+  /* 5. Mobile Header Action Buttons (Bell, Calendar) */
+  .kula-header-icon-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    font-size: 14px !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 6. Mobile User Profile Pill: HIDE text meta (Username & Role) & Chevron; SHOW Avatar only */
+  .kula-profile-meta,
+  .kula-profile-pill .kula-dropdown-arrow,
+  a.kula-profile-pill .kula-dropdown-arrow {
+    display: none !important;
+  }
+
+  .top-nav ul.top-menu > li > a.kula-profile-pill,
+  .kula-profile-pill {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 50% !important;
+    margin-top: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .top-nav ul.top-menu > li > a.kula-profile-pill:hover,
+  .top-nav ul.top-menu > li > a.kula-profile-pill:focus,
+  .kula-profile-pill:hover,
+  .kula-profile-pill:focus {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .kula-profile-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    border-width: 1.5px !important;
+  }
+
+  .kula-profile-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Positioning Dropdown Popovers */
+  .kula-notif-popover,
+  .kula-profile-dropdown,
+  .kula-lang-menu {
+    max-width: calc(100vw - 16px) !important;
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  .kula-notif-popover {
+    width: 310px !important;
+  }
+}
+
+/* Extra Small Mobile Viewports (<= 380px) */
+@media (max-width: 380px) {
+  header.header.white-bg,
+  header.header {
+    padding: 0 6px !important;
+    gap: 4px !important;
+  }
+
+  .kula-top-header-left {
+    gap: 4px !important;
+  }
+
+  .kula-header-actions,
+  .top-nav ul.top-menu {
+    gap: 4px !important;
+  }
+
+  .btn-mobile-hamburger,
+  #kula-mobile-hamburger,
+  .btn-theme-toggle,
+  #kula-theme-toggle,
+  .kula-header-icon-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
+  }
+
+  .kula-lang-dropdown .kula-lang-btn,
+  .kula-lang-btn {
+    height: 32px !important;
+    min-width: 32px !important;
+    padding: 2px 4px !important;
+    border-radius: 8px !important;
+  }
+
+  .kula-profile-avatar {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+}
+
+/* ==========================================================================
+   MOBILE FULL-SCREEN LAYOUT ENGINE (ZERO LEFT MARGIN GAP WHEN SIDEBAR IS HIDDEN)
+   ========================================================================== */
+@media (max-width: 768px) {
+  #main-content,
+  body #main-content,
+  body.kula-sidebar-collapsed-body #main-content,
+  body.sidebar-collapsed #main-content,
+  .sidebar-closed #main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    left: 0 !important;
+    padding-top: 60px !important;
+    padding-bottom: 76px !important;
+    box-sizing: border-box !important;
+  }
+
+  header.header.white-bg,
+  header.header,
+  body header.header,
+  body.kula-sidebar-collapsed-body header.header {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .wrapper,
+  .site-min-height {
+    margin-top: 0 !important;
+    padding: 12px 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* ==========================================================================
+   MOBILE DYNAMIC RESPONSIVE STYLES FOR DASHBOARD CARDS
+   ========================================================================== */
+@media (max-width: 640px) {
+  .kula-dashboard-card-body {
+    padding: 16px !important;
+  }
+
+  .kula-span-mobile-1 {
+    grid-column: span 1 !important;
+  }
+
+  .kula-mobile-stack-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .kula-mobile-full-btn {
+    width: 100% !important;
+    display: flex !important;
+  }
+}
+
+
+

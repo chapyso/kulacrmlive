@@ -271,18 +271,20 @@
 
 <!-- Enterprise Mobile Bottom Navigation Bar -->
 <div class="kula-mobile-bottom-nav">
-  <a href="<?php echo base_url('home'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'home') ? 'active' : ''; ?>">
+  <a href="<?php echo base_url('home'); ?>" class="kula-mobile-nav-item <?php echo (in_array($this->router->fetch_class(), array('home', 'dashboard'))) ? 'active' : ''; ?>">
     <i class="fa-solid fa-house"></i>
     <span>Home</span>
   </a>
-  <a href="<?php echo base_url('livestock/listLivestock'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'livestock') ? 'active' : ''; ?>">
+  <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'livestock') ? 'active' : ''; ?>">
     <i class="fa-solid fa-cow"></i>
     <span>Livestock</span>
   </a>
-  <a href="<?php echo base_url('sale/addSaleView'); ?>" class="kula-mobile-nav-item kula-mobile-quick-action" title="Quick Add Record">
-    <i class="fa-solid fa-plus"></i>
+  <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-mobile-quick-action" title="Add Livestock">
+    <div class="kula-fab-circle">
+      <i class="fa-solid fa-plus"></i>
+    </div>
   </a>
-  <a href="<?php echo base_url('vaccine/viewVaccinationSchedule'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'vaccine') ? 'active' : ''; ?>">
+  <a href="<?php echo base_url('vaccine'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'vaccine') ? 'active' : ''; ?>">
     <i class="fa-solid fa-syringe"></i>
     <span>Health</span>
   </a>
