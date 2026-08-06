@@ -1,0 +1,19 @@
+# Set CI_ENV=development for local hostnames so PHP errors are visible.
+# Production hostnames don't match these patterns and inherit the
+# 'production' default defined in index.php.
+#
+# To temporarily expose errors on a live staging host, add its hostname
+# pattern here. REMOVE it again before going truly public — running
+# production with display_errors=On leaks stack traces to visitors.
+<IfModule mod_setenvif.c>
+    SetEnvIfNoCase Host "\.test$"                   CI_ENV=development
+    SetEnvIfNoCase Host "^localhost"                CI_ENV=development
+    SetEnvIfNoCase Host "^127\.0\.0\.1"             CI_ENV=development
+    SetEnvIfNoCase Host "^\[::1\]"                  CI_ENV=development
+    SetEnvIfNoCase Host "^livestock\.lifedigital\.space$" CI_ENV=development
+</IfModule>
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?/$1 [L]

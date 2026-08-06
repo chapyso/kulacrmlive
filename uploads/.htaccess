@@ -1,0 +1,36 @@
+# Block PHP / script execution inside the uploads dir.
+# A user-supplied image renamed to .php (or a polyglot file) MUST NOT execute.
+
+# Apache 2.4+
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(?i:ph(p[3-7]?|t|tml|ar)|phps|inc|cgi|pl|py|rb|sh|lua|jsp|asp|aspx)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# Apache 2.2
+<IfModule !mod_authz_core.c>
+    <FilesMatch "\.(?i:ph(p[3-7]?|t|tml|ar)|phps|inc|cgi|pl|py|rb|sh|lua|jsp|asp|aspx)$">
+        Order Deny,Allow
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+# Belt-and-suspenders: disable the PHP handler entirely in this tree.
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Make sure Apache does not pass requests off to a PHP handler via AddHandler/AddType.
+<IfModule mod_mime.c>
+    RemoveHandler .php .php3 .php4 .php5 .php7 .phtml .phar
+    RemoveType .php .php3 .php4 .php5 .php7 .phtml .phar
+</IfModule>
+
+Options -ExecCGI -Indexes

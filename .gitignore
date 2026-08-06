@@ -1,0 +1,26 @@
+# Dependencies & Vendors
+/vendor/
+/laravel/
+
+# Database raw files
+mysql_data/
+*.zip
+*.tar.gz
+*.sql.gz
+
+# Cache & Logs
+application/cache/sessions/*
+!application/cache/sessions/index.html
+application/logs/*
+!application/logs/index.html
+
+# Test cookies & Scratch files
+cookie*.txt
+*.log
+
+# Environment & IDE
+.env
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,1105 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Official documentation for the Livestock Farm Management System v3.0.2 — installation, modules, reports, and FAQs.">
+    <title>Livestock Management System — Documentation</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<button class="menu-toggle" aria-label="Toggle navigation"><span></span></button>
+
+<div class="app">
+
+    <!-- =================================================================
+         SIDEBAR
+         ================================================================= -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="logo-mark">
+                <img src="https://livestock.lifedigital.space/uploads/logo11.png" alt="Livestock Management System" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">
+            </div>
+            <div class="brand-text">
+                <div class="brand-name">Livestock Management</div>
+                <div class="brand-version">Documentation &middot; v3.0.2</div>
+            </div>
+        </div>
+
+        <div class="sidebar-search">
+            <input type="text" id="sidebar-search" placeholder="Filter topics&hellip;" aria-label="Filter navigation">
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <div class="nav-group">
+                <div class="nav-group-title">Contents</div>
+                <ul>
+                    <li><a href="#introduction">Introduction</a></li>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#integrations">Integrations</a></li>
+                    <li><a href="#report">Report</a></li>
+                    <li><a href="#faq">FAQs</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Integrations</div>
+                <ul>
+                    <li><a href="#farm-setup">Farm Information Setup</a></li>
+                    <li><a href="#livestock">Livestock</a></li>
+                    <li><a href="#supplier">Supplier</a></li>
+                    <li><a href="#livestock-purchase">Livestock Purchase</a></li>
+                    <li><a href="#shed">Shed</a></li>
+                    <li><a href="#product-unit">Product Unit</a></li>
+                    <li><a href="#vaccine">Vaccine</a></li>
+                    <li><a href="#food">Food</a></li>
+                    <li><a href="#production">Production</a></li>
+                    <li><a href="#client">Client</a></li>
+                    <li><a href="#sale">Sale</a></li>
+                    <li><a href="#other-expenses">Other Expenses</a></li>
+                    <li><a href="#staff">Staff</a></li>
+                    <li><a href="#trash">Trash Bin</a></li>
+                    <li><a href="#backup">Backup &amp; Restore</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Reports</div>
+                <ul>
+                    <li><a href="#report-dashboard">Dashboard</a></li>
+                    <li><a href="#report-batch">Batch Report</a></li>
+                    <li><a href="#report-shed">Shed Report</a></li>
+                    <li><a href="#report-finance">Finance Report</a></li>
+                    <li><a href="#report-other">Other Reports</a></li>
+                </ul>
+            </div>
+
+        </nav>
+    </aside>
+
+    <!-- =================================================================
+         MAIN CONTENT
+         ================================================================= -->
+    <main class="main">
+
+        <!-- HERO -->
+        <header class="hero">
+            <h1>Documentation</h1>
+            <p class="hero-subtitle">
+                Livestock Management System &mdash; complete farm management with livestock, sheds,
+                batches, vaccines, food, sales, production and reporting.
+            </p>
+            <div class="hero-meta">
+                <span class="badge">Version 3.0.2</span>
+                <span class="badge">PHP 7.2 &ndash; 8.5</span>
+                <span class="badge">MySQL / MariaDB</span>
+            </div>
+        </header>
+
+        <!-- =============================================================
+             INTRODUCTION
+             ============================================================= -->
+        <section class="section" id="introduction">
+            <h2><span class="section-num">1.</span>Introduction</h2>
+
+            <p>
+                Livestock Management Software is a system that helps farmers <strong>record and keep track of
+                their livestocks</strong> from purchase, birth all the way to sale. It manages all activities of
+                an animal batch-wise as well as the most important dates in the lifetime of livestock. The system
+                manages cattle, poultry, pigs, goats, rabbits and more &mdash; with shed, batch, costing and
+                performance metrics, plus financial tracking from sales. You can also track deaths from a shed,
+                vaccinate batches on schedule, and manage food and production end-to-end.
+            </p>
+
+            <h3>Product information</h3>
+            <div class="deflist">
+                <dt>Item Name</dt>     <dd>Livestock Management System</dd>
+                <dt>Item Version</dt>  <dd>v 3.0.2</dd>
+                <dt>Framework</dt>     <dd>CodeIgniter 3.1.13 (HMVC)</dd>
+                <dt>PHP</dt>           <dd>7.2 &ndash; 8.5 supported</dd>
+                <dt>Database</dt>      <dd>MySQL 5.7+ / MariaDB 10.2+</dd>
+                <dt>Updated</dt>       <dd>July 9, 2026</dd>
+            </div>
+
+            <h3>Some special feature introductions</h3>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Purchase Management</h4>
+                    <p>Purchase livestock multi-line and assign it to a shed purchase-wise. Supports
+                    multiple suppliers, multi-row invoices, paid &amp; due tracking.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Transfer Management</h4>
+                    <p>Move animals from one shed to another and keep the full location history. See which
+                    animals were in a particular shed at any given time.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Death Management</h4>
+                    <p>Record livestock deaths separately so they don't pollute your active stock or
+                    financial counts &mdash; with audit trail per shed and batch.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Feed Management</h4>
+                    <p>Plan feeding by shed and batch, track how much was consumed, and cost it per ranch
+                    so you can make informed operations decisions.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Detailed Livestock Records</h4>
+                    <p>Capture breed, birth date, approximate selling price &mdash; plus a free-text Notes
+                    field per breed and full event history per animal lifetime.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Vaccination System</h4>
+                    <p>Define vaccine routes, schedules and doses per livestock variant. Automatic
+                    upcoming-dose dashboard, used &amp; wasted tracking.</p>
+                </div>
+            </div>
+
+            <h3>What's new in this version <span class="tag new">v3.0.2</span></h3>
+            <div class="callout success">
+                <strong>Maintenance release:</strong> fixes the profile update error so users can change their
+                name, email and password again, and the same validation error when saving medicine records.
+                No database changes &mdash; safe to upgrade by replacing the application files.
+            </div>
+
+            <h3>Previously in v3.0.1</h3>
+            <div class="callout success">
+                <strong>Modernised platform:</strong> rebuilt on <strong>CodeIgniter 3.1.13</strong> (framework), runs on PHP 7.2 through 8.5.
+                Existing workflows behave identically.
+            </div>
+            <ul>
+                <li><strong>Date-range filter</strong> on Purchase, Sale, Product Sale and Expense list pages.</li>
+                <li><strong>Trash Bin</strong> &mdash; restore accidentally-deleted records (admin-only).</li>
+                <li><strong>Recent Activity</strong> panel on the dashboard.</li>
+                <li><strong>Livestock Notes</strong> &mdash; free-text per breed.</li>
+                <li><strong>Dashboard alerts</strong> &mdash; low stock, overdue invoices, upcoming vaccinations.</li>
+                <li><strong>CSV Export</strong> on primary list pages.</li>
+                <li><strong>PDF download</strong> on purchase, livestock sale and product sale invoices.</li>
+                <li><strong>Configurable timezone</strong>, low-stock threshold and overdue-payment days.</li>
+            </ul>
+        </section>
+
+        <!-- =============================================================
+             INSTALLATION
+             ============================================================= -->
+        <section class="section" id="installation">
+            <h2><span class="section-num">2.</span>Installation</h2>
+
+            <p>You can install this software easily. Follow the steps below and successfully install and enjoy the software.</p>
+
+            <h3>Step 1 &mdash; Create a MySQL database and user</h3>
+            <p>
+                Sign in to your <strong>cPanel</strong>, <strong>VPS</strong> or <strong>hosting control panel</strong>
+                and open the <strong>MySQL Databases</strong> section. You need three things here:
+            </p>
+            <ol>
+                <li>
+                    <strong>Create a new database</strong> &mdash; give it any name you like, for example
+                    <code>livestock</code>. Most shared hosts will automatically prefix it with your account
+                    name, so the final database name might look like <code>youracct_livestock</code>.
+                    Use the <code>utf8mb4</code> character set if your panel asks.
+                </li>
+                <li>
+                    <strong>Create a new MySQL user</strong> with a strong password. Note down the
+                    <em>username</em> and <em>password</em> &mdash; you'll need them again in Step&nbsp;3.
+                </li>
+                <li>
+                    <strong>Add the user to the database</strong> and grant <strong>ALL PRIVILEGES</strong>.
+                    Without this step the application will fail to connect.
+                </li>
+            </ol>
+            <p>
+                On a VPS or local server (XAMPP / WAMP / Laravel Herd) where you have root access, you can do
+                the same thing from the MySQL shell:
+            </p>
+<pre><code>CREATE DATABASE livestock CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'livestock_user'@'localhost' IDENTIFIED BY 'YourStrongPassword';
+GRANT ALL PRIVILEGES ON livestock.* TO 'livestock_user'@'localhost';
+FLUSH PRIVILEGES;</code></pre>
+
+            <h3>Step 2 &mdash; Import the SQL file</h3>
+            <p>
+                Open <strong>phpMyAdmin</strong> from your hosting panel and select the database you just created
+                from the left-hand sidebar.
+            </p>
+            <ol>
+                <li>Click the <strong>Import</strong> tab at the top.</li>
+                <li>
+                    Click <strong>Choose File</strong> and pick <code>livestock.sql</code> from the unzipped
+                    project folder. The file ships at the root of the project, next to <code>index.php</code>.
+                </li>
+                <li>
+                    Scroll down and click <strong>Go</strong> (or <strong>Import</strong>). On a clean install the
+                    import takes a few seconds and a green success message appears.
+                </li>
+            </ol>
+            <p>
+                After the import you should see a list of tables in the left sidebar &mdash; <code>livestock</code>,
+                <code>shed</code>, <code>users</code>, <code>settings</code> and many others. If the table list is
+                empty, re-check that you selected the right database before clicking Import.
+            </p>
+            <div class="callout warn">
+                <strong>Large databases:</strong> if your host imposes an upload size limit and the import fails,
+                upload <code>livestock.sql</code> via FTP/File Manager into a folder and import it from the command
+                line with <code>mysql -u user -p database &lt; livestock.sql</code>, or ask your host to raise
+                <code>upload_max_filesize</code> in PHP.
+            </div>
+
+            <h3>Step 3 &mdash; Upload the files and configure the database connection</h3>
+            <p>
+                Upload the entire unzipped project folder to your server. On a shared host this is usually done
+                through cPanel's <strong>File Manager</strong> or an FTP client (FileZilla, WinSCP). You can install
+                in any of these locations:
+            </p>
+            <ul>
+                <li>
+                    <strong>Domain root</strong> &mdash; the app is reachable at <code>https://yourdomain.com/</code>.
+                    Upload the project contents directly into <code>public_html/</code>.
+                </li>
+                <li>
+                    <strong>Sub-directory</strong> &mdash; the app is reachable at
+                    <code>https://yourdomain.com/livestock/</code>. Upload the project contents into
+                    <code>public_html/livestock/</code>.
+                </li>
+                <li>
+                    <strong>Sub-domain</strong> &mdash; the app is reachable at
+                    <code>https://livestock.yourdomain.com/</code>. Upload the project contents into the
+                    sub-domain's document root.
+                </li>
+            </ul>
+            <p>
+                Once the files are uploaded, open <code>application/config/database.php</code> in the File Manager's
+                code editor (or download it, edit locally, and re-upload) and fill in the four database fields with
+                the credentials you noted in Step&nbsp;1:
+            </p>
+<pre><code>$db['default']['hostname'] = '<u>Host Name</u>';
+$db['default']['username'] = '<u>Database Username</u>';
+$db['default']['password'] = '<u>Password</u>';
+$db['default']['database'] = '<u>Database Name</u>';</code></pre>
+            <p>What to enter in each field:</p>
+            <ul>
+                <li><code>hostname</code> &mdash; usually <code>localhost</code>. A few hosts use <code>127.0.0.1</code> or a remote host name like <code>mysql.yourdomain.com</code>; check your hosting panel if unsure.</li>
+                <li><code>username</code> &mdash; the MySQL user from Step&nbsp;1 (e.g. <code>youracct_livestock_user</code>).</li>
+                <li><code>password</code> &mdash; the password you set for that user.</li>
+                <li><code>database</code> &mdash; the database name from Step&nbsp;1 (e.g. <code>youracct_livestock</code>).</li>
+            </ul>
+            <p>Save the file. Do not change any other lines in <code>database.php</code>.</p>
+            <div class="callout warn">
+                <strong>Folder permissions:</strong> after uploading, make sure these folders are writable by the
+                web server (set permission <code>755</code> or <code>775</code>) &mdash;
+                <code>application/cache/</code>, <code>application/cache/sessions/</code>,
+                <code>application/logs/</code>, <code>uploads/</code>, and <code>files/backups/</code>.
+                Otherwise login may silently fail, file uploads will be rejected, and backups will not save.
+            </div>
+
+            <h3>Step 4 &mdash; Upload the <code>.htaccess</code> file</h3>
+            <p>
+                The project ships with an <code>.htaccess</code> file that enables clean URLs (so that
+                <code>auth/login</code> works instead of <code>index.php?/auth/login</code>) and adds basic
+                security headers. Make sure it is uploaded into the same folder as <code>index.php</code>.
+            </p>
+            <ul>
+                <li>
+                    On most FTP clients hidden files (any file starting with a dot) are not shown by default. In
+                    <strong>FileZilla</strong> turn on <em>Server &rarr; Force showing hidden files</em>; in
+                    <strong>cPanel File Manager</strong> tick <em>Show Hidden Files (dotfiles)</em> in the settings
+                    dialog. Re-upload if needed.
+                </li>
+                <li>
+                    Your server must have Apache's <code>mod_rewrite</code> module enabled. On shared hosts this is
+                    almost always on by default; on a VPS run <code>a2enmod rewrite</code> and restart Apache.
+                </li>
+                <li>
+                    If you installed the app in a sub-directory and links return 404, edit the very first line of
+                    <code>.htaccess</code> &mdash; change <code>RewriteBase /</code> to
+                    <code>RewriteBase /livestock/</code> (replace with your folder name).
+                </li>
+            </ul>
+            <p><strong class="tag new">It's done!</strong> Move on to Step&nbsp;5 to verify your install.</p>
+
+            <h3>Step 5 &mdash; Open the site and sign in</h3>
+            <p>
+                Type your URL: <code>www.yourdomain.com/livestock/auth/login</code>. Then enter your username and
+                password and login.
+            </p>
+            <figure class="screenshot">
+                <img src="images/login-page.png"
+                     data-name="login-page.png"
+                     data-title="Screenshot needed"
+                     data-hint="The login page of the live site at /auth/login.">
+                <figcaption>Login page &mdash; <code>login-page.png</code></figcaption>
+            </figure>
+
+            <h3>Default login details</h3>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr><th>Role</th><th>Username</th><th>Password</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Admin</td><td><code>admin@example.com</code></td><td><code>12345</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout danger">
+                <strong>Change this password immediately</strong> from <strong>Profile &rarr; Change Password</strong>
+                on any public install.
+            </div>
+        </section>
+
+        <!-- =============================================================
+             FEATURES
+             ============================================================= -->
+        <section class="section" id="features">
+            <h2><span class="section-num">3.</span>Features</h2>
+
+            <ul>
+                <li>Livestock Management <span class="tag new">+ notes</span></li>
+                <li>Purchase Management <span class="tag new">+ PDF invoice</span></li>
+                <li>Shed Management
+                    <ol>
+                        <li>Shed Management</li>
+                        <li>Death Management</li>
+                        <li>Transfer Management</li>
+                    </ol>
+                </li>
+                <li>Batch Management</li>
+                <li>Vaccine Management</li>
+                <li>Food Management</li>
+                <li>Sales Management <span class="tag new">+ PDF invoice</span></li>
+                <li>Production Management</li>
+                <li>Reproduction Management</li>
+                <li>Supplier Database</li>
+                <li>Client Database</li>
+                <li>Staff Database</li>
+                <li>All Kind of Reports <span class="tag new">+ CSV export</span></li>
+                <li>General Settings <span class="tag new">+ timezone &amp; thresholds</span></li>
+                <li>Multiple Languages</li>
+                <li>Date-Range Filter on List Pages <span class="tag new">v3.0.1</span></li>
+                <li>Trash Bin (restore deleted records) <span class="tag new">v3.0.1</span></li>
+                <li>Dashboard Alerts (low stock, overdue, upcoming vaccinations) <span class="tag new">v3.0.1</span></li>
+                <li>Recent Activity Panel <span class="tag new">v3.0.1</span></li>
+                <li>Database Backup &amp; Restore</li>
+            </ul>
+        </section>
+
+        <!-- =============================================================
+             INTEGRATIONS
+             ============================================================= -->
+        <section class="section" id="integrations">
+            <h2><span class="section-num">4.</span>Integrations</h2>
+
+            <!-- ====================== Farm Setup ====================== -->
+            <h3 id="farm-setup">&#9632; Farm Information Setup</h3>
+            <p>The system already has some data in it, but you can change it to your own information from the Settings module.</p>
+            <p>You can also change the system language from the Language Setup.</p>
+            <p>Change username and password from the Profile module.</p>
+
+            <p>
+                <strong>New in v3.0.1:</strong> Settings now also has a <strong>timezone dropdown</strong> (default
+                <code>Asia/Dhaka</code>), a <strong>low-stock threshold</strong> (head count at which a batch triggers a
+                dashboard alert, default 10), and an <strong>overdue-payment days</strong> threshold (default 7).
+            </p>
+
+            <figure class="screenshot">
+                <img src="images/settings.png"
+                     data-name="settings.png"
+                     data-title="Screenshot needed"
+                     data-hint="Settings page showing farm info + new timezone / low-stock / overdue fields.">
+                <figcaption>Farm setup &mdash; settings &mdash; <code>settings.png</code></figcaption>
+            </figure>
+            <!-- ====================== Livestock ====================== -->
+            <h3 id="livestock">&#9632; Livestock</h3>
+
+            <h4>&rarr; Livestock</h4>
+            <p>
+                After login, go to the Livestock module and click <strong>Add New Livestock</strong> button. It will
+                open a popup, fill the input fields and submit.
+            </p>
+            <p>You can <strong>edit</strong> and <strong>delete</strong> livestock.</p>
+            <p>
+                <strong>New in v3.0.1:</strong> the Add/Edit form now has a free-text <strong>Notes</strong> field. Use it to
+                record breed quirks &mdash; average milk yield, weight at slaughter, supplier preferences, anything you
+                want next-time-you. Notes never appear on customer invoices.
+            </p>
+            <figure class="screenshot">
+                <img src="images/livestock_add.png"
+                     data-name="livestock_add.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Livestock modal/form (include the new Notes field if available).">
+                <figcaption>Livestock add &mdash; <code>livestock_add.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Livestock Variant</h4>
+            <p>
+                After adding <strong>livestock</strong> you can see the <strong>Add Variant</strong> button under the
+                created livestock. Click <strong>Add Variant</strong> to add a new variant under the created livestock.
+            </p>
+            <p>
+                You can <strong>edit</strong> and <strong>delete</strong> a livestock variant. Click
+                <strong>View Variant</strong> from the livestock list to open the variant list page and then edit the variant.
+            </p>
+            <figure class="screenshot">
+                <img src="images/livestock_variant_add.png"
+                     data-name="livestock_variant_add.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Variant modal under a livestock row.">
+                <figcaption>Livestock variant add &mdash; <code>livestock_variant_add.png</code></figcaption>
+            </figure>
+            <!-- ====================== Supplier ====================== -->
+            <h3 id="supplier">&#9632; Supplier</h3>
+            <h4>&rarr; Add New Supplier</h4>
+            <p>
+                Without creating a supplier you can't purchase <strong>livestock</strong>. Go to the Supplier module
+                and create a new supplier. After creating the supplier you can see a <strong>supplier ledger</strong> &mdash;
+                all purchase invoices and transactions under this supplier are listed there. <strong>Purchase invoice
+                payments</strong> are managed from the ledger. You can also <strong>edit</strong> and <strong>delete</strong>
+                a supplier from the supplier list.
+            </p>
+            <figure class="screenshot">
+                <img src="images/supplier_add.png"
+                     data-name="supplier_add.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Supplier modal/form.">
+                <figcaption>Supplier add &mdash; <code>supplier_add.png</code></figcaption>
+            </figure>
+            <!-- ====================== Livestock Purchase ====================== -->
+            <h3 id="livestock-purchase">&#9632; Livestock Purchase</h3>
+            <h4>&rarr; Purchase New Livestock</h4>
+            <p>
+                In this module you can purchase livestock. Before purchasing, make sure you have already added
+                <strong>livestock</strong>, <strong>livestock variant</strong> and <strong>supplier</strong>. In every
+                module <strong style="color:#dc2626">*</strong> means the input field is required.
+            </p>
+            <p>You can purchase <strong>multiple livestock and variants</strong> in the same invoice from a supplier.</p>
+            <p>
+                On the purchase form there's a payment option. Tick the checkbox to record a payment along
+                with the purchase. Remember: <strong>you can't pay more money than the purchase amount</strong> &mdash; the
+                system blocks it.
+            </p>
+            <p>
+                The invoice is <strong>editable</strong> and <strong>deletable</strong> before the purchased livestock
+                is assigned to a shed.
+            </p>
+            <p>
+                <strong>New in v1.2+:</strong> on the invoice view page you can now download the invoice as <strong>PDF</strong>
+                &mdash; A4 portrait, UTF-8, ready to email to the supplier.
+            </p>
+            <figure class="screenshot">
+                <img src="images/livestock_purchase1.png"
+                     data-name="livestock_purchase1.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add New Purchase form with 2+ line items entered.">
+                <figcaption>Livestock purchase &mdash; <code>livestock_purchase1.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Livestock Purchase Payments</h4>
+            <p>
+                If you want to pay later, go to the Payments module and click <strong>Payments Reports</strong> &mdash;
+                this shows the supplier ledger. You can record multiple payments for one invoice. You can also see
+                the purchase invoice by clicking the <strong>Invoice</strong> button.
+            </p>
+            <figure class="screenshot">
+                <img src="images/supplier_payment2.png"
+                     data-name="supplier_payment2.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Payment modal showing amount field and the overpayment guard.">
+                <figcaption>Add a supplier payment &mdash; <code>supplier_payment2.png</code></figcaption>
+            </figure>
+
+            <!-- ====================== Shed ====================== -->
+            <h3 id="shed">&#9632; Shed</h3>
+
+            <h4>&rarr; Create Livestock Shed</h4>
+            <p>
+                After purchasing livestock you will send purchased livestocks to a shed. For that you have to create
+                a <strong>Shed</strong> to assign livestock. Go to the Shed module and create a shed.
+            </p>
+            <p>The shed number is required &mdash; it should be unique. You can create multiple sheds.</p>
+            <p>To view shed details, click the <strong>View Details</strong> button from the shed list.</p>
+            <figure class="screenshot">
+                <img src="images/shed.png"
+                     data-name="shed.png"
+                     data-title="Screenshot needed"
+                     data-hint="Shed list page with 3+ sheds and the Add Shed button.">
+                <figcaption>Shed list &mdash; <code>shed.png</code></figcaption>
+            </figure>
+            <figure class="screenshot">
+                <img src="images/shed_details.png"
+                     data-name="shed_details.png"
+                     data-title="Screenshot needed"
+                     data-hint="Shed details / view page showing capacity and assigned batches.">
+                <figcaption>Shed details &mdash; <code>shed_details.png</code></figcaption>
+            </figure>
+
+            <h4>&rarr; Livestock Assign to Shed</h4>
+            <p>You can assign livestock to a shed to nurture the purchased livestocks.</p>
+            <p>After being purchased, livestock is stored here. From here you can assign livestock to multiple sheds.</p>
+            <p>
+                Generally when you assign livestock to a shed, the system creates a unique <strong>batch number</strong>
+                and <strong>batch title</strong> automatically. <strong>Under each shed it generates a new batch for
+                each new assignment.</strong>
+            </p>
+            <p>
+                You can assign the same purchased livestock to <strong>multiple sheds</strong> and also assign
+                <strong>different purchased livestocks</strong> to the <strong>same shed</strong>.
+            </p>
+            <p>
+                You can assign the same variant from multiple purchases to the same batch. You cannot assign different
+                variants to the same batch.
+            </p>
+            <p>
+                Go to the Shed module and click <strong>Assign to Shed</strong> &mdash; the assign module opens. Click
+                the <strong>Assign</strong> button to open the popup, fill in the information and submit.
+            </p>
+            <p>You can edit assigned livestock for a limited time.</p>
+            <p>
+                If assigned livestock is already involved in food, vaccine, sale or production modules, you can't edit
+                it. So make sure you assigned the livestock to the correct shed or batch before it is involved in any
+                other module.
+            </p>
+            <figure class="screenshot">
+                <img src="images/assign_to_shed.png"
+                     data-name="assign_to_shed.png"
+                     data-title="Screenshot needed"
+                     data-hint="Assign livestock to shed modal with shed, batch and quantity fields.">
+                <figcaption>Assign livestock to shed &mdash; <code>assign_to_shed.png</code></figcaption>
+            </figure>
+            <p>
+                After assigning livestock to a shed, go to the <strong>shed list</strong> and click <strong>View
+                Details</strong>. On the details page you can mark the batch as <strong>active</strong> or
+                <strong>inactive</strong>.
+            </p>
+            <h4>&rarr; Livestock Death from Shed</h4>
+            <p>
+                If any livestock dies in a shed, you can record it in the death module. Go to the Shed module and
+                click <strong>Death List</strong>, then select the shed where the livestock died.
+            </p>
+            <p>
+                Click <strong>Add New Death</strong> to open the popup. Enter the died quantity and submit. You can
+                edit and delete the death quantity until the batch is completed.
+            </p>
+            <figure class="screenshot">
+                <img src="images/shed_death.png"
+                     data-name="shed_death.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add New Death modal with quantity field.">
+                <figcaption>Add livestock death &mdash; <code>shed_death.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Livestock Transfer from Shed to Shed</h4>
+            <p>If you want to transfer livestock from one shed to another, you can do it here.</p>
+            <p>You can transfer livestock only before the batch is involved in the production or sale module.</p>
+            <p>When you transfer, all livestocks of the selected batch move to the destination shed.</p>
+            <figure class="screenshot">
+                <img src="images/transfer_list.png"
+                     data-name="transfer_list.png"
+                     data-title="Screenshot needed"
+                     data-hint="Transfer list page with 1+ transfer rows.">
+                <figcaption>Transfer list &mdash; <code>transfer_list.png</code></figcaption>
+            </figure>
+            <!-- ====================== Product Unit ====================== -->
+            <h3 id="product-unit">&#9632; Product Unit</h3>
+            <h4>&rarr; Create Product Unit</h4>
+            <p>
+                For Food, Vaccine and Production you need units like litre, kilogram, gram, milligram etc. You can
+                use a short form for each unit: ltr, kg, g, ml etc. Go to the Settings module and create a few units.
+            </p>
+            <p>You can edit and delete a product unit.</p>
+            <figure class="screenshot">
+                <img src="images/product_unit.png"
+                     data-name="product_unit.png"
+                     data-title="Screenshot needed"
+                     data-hint="Product unit list page with add button.">
+                <figcaption>Product unit &mdash; <code>product_unit.png</code></figcaption>
+            </figure>
+            <!-- ====================== Vaccine ====================== -->
+            <h3 id="vaccine">&#9632; Vaccine</h3>
+            <p>This is the vaccine module &mdash; from here you can create a new vaccine and make a vaccination schedule.</p>
+            <p>
+                In the vaccine module you assign vaccine for livestock and variant-wise one time. Next, the system
+                automatically shows you variant-wise vaccination schedules. You can assign each vaccine to
+                <strong>multiple variants</strong>. You can also assign multiple vaccines for <strong>one variant</strong>.
+            </p>
+            <p>You can apply single or multiple doses for livestock variants.</p>
+
+            <h4>&rarr; Create Vaccine Route</h4>
+            <p>The vaccine route is how you administer the vaccine to the livestock. A vaccine route is required when you assign a dose for a livestock.</p>
+            <p>Go to the Vaccine module and click <strong>Routing</strong> from the sidebar to create routes. You can <strong>edit</strong> and <strong>delete</strong> a route.</p>
+            <figure class="screenshot">
+                <img src="images/add_vaccine_route.png"
+                     data-name="add_vaccine_route.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Vaccine Route modal.">
+                <figcaption>Create vaccine route &mdash; <code>add_vaccine_route.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Create Vaccine</h4>
+            <p>From the Vaccine module you can create a new vaccine and make a vaccination schedule. You can edit a vaccine.</p>
+            <figure class="screenshot">
+                <img src="images/create_new_vaccine.png"
+                     data-name="create_new_vaccine.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Vaccine modal.">
+                <figcaption>Create new vaccine &mdash; <code>create_new_vaccine.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Vaccine Dose Assign</h4>
+            <p>Now assign vaccine to livestock with doses.</p>
+            <p>
+                Click <strong>Assign</strong> &mdash; it opens a popup. Select livestock, variant, add doses, click
+                <strong>Add more dose</strong> to add multiple doses, then submit.
+            </p>
+            <figure class="screenshot">
+                <img src="images/vaccine_dose_assign.png"
+                     data-name="vaccine_dose_assign.png"
+                     data-title="Screenshot needed"
+                     data-hint="Vaccine Dose Assign modal.">
+                <figcaption>Vaccine dose assign &mdash; <code>vaccine_dose_assign.png</code></figcaption>
+            </figure>
+            <p>To see dose details, click <strong>Vaccine Details</strong> from the vaccine list.</p>
+            <figure class="screenshot">
+                <img src="images/vaccine_assign_list.png"
+                     data-name="vaccine_assign_list.png"
+                     data-title="Screenshot needed"
+                     data-hint="Vaccine assign list page.">
+                <figcaption>Vaccine assign list &mdash; <code>vaccine_assign_list.png</code></figcaption>
+            </figure>
+            <figure class="screenshot">
+                <img src="images/vaccine_doses.png"
+                     data-name="vaccine_doses.png"
+                     data-title="Screenshot needed"
+                     data-hint="Vaccine doses detail page.">
+                <figcaption>Vaccine doses &mdash; <code>vaccine_doses.png</code></figcaption>
+            </figure>
+
+            <h4>&rarr; Vaccine Purchase</h4>
+            <p>Without purchasing vaccine you can't complete vaccine doses. Go to the vaccine module and purchase vaccine &mdash; the flow is the same as livestock purchase.</p>
+            <p>You can add payments when you purchase or pay later from the payments module. You can also <strong>edit</strong> and <strong>delete</strong> a vaccine purchase.</p>
+            <p>After purchasing vaccine, it is added to <strong>vaccine stock</strong> in the vaccine list.</p>
+            <figure class="screenshot">
+                <img src="images/vaccine_purchase.png"
+                     data-name="vaccine_purchase.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Vaccine Purchase form.">
+                <figcaption>Vaccine purchase &mdash; <code>vaccine_purchase.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Vaccination Schedule</h4>
+            <p>After assigning and purchasing vaccine, you can apply doses on schedule. Go to the Vaccine Schedule.</p>
+            <p>
+                After assigning vaccine for livestock and variant-wise, you can see shed-wise vaccination date, the
+                <strong>last vaccine issue date</strong>, <strong>last vaccinated date</strong> and <strong>next
+                vaccination date</strong>.
+            </p>
+            <p>To complete a vaccination dose, go to Vaccine Schedule and complete the dose. If the batch is active you can issue the dose, otherwise you can't.</p>
+            <figure class="screenshot">
+                <img src="images/shed_wise_vaccine_date.png"
+                     data-name="shed_wise_vaccine_date.png"
+                     data-title="Screenshot needed"
+                     data-hint="Shed-wise vaccination date page.">
+                <figcaption>Shed-wise vaccination date &mdash; <code>shed_wise_vaccine_date.png</code></figcaption>
+            </figure>
+            <p>
+                Click <strong>Dose</strong> &mdash; a popup opens. You can see the vaccine stock and enter how much
+                vaccine was used for this dose, then confirm. After completing the first dose, the second-dose button
+                opens. You can revert or undo a dose.
+            </p>
+            <p>You can edit a used vaccine by clicking <strong>View Used Vaccine</strong> from the Vaccination Schedule page.</p>
+            <h4>&rarr; Wasted Vaccine</h4>
+            <p>If any vaccine is wasted from stock, you can add it as wasted vaccine.</p>
+            <p>Click <strong>Wasted Vaccine</strong>, a popup opens &mdash; enter the wasted quantity and submit. You can edit a wasted vaccine entry from the wasted vaccine details page.</p>
+            <!-- ====================== Food ====================== -->
+            <h3 id="food">&#9632; Food</h3>
+            <p>You can feed livestock <strong>shed</strong> and <strong>batch</strong> wise every day from the Food module. Basically, you can assign food to livestock batch-wise.</p>
+
+            <h4>&rarr; Create Food</h4>
+            <p><strong>Note:</strong> for creating food you need a product unit (see Product Unit above). You can edit food.</p>
+            <figure class="screenshot">
+                <img src="images/create_food.png"
+                     data-name="create_food.png"
+                     data-title="Screenshot needed"
+                     data-hint="Create Food modal.">
+                <figcaption>Create food &mdash; <code>create_food.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Assign Batch for Food</h4>
+            <p>Now assign food for a livestock batch. Click <strong>Assign Batch</strong> &mdash; a popup opens. Select shed and batch, and enter the daily food demand for this batch.</p>
+            <p>After assigning, click <strong>Food Details</strong> to open the assigned-batch details page where you can edit the assignment.</p>
+            <figure class="screenshot">
+                <img src="images/assign_food_to_batch.png"
+                     data-name="assign_food_to_batch.png"
+                     data-title="Screenshot needed"
+                     data-hint="Assign Food to Batch modal.">
+                <figcaption>Assign food to batch &mdash; <code>assign_food_to_batch.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Food Purchase</h4>
+            <p>Without purchasing food you can't distribute it. Go to the Food module and purchase food &mdash; the flow is the same as other purchases.</p>
+            <p>You can add payments at purchase time or pay later. You can <strong>edit</strong> and <strong>delete</strong> a food purchase.</p>
+            <p>After purchasing food, it is added to <strong>food stock</strong>.</p>
+            <figure class="screenshot">
+                <img src="images/purchase_food.png"
+                     data-name="purchase_food.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Food Purchase form.">
+                <figcaption>Purchase food &mdash; <code>purchase_food.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Distribute Food</h4>
+            <p>Every day you distribute food to the assigned batch. Go to the <strong>Food Stock</strong> module and click <strong>Distribute Food</strong>.</p>
+            <p>If food in stock is available, you can distribute; otherwise you can't. Make sure you have enough food in stock.</p>
+            <figure class="screenshot">
+                <img src="images/distribute_food.png"
+                     data-name="distribute_food.png"
+                     data-title="Screenshot needed"
+                     data-hint="Distribute Food modal.">
+                <figcaption>Distribute food &mdash; <code>distribute_food.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Wasted Food</h4>
+            <p>If any food is wasted from stock, you can add it as wasted food.</p>
+            <p>Click <strong>Wasted Food</strong>, a popup opens &mdash; enter wasted quantity and submit. You can edit a wasted food entry from its details page.</p>
+            <!-- ====================== Production ====================== -->
+            <h3 id="production">&#9632; Production</h3>
+            <p>Products received from each batch are stored in the Product module and can be sold from there. You will need a product category and a product.</p>
+
+            <h4>&rarr; Create Product Category</h4>
+            <p>Go to the Production module and click <strong>Production Category</strong> from the sidebar. You can edit a product category.</p>
+            <figure class="screenshot">
+                <img src="images/product_category.png"
+                     data-name="product_category.png"
+                     data-title="Screenshot needed"
+                     data-hint="Product Category list page.">
+                <figcaption>Product category &mdash; <code>product_category.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Create Product</h4>
+            <p>After creating the product category, create the product from the Production list.</p>
+            <p><strong>Note:</strong> for creating a product you also need a product unit. You can edit a product from here.</p>
+            <figure class="screenshot">
+                <img src="images/product_create.png"
+                     data-name="product_create.png"
+                     data-title="Screenshot needed"
+                     data-hint="Create Product modal.">
+                <figcaption>Create product &mdash; <code>product_create.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Assign Batch for Production</h4>
+            <p>Click <strong>Assign Product</strong> &mdash; a popup opens. Select shed and batch and enter the production demand for the batch.</p>
+            <p>The same product can come from multiple batches; you can assign each product to multiple batches.</p>
+            <p>You can edit assigned batches by clicking <strong>Details</strong> from the product list.</p>
+            <figure class="screenshot">
+                <img src="images/assign_product.png"
+                     data-name="assign_product.png"
+                     data-title="Screenshot needed"
+                     data-hint="Assign Product to Batch modal.">
+                <figcaption>Assign product to batch &mdash; <code>assign_product.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Stock product in assigned batch</h4>
+            <p>Now add products to stock for the batch they came from.</p>
+            <figure class="screenshot">
+                <img src="images/product_stock_add_popup.png"
+                     data-name="product_stock_add_popup.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Product Stock modal.">
+                <figcaption>Add product stock &mdash; <code>product_stock_add_popup.png</code></figcaption>
+            </figure>
+            <p>If there is any mistake, you can edit the stock entry from here.</p>
+            <h4>&rarr; Waste Product</h4>
+            <p>If any products are wasted, you can deduct them from stock.</p>
+
+            <p>Edit wasted products if any mistake.</p>
+            <h4>&rarr; Livestock Reproduction</h4>
+            <p>If you get reproductive livestock or new births from a batch and want to nurture them, assign them to a shed.</p>
+            <p>Click <strong>Reproduction List</strong> from the sidebar and click <strong>Add New Livestock Reproduction</strong> &mdash; a popup opens. Fill the input fields and submit.</p>
+            <p>You can edit after assigning.</p>
+            <figure class="screenshot">
+                <img src="images/reproduction_add.png"
+                     data-name="reproduction_add.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Livestock Reproduction modal.">
+                <figcaption>Add reproduction &mdash; <code>reproduction_add.png</code></figcaption>
+            </figure>
+            <!-- ====================== Client ====================== -->
+            <h3 id="client">&#9632; Client</h3>
+            <h4>&rarr; Add New Client</h4>
+            <p>
+                Without creating a client you can't sell <strong>livestock</strong> and <strong>products</strong>. Go
+                to the Client module and create a new client. After creating you can see a <strong>client ledger</strong> &mdash;
+                all sale invoices and transactions under this client appear there. <strong>Sale invoice payments</strong>
+                are managed from the ledger. You can also <strong>edit</strong> and <strong>delete</strong> a client from the client list.
+            </p>
+            <figure class="screenshot">
+                <img src="images/add_client.png"
+                     data-name="add_client.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Client modal/form.">
+                <figcaption>Add client &mdash; <code>add_client.png</code></figcaption>
+            </figure>
+            <!-- ====================== Sale ====================== -->
+            <h3 id="sale">&#9632; Sale</h3>
+            <p>Now you can sell livestock and products.</p>
+
+            <h4>&rarr; Livestock Sale</h4>
+            <p>
+                Go to the Sale module and click <strong>Livestock Sale List</strong> from the sidebar. Click
+                <strong>Add New Sale</strong> &mdash; from here you can sell livestock.
+            </p>
+            <p>You have to create a <strong>client</strong> before selling livestock. You can <strong>edit</strong> and <strong>delete</strong> a sale invoice.</p>
+            <div class="callout success">
+                <strong>Stock validation:</strong> the system blocks oversells &mdash; available = (assigned) &minus; (already sold + dead), per shed and per breed.
+            </div>
+            <p><strong>New in v1.2+:</strong> the sale invoice view page now has a <strong>PDF</strong> download button.</p>
+            <figure class="screenshot">
+                <img src="images/livestock_sale.png"
+                     data-name="livestock_sale.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add New Sale form with shed selected and 2+ line items.">
+                <figcaption>Livestock sale &mdash; <code>livestock_sale.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Product Sale From Stock</h4>
+            <p>
+                After storing products in stock you can sell them. Go to the Sale module and click <strong>Product
+                Sale List</strong> from the sidebar. Click <strong>Add New Product Sale</strong> &mdash; from here you can sell products.
+            </p>
+            <p>Before selling, make sure you have already created a client. You can <strong>edit</strong> and <strong>delete</strong> the sale invoice.</p>
+            <figure class="screenshot">
+                <img src="images/product_sale.png"
+                     data-name="product_sale.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Product Sale form.">
+                <figcaption>Product sale &mdash; <code>product_sale.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Livestock And Product Sale Payments</h4>
+            <p>You can add livestock and product sale payments at sale time or later from the Payments module.</p>
+            <p>Go to the Client Payments module or the client ledger to add payments. You can edit payments by clicking <strong>View Payments</strong> from the client ledger.</p>
+            <div class="callout warn">
+                <strong>Overpayment guard:</strong> any amount above the remaining balance is rejected, as are zero or negative amounts.
+            </div>
+            <figure class="screenshot">
+                <img src="images/add_client_payment.png"
+                     data-name="add_client_payment.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Client Payment modal.">
+                <figcaption>Add client payment &mdash; <code>add_client_payment.png</code></figcaption>
+            </figure>
+            <!-- ====================== Other Expenses ====================== -->
+            <h3 id="other-expenses">&#9632; Other Expenses</h3>
+            <p>The system has a module to maintain other expenses with categories. You can add other expenses and record multiple payments against them.</p>
+
+            <h4>&rarr; Create Expense Category</h4>
+            <p>You can record expenses by category. First create an expense category. You can edit and delete an expense category.</p>
+            <figure class="screenshot">
+                <img src="images/expesne_category.png"
+                     data-name="expesne_category.png"
+                     data-title="Screenshot needed"
+                     data-hint="Expense Category list page.">
+                <figcaption>Expense category &mdash; <code>expesne_category.png</code></figcaption>
+            </figure>
+            <h4>&rarr; Expense and Expense Payment</h4>
+            <p>After creating expense categories, add expenses and expense payments. <strong>v3.0.1:</strong> the Expense list now has a <strong>date-range filter</strong> and <strong>CSV export</strong> button.</p>
+            <figure class="screenshot">
+                <img src="images/expense.png"
+                     data-name="expense.png"
+                     data-title="Screenshot needed"
+                     data-hint="Expense list page (with date-range filter and CSV button visible).">
+                <figcaption>Expense &mdash; <code>expense.png</code></figcaption>
+            </figure>
+            <!-- ====================== Staff ====================== -->
+            <h3 id="staff">&#9632; Staff</h3>
+            <p>You can add staff and manage staff payments.</p>
+
+            <h4>&rarr; Create staff and staff payments</h4>
+            <p>Go to the Staff module and create staff. You can add multiple staff. You can manage staff payment from the Staff Payments module.</p>
+            <figure class="screenshot">
+                <img src="images/staff_add.png"
+                     data-name="staff_add.png"
+                     data-title="Screenshot needed"
+                     data-hint="Add Staff modal/form.">
+                <figcaption>Add staff &mdash; <code>staff_add.png</code></figcaption>
+            </figure>
+            <figure class="screenshot">
+                <img src="images/staff_payments.png"
+                     data-name="staff_payments.png"
+                     data-title="Screenshot needed"
+                     data-hint="Staff Payments list page.">
+                <figcaption>Staff payments &mdash; <code>staff_payments.png</code></figcaption>
+            </figure>
+
+            <!-- ====================== Trash Bin ====================== -->
+            <h3 id="trash">&#9632; Trash Bin <span class="tag new">v3.0.1</span></h3>
+            <p>
+                Every deletion in the system is a <strong>soft delete</strong>. The Trash Bin (admin-only, under
+                <strong>Settings &rarr; Trash</strong>) gives admins a UI to see and <strong>restore</strong> deleted
+                records.
+            </p>
+            <p>
+                Tabs cover every module &mdash; Livestock, Clients, Suppliers, Staff, Sheds, Livestock Purchases,
+                Livestock Sales, Product Sales, Expenses. Each tab shows the 50 most recently deleted records with a
+                <strong>Restore</strong> button. One click and the record is back exactly as it was.
+            </p>
+
+
+            <!-- ====================== Backup ====================== -->
+            <h3 id="backup">&#9632; Backup &amp; Restore</h3>
+            <p>The Backups page (admin-only) lets you export and restore your database without leaving the browser.</p>
+            <ul>
+                <li><strong>Backup now</strong> &mdash; writes a SQL dump to <code>files/backups/</code>.</li>
+                <li><strong>Download</strong> &mdash; downloads the SQL file.</li>
+                <li><strong>Restore</strong> &mdash; loads a previously exported SQL file back into the database.</li>
+                <li><strong>Delete</strong> &mdash; deletes a backup file from disk.</li>
+            </ul>
+            <div class="callout danger">
+                <strong>Restore is destructive.</strong> Always take a fresh backup immediately before restoring an older one, so you can roll forward if needed.
+            </div>
+
+        </section>
+
+        <!-- =============================================================
+             REPORT
+             ============================================================= -->
+        <section class="section" id="report">
+            <h2><span class="section-num">5.</span>Report</h2>
+            <p>In the Report module you can overview your farm's reports.</p>
+
+            <h3 id="report-dashboard">&#9632; Dashboard</h3>
+            <p>After logging in, you see a dashboard with the most important reports.</p>
+            <p>
+                <strong>New in v3.0.1:</strong> the dashboard now shows <strong>alert cards</strong> (low-stock batches,
+                overdue supplier invoices, overdue client invoices, vaccinations due in the next 7 days) and a
+                <strong>Recent Activity</strong> panel listing the 10 latest records across all modules.
+            </p>
+            <figure class="screenshot">
+                <img src="images/dashboard.png"
+                     data-name="dashboard.png"
+                     data-title="Screenshot needed"
+                     data-hint="Full dashboard after login: summary cards, alerts, charts.">
+                <figcaption>Dashboard &mdash; <code>dashboard.png</code></figcaption>
+            </figure>
+            <h3 id="report-batch">&#9632; Batch Report</h3>
+            <p>
+                You manage the system batch-wise &mdash; assign livestock to shed by batch, distribute foods,
+                vaccinations, reproductions, livestock sales, productions, product sales are all maintained batch-wise.
+                So you get a batch-wise report.
+            </p>
+            <p>
+                To see a batch-wise report, go to the Report module and select <strong>Batch Analysis</strong>. First
+                select <strong>Shed</strong>, then select <strong>Batch</strong> from the dropdown and search.
+            </p>
+            <p>Then the batch report appears.</p>
+            <figure class="screenshot">
+                <img src="images/batch_analysis_report.png"
+                     data-name="batch_analysis_report.png"
+                     data-title="Screenshot needed"
+                     data-hint="Batch Analysis Report page with totals.">
+                <figcaption>Batch analysis report &mdash; <code>batch_analysis_report.png</code></figcaption>
+            </figure>
+
+            <h3 id="report-shed">&#9632; Shed Report</h3>
+            <p>You can also see assigned livestock, distributed foods, vaccinations, reproductions, sales and productions shed-wise.</p>
+            <p>To see a shed-wise report, go to the Report module and select <strong>Shed Analysis</strong>. Select a <strong>Shed</strong> from the dropdown and search.</p>
+            <p>Then the shed report appears.</p>
+            <figure class="screenshot">
+                <img src="images/shed_analysis_report.png"
+                     data-name="shed_analysis_report.png"
+                     data-title="Screenshot needed"
+                     data-hint="Shed Analysis Report page with totals.">
+                <figcaption>Shed analysis report &mdash; <code>shed_analysis_report.png</code></figcaption>
+            </figure>
+
+            <h3 id="report-finance">&#9632; Finance Report</h3>
+            <p>The Finance Report provides your whole expense and income report.</p>
+            <p>
+                It also provides all purchase payable, purchase paid, purchase due, sale receivable, received, and
+                receivable due amounts. It also reports staff payments and other expense payments.
+            </p>
+            <figure class="screenshot">
+                <img src="images/finance_report.png"
+                     data-name="finance_report.png"
+                     data-title="Screenshot needed"
+                     data-hint="Finance Report page with totals.">
+                <figcaption>Finance report &mdash; <code>finance_report.png</code></figcaption>
+            </figure>
+            <p>You can see a date-to-date finance report.</p>
+            <h3 id="report-other">&#9632; Other Reports</h3>
+            <p>
+                You can see other reports: livestock purchase, sale, death, food purchase, vaccine purchase,
+                productions, supplier transactions, client transactions, staff payments and other expense payments.
+            </p>
+            <p>In these reports you can see total, today, month-wise, date-to-date and year-wise filters.</p>
+
+            <h4>&rarr; Livestock Purchase Reports</h4>
+            <h4>&rarr; Livestock Sale Reports</h4>
+            <h4>&rarr; Livestock Death Reports</h4>
+            <h4>&rarr; Food Reports</h4>
+            <h4>&rarr; Vaccine Reports</h4>
+            <h4>&rarr; Production Reports</h4>
+            <h4>&rarr; Supplier Reports</h4>
+            <h4>&rarr; Client Reports</h4>
+            <h4>&rarr; Staff Reports</h4>
+            <h4>&rarr; Other Expense Reports</h4>
+        </section>
+
+        <!-- =============================================================
+             FAQs
+             ============================================================= -->
+        <section class="section" id="faq">
+            <h2><span class="section-num">6.</span>Frequently Asked Questions &mdash; FAQs</h2>
+
+            <h3>What is Livestock Management System?</h3>
+            <p>
+                Livestock Management Software is a system that helps farmers to record and keep track of their
+                livestocks from purchase, birth all the way to sale. It manages all activities of an animal batch-wise,
+                as well as the most important dates in the lifetime of livestock. The system manages cattle, poultry,
+                pigs, goats, rabbits and more. With this system you can keep track of the number of animals on the
+                farm, the shed and batch with costing and performance metrics, and financial tracking from the sale of
+                livestocks. You can also track death of livestock from shed. Another special feature is vaccination.
+            </p>
+
+            <h3>Can I keep an account of all kinds of cattle here?</h3>
+            <p>Yes, you can keep accounts of all kinds of cattle here. You can also store all kinds of income and expenses for cattle and view reports.</p>
+
+            <h3>Do you have any vaccination system here? How can I manage these?</h3>
+            <p>
+                Yes &mdash; we have a vaccination system. Users can add new vaccines to the system and purchase them
+                for stock. A vaccination schedule lets users vaccinate the livestock by batch on time.
+            </p>
+
+            <h3>How can I manage livestock in this system?</h3>
+            <p>
+                After you buy cattle, you can send them separately to different sheds in new batches. Then you can
+                give them food, vaccine or medicine according to the batch. If you get any produce from them, you can
+                save it and sell it. You can view income and expenditure accounts by batch. You can also sell them
+                from the shed.
+            </p>
+
+            <h3>Can I get a report about profit and loss?</h3>
+            <p>Yes &mdash; you can view profit and loss reports by shed, batch and overall. You can also get monthly and date-to-date reports with filtering.</p>
+
+            <h3>Can this system provide an account for other expenses?</h3>
+            <p>Yes &mdash; users can add other expenses and generate automatic expense reports.</p>
+
+            <h3>Where do I find recently-deleted records? <span class="tag new">v3.0.1</span></h3>
+            <p>Go to <strong>Settings &rarr; Trash</strong>. Find the row under its module tab and click <strong>Restore</strong> &mdash; the record returns exactly as it was.</p>
+
+            <h3>How do I export a list to Excel? <span class="tag new">v1.2+</span></h3>
+            <p>Each primary list page (Livestock, Client, Supplier, Purchase, Sale, Expense) has an <strong>Export CSV</strong> button. The export is UTF-8 with a BOM so Excel opens it without character corruption. Apply a date-range filter first to export only that window.</p>
+
+            <h3>How do I download an invoice as PDF? <span class="tag new">v1.2+</span></h3>
+            <p>Open the invoice from the Purchase, Livestock Sale or Product Sale list and click the <strong>PDF</strong> button on the view page.</p>
+
+            <h3>I can't sign in &mdash; the page just reloads.</h3>
+            <p>Check that <code>application/cache/sessions/</code> exists and is writable by the web server. CI 3 uses file-based sessions and silently fails to start a session if it cannot write here.</p>
+
+            <h3>Wrong timezone in timestamps.</h3>
+            <p>Go to <strong>Settings &rarr; General</strong> and pick your timezone from the dropdown. All future timestamps will follow it.</p>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="docs-footer">
+            <p><strong>Livestock Management System</strong> &mdash; Documentation v3.0.2 &middot; Built on CodeIgniter 3.1.13</p>
+            <p>&copy; 2026</p>
+        </footer>
+
+    </main>
+</div>
+
+<button class="back-to-top" aria-label="Back to top">&uarr;</button>
+
+<script src="js/main.js"></script>
+</body>
+</html>
