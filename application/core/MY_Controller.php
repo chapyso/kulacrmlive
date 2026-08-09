@@ -5,6 +5,7 @@ if (!defined('BASEPATH')) exit('No direct script access allowed');
  * MY_Controller - Base Multi-Tenant SaaS Controller
  * Extends MX_Controller to support HMVC module architecture while enforcing global multi-tenant isolation and route guards.
  */
+#[AllowDynamicProperties]
 class MY_Controller extends MX_Controller {
     public $tenant_id = null;
     public $tenant_slug = null;
@@ -120,7 +121,7 @@ class MY_Controller extends MX_Controller {
         
         if ($this->ion_auth->logged_in()) {
             $user = $this->ion_auth->user()->row();
-            $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin'));
+            $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
 
             if ($is_superadmin) {
                 if ($this->is_impersonating && $this->session->userdata('tenant_id')) {
@@ -217,7 +218,7 @@ class MY_Controller extends MX_Controller {
         }
 
         $user = $this->ion_auth->user()->row();
-        $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin'));
+        $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
         $segment1 = strtolower($this->uri->segment(1));
         $is_superadmin_route = ($segment1 === 'superadmin');
 
@@ -243,7 +244,7 @@ class MY_Controller extends MX_Controller {
             return false;
         }
         $user = $this->ion_auth->user()->row();
-        return ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin'));
+        return ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
     }
 
     /**

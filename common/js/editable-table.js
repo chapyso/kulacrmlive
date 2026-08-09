@@ -87,7 +87,7 @@ var EditableTable = function () {
                 nEditing = nRow;
             });
 
-            $('#editable-sample a.delete').live('click', function (e) {
+            $(document).on('click', '#editable-sample a.delete', function (e) {
                 e.preventDefault();
 
                 if (confirm("Are you sure to delete this row ?") == false) {
@@ -99,7 +99,7 @@ var EditableTable = function () {
                 alert("Deleted! Do not forget to do some ajax to sync with backend :)");
             });
 
-            $('#editable-sample a.cancel').live('click', function (e) {
+            $(document).on('click', '#editable-sample a.cancel', function (e) {
                 e.preventDefault();
                 if ($(this).attr("data-mode") == "new") {
                     var nRow = $(this).parents('tr')[0];
@@ -110,7 +110,7 @@ var EditableTable = function () {
                 }
             });
 
-            $('#editable-sample a.edit').live('click', function (e) {
+            $(document).on('click', '#editable-sample a.edit', function (e) {
                 e.preventDefault();
 
                 /* Get the row as a parent of the link that was clicked on */

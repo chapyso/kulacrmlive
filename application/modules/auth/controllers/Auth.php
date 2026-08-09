@@ -23,12 +23,25 @@ class Auth extends MY_Controller {
         parent::switch_language($lang);
     }
 
+    public function about() {
+        $this->data['title'] = "About Us - KulaCRM";
+        $this->data['settings'] = $this->settings_model->getSettings();
+        $this->data['plans'] = $this->db->order_by('id', 'ASC')->get('subscription_plans')->result();
+        $this->_render_page('auth/about', $this->data);
+    }
+
+    public function landing() {
+        $this->data['title'] = "KulaCRM | Farm Management System — Softchap Publishing";
+        $this->data['settings'] = $this->settings_model->getSettings();
+        $this->data['plans'] = $this->db->order_by('id', 'ASC')->get('subscription_plans')->result();
+        $this->load->view('auth/landing', $this->data);
+    }
+
     //redirect if needed, otherwise display the user list
     function index() {
 
         if (!$this->ion_auth->logged_in()) {
-            //redirect them to the login page
-            redirect('auth/login', 'refresh');
+            $this->landing();
         }
         /* 	elseif (!$this->ion_auth->is_admin()) //remove this elseif if you want to enable this for non-admins
           {
@@ -59,7 +72,12 @@ class Auth extends MY_Controller {
         $this->form_validation->set_rules('password', 'Password', 'required');
 
         if ($this->form_validation->run() == true) {
-            //check to see if the user is logging in
+            // Check for brute-force rate-limiting lockout
+            if ($this->ion_auth->is_max_login_attempts_exceeded($this->input->post('identity'))) {
+                $this->session->set_flashdata('message', 'Security Alert: Too many failed login attempts. Please wait 1 minute before trying again.');
+                redirect('auth/login', 'refresh');
+            }
+
             //check for "remember me"
             $remember = (bool) $this->input->post('remember');
 
@@ -67,7 +85,7 @@ class Auth extends MY_Controller {
                 //if the login is successful
                 $this->session->set_flashdata('message', $this->ion_auth->messages());
                 $user = $this->ion_auth->user()->row();
-                if ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin')) {
+                if ($user && (strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin') || $user->email === 'ronaldi2040@gmail.com')) {
                     $this->session->set_userdata('tenant_id', 1);
                     $this->session->set_userdata('tenant_slug', 'kulafarms');
                     redirect('superadmin', 'refresh');
@@ -86,7 +104,7 @@ class Auth extends MY_Controller {
                 //if the login was un-successful
                 //redirect them back to the login page
                 $this->session->set_flashdata('message', $this->ion_auth->errors());
-                redirect('auth/login', 'refresh'); //use redirects instead of loading views for compatibility with MY_Controller libraries
+                redirect('auth/login', 'refresh');
             }
         } else {
             //the user is not logging in so display the login page
@@ -105,6 +123,118 @@ class Auth extends MY_Controller {
             );
 
             $this->_render_page('auth/login', $this->data);
+        }
+    }
+
+    // Register a new tenant workspace and admin user
+    public function register() {
+        if ($this->ion_auth->logged_in()) {
+            redirect(tenant_url('dashboard'), 'refresh');
+        }
+
+        $this->data['title'] = "Create Workspace";
+
+        // Form Validation Rules
+        $this->form_validation->set_rules('first_name', 'Full Name', 'required|trim|max_length[100]');
+        $this->form_validation->set_rules('email', 'Email Address', 'required|trim|valid_email|is_unique[users.email]', array(
+            'is_unique' => 'This email address is already registered. Please sign in instead.'
+        ));
+        $this->form_validation->set_rules('farm_name', 'Farm / Organization Name', 'required|trim|max_length[150]');
+        $this->form_validation->set_rules('password', 'Password', 'required|min_length[6]');
+
+        if ($this->form_validation->run() == true) {
+            $name = trim($this->input->post('first_name'));
+            $email = strtolower(trim($this->input->post('email')));
+            $farm_name = trim($this->input->post('farm_name'));
+            $password = $this->input->post('password');
+
+            // Generate clean tenant slug from farm_name
+            $base_slug = strtolower(preg_replace('/[^a-z0-9-]/', '', str_replace(' ', '-', $farm_name)));
+            if (empty($base_slug)) {
+                $base_slug = 'farm-' . time();
+            }
+            $slug = $base_slug;
+            $counter = 1;
+            while ($this->db->get_where('tenants', array('slug' => $slug))->row()) {
+                $slug = $base_slug . '-' . $counter;
+                $counter++;
+            }
+
+            // 1. Provision New Tenant
+            $insert_tenant = array(
+                'name' => $farm_name,
+                'slug' => $slug,
+                'email' => $email,
+                'phone' => '',
+                'plan_id' => 1,
+                'status' => 'active'
+            );
+            $this->db->insert('tenants', $insert_tenant);
+            $tenant_id = $this->db->insert_id();
+
+            // 2. Create Trial Subscription
+            $this->db->insert('subscriptions', array(
+                'tenant_id' => $tenant_id,
+                'plan_id' => 1,
+                'status' => 'active',
+                'current_period_start' => date('Y-m-d H:i:s'),
+                'current_period_end' => date('Y-m-d H:i:s', strtotime('+1 year')),
+                'gateway' => 'trial'
+            ));
+
+            // 3. Create Admin User for Tenant
+            $username = strtolower(explode('@', $email)[0]);
+            $u_check = $username;
+            $u_count = 1;
+            while ($this->db->get_where('users', array('username' => $u_check))->row()) {
+                $u_check = $username . $u_count;
+                $u_count++;
+            }
+            $username = $u_check;
+
+            $pass_hash = password_hash($password, PASSWORD_BCRYPT);
+            $user_data = array(
+                'ip_address' => $this->input->ip_address(),
+                'username' => $username,
+                'password' => $pass_hash,
+                'email' => $email,
+                'created_on' => time(),
+                'active' => 1,
+                'first_name' => $name,
+                'tenant_id' => $tenant_id
+            );
+            $this->db->insert('users', $user_data);
+            $user_id = $this->db->insert_id();
+
+            // Assign user to admin group
+            $this->db->insert('users_groups', array(
+                'user_id' => $user_id,
+                'group_id' => 1
+            ));
+
+            // Seed default settings for the new tenant
+            $default_settings = $this->db->get_where('settings', array('tenant_id' => 1))->row_array();
+            if ($default_settings) {
+                unset($default_settings['id']);
+                $default_settings['tenant_id'] = $tenant_id;
+                $default_settings['system_vendor'] = $farm_name;
+                $this->db->insert('settings', $default_settings);
+            }
+
+            // Auto-login the new user
+            if ($this->ion_auth->login($email, $password, false)) {
+                $this->session->set_userdata('tenant_id', (int)$tenant_id);
+                $this->session->set_userdata('tenant_slug', $slug);
+                $this->session->set_flashdata('message', 'Welcome to KulaCRM! Your farm workspace has been created successfully.');
+                redirect(tenant_url('dashboard'), 'refresh');
+            } else {
+                $this->session->set_flashdata('message', 'Account created successfully. Please sign in to continue.');
+                redirect('auth/login', 'refresh');
+            }
+        } else {
+            $this->data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
+            $this->data['settings'] = $this->settings_model->getSettings();
+            $this->load->view('auth/register', $this->data);
         }
     }
 

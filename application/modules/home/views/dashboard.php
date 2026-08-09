@@ -502,78 +502,147 @@
  
          <!-- Modern Sidebar Interactive JS Script -->
          <script>
-         function toggleKulaMobileSidebar() {
-             var sidebar = document.getElementById('sidebar');
-             var backdrop = document.getElementById('kula-mobile-backdrop');
-             if (sidebar) {
-                 sidebar.classList.toggle('kula-mobile-open');
-                 if (backdrop) backdrop.classList.toggle('show');
-             }
-         }
+          function toggleKulaMobileSidebar(e) {
+              if (e) {
+                  if (e.preventDefault) e.preventDefault();
+                  if (e.stopPropagation) e.stopPropagation();
+              }
+              var sidebar = document.getElementById('sidebar');
+              var backdrop = document.getElementById('kula-mobile-backdrop');
+              var body = document.body;
+              if (sidebar) {
+                  if (window.innerWidth <= 991) {
+                      sidebar.classList.toggle('kula-mobile-open');
+                      if (backdrop) backdrop.classList.toggle('show');
+                  } else {
+                      sidebar.classList.toggle('kula-collapsed');
+                      var collapsed = sidebar.classList.contains('kula-collapsed');
+                      if (body) {
+                          if (collapsed) {
+                              body.classList.add('kula-sidebar-collapsed-body');
+                          } else {
+                              body.classList.remove('kula-sidebar-collapsed-body');
+                          }
+                      }
+                      localStorage.setItem('kula_sidebar_collapsed', collapsed);
+                  }
+              }
+          }
+
+          // Global Immediate Event Delegation for Sidebar Collapse (Retract), Tree Toggles, and Dropdowns
+          document.addEventListener('click', function(e) {
+              var sidebar = document.getElementById('sidebar');
+              var body = document.body;
+
+              // 1. Collapse / Expand Sidebar Toggle (Retracting Feature)
+              var toggleBtn = e.target.closest('#kula-sidebar-toggle-btn, .sidebar-toggle-box');
+              if (toggleBtn) {
+                  toggleKulaMobileSidebar(e);
+                  return;
+              }
+
+                // 2. Tree Accordion Toggles (Dropdown Submenus)
+                var treeToggle = e.target.closest('.kula-tree-toggle');
+                if (treeToggle) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (sidebar && sidebar.classList.contains('kula-collapsed')) {
+                        sidebar.classList.remove('kula-collapsed');
+                        if (body) body.classList.remove('kula-sidebar-collapsed-body');
+                        localStorage.setItem('kula_sidebar_collapsed', 'false');
+                    }
+                    var treeParent = treeToggle.closest('.kula-menu-tree');
+                    if (treeParent) {
+                        treeParent.classList.toggle('open');
+                    }
+                    return;
+                }
+            });
  
-         document.addEventListener('DOMContentLoaded', function() {
-             var sidebar = document.getElementById('sidebar');
-             var toggleBtn = document.getElementById('kula-sidebar-toggle-btn');
+             // Active Route Highlight Engine
+             (function() {
+                 var normalizeUrl = function(u) {
+                     return u ? u.split('#')[0].split('?')[0].replace(/\/$/, "") : "";
+                 };
+
+                 var currentUrl = normalizeUrl(window.location.href);
+                 var baseUrl = normalizeUrl("<?php echo base_url(); ?>");
+                 var menuLinks = document.querySelectorAll('.kula-menu-item[href], .kula-tree-submenu a[href]');
+
+                 if (!menuLinks.length) return;
+
+                 menuLinks.forEach(function(link) {
+                     link.classList.remove('active');
+                 });
+                 document.querySelectorAll('.kula-menu-tree').forEach(function(tree) {
+                     tree.classList.remove('open');
+                 });
+                 document.querySelectorAll('.kula-tree-toggle').forEach(function(toggle) {
+                     toggle.classList.remove('active');
+                 });
+
+                 var getModuleSegment = function(url) {
+                     if (!url || url.indexOf(baseUrl) !== 0) return "";
+                     var path = url.substring(baseUrl.length).replace(/^\//, "");
+                     return path.split('/')[0] || "";
+                 };
+
+                 var currentModule = getModuleSegment(currentUrl);
+                 var bestMatchLink = null;
+                 var maxScore = -1;
+
+                 menuLinks.forEach(function(link) {
+                     var linkUrl = normalizeUrl(link.href);
+                     if (!linkUrl) return;
+
+                     var isBaseLink = (linkUrl === baseUrl || linkUrl === baseUrl + '/index.php');
+                     var score = -1;
+
+                     if (currentUrl === linkUrl ||
+                         linkUrl.replace(/\/listStaff$/, '/staff') === currentUrl ||
+                         currentUrl.replace(/\/listStaff$/, '') === linkUrl) {
+                         score = 10000 + linkUrl.length;
+                     } else if (isBaseLink) {
+                         if (currentUrl === baseUrl + '/home' || 
+                             currentUrl === baseUrl + '/dashboard' || 
+                             currentUrl === baseUrl + '/index.php' ||
+                             currentUrl === baseUrl ||
+                             currentModule === "" ||
+                             currentModule === "home" ||
+                             currentModule === "dashboard") {
+                             score = 5000;
+                         }
+                     } else if (currentUrl.indexOf(linkUrl + '/') === 0) {
+                         score = 1000 + linkUrl.length;
+                     } else {
+                         var linkModule = getModuleSegment(linkUrl);
+                         if (currentModule && linkModule && currentModule === linkModule) {
+                             score = 100 + linkUrl.length;
+                         }
+                     }
+
+                     if (score > maxScore) {
+                         maxScore = score;
+                         bestMatchLink = link;
+                     }
+                 });
+
+                 if (bestMatchLink && maxScore > 0) {
+                     bestMatchLink.classList.add('active');
+                     var parentTree = bestMatchLink.closest('.kula-menu-tree');
+                     if (parentTree) {
+                         parentTree.classList.add('open');
+                         var parentToggle = parentTree.querySelector('.kula-tree-toggle');
+                         if (parentToggle) parentToggle.classList.add('active');
+                     }
+                 }
+             })();
+ 
+             // User Popover Toggle
              var userCardTrigger = document.getElementById('kula-user-card-trigger');
              var userPopover = document.getElementById('kula-user-popover-menu');
              var searchInput = document.getElementById('kula-sidebar-search-input');
-             var body = document.body;
- 
-             // Load saved sidebar state
-             var isCollapsed = localStorage.getItem('kula_sidebar_collapsed') === 'true';
-             if (isCollapsed && sidebar) {
-                 sidebar.classList.add('kula-collapsed');
-                 body.classList.add('kula-sidebar-collapsed-body');
-             }
- 
-             // Collapse / Expand Toggle
-             if (toggleBtn && sidebar) {
-                 toggleBtn.addEventListener('click', function(e) {
-                     e.stopPropagation();
-                     sidebar.classList.toggle('kula-collapsed');
-                     var collapsed = sidebar.classList.contains('kula-collapsed');
-                     if (collapsed) {
-                         body.classList.add('kula-sidebar-collapsed-body');
-                     } else {
-                         body.classList.remove('kula-sidebar-collapsed-body');
-                     }
-                     localStorage.setItem('kula_sidebar_collapsed', collapsed);
-                 });
-             }
- 
-             // Tree Accordion Toggles
-             var treeToggles = document.querySelectorAll('.kula-tree-toggle');
-             treeToggles.forEach(function(toggle) {
-                 toggle.addEventListener('click', function(e) {
-                     if (sidebar.classList.contains('kula-collapsed')) {
-                         sidebar.classList.remove('kula-collapsed');
-                         body.classList.remove('kula-sidebar-collapsed-body');
-                         localStorage.setItem('kula_sidebar_collapsed', 'false');
-                     }
-                     var treeParent = this.closest('.kula-menu-tree');
-                     if (treeParent) {
-                         treeParent.classList.toggle('open');
-                     }
-                 });
-             });
- 
-             // Active Route Highlight
-              var currentUrl = window.location.href.split('#')[0].split('?')[0].replace(/\/$/, "");
-              var menuLinks = document.querySelectorAll('.kula-menu-item[href], .kula-tree-submenu a[href]');
-              menuLinks.forEach(function(link) {
-                  var linkUrl = link.href.split('#')[0].split('?')[0].replace(/\/$/, "");
-                  if (linkUrl && (currentUrl === linkUrl || currentUrl.indexOf(linkUrl + '/') === 0 || linkUrl.replace(/\/listStaff$/, '/staff') === currentUrl || currentUrl.replace(/\/listStaff$/, '') === linkUrl)) {
-                      link.classList.add('active');
-                      var parentTree = link.closest('.kula-menu-tree');
-                      if (parentTree) {
-                          parentTree.classList.add('open');
-                          var parentToggle = parentTree.querySelector('.kula-tree-toggle');
-                          if (parentToggle) parentToggle.classList.add('active');
-                      }
-                  }
-              });
- 
-             // User Popover Toggle
+
              if (userCardTrigger && userPopover) {
                  userCardTrigger.addEventListener('click', function(e) {
                      e.stopPropagation();
@@ -618,14 +687,15 @@
                  document.addEventListener('keydown', function(e) {
                      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                          e.preventDefault();
-                         if (sidebar.classList.contains('kula-collapsed')) {
-                             sidebar.classList.remove('kula-collapsed');
-                             body.classList.remove('kula-sidebar-collapsed-body');
+                         var s = document.getElementById('sidebar');
+                         var b = document.body;
+                         if (s && s.classList.contains('kula-collapsed')) {
+                             s.classList.remove('kula-collapsed');
+                             if (b) b.classList.remove('kula-sidebar-collapsed-body');
                              localStorage.setItem('kula_sidebar_collapsed', 'false');
                          }
-                         searchInput.focus();
+                         if (searchInput) searchInput.focus();
                      }
                  });
              }
-         });
          </script>

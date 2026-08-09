@@ -38,20 +38,20 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#ecfdf5',
-                            100: '#d1fae5',
-                            200: '#a7f3d0',
-                            300: '#6ee7b7',
-                            400: '#34d399',
-                            500: '#10b981',
-                            600: '#059669',
-                            700: '#047857',
-                            800: '#065f46',
-                            900: '#064e3b',
-                            950: '#022c22',
+                            50: '#F7FAF5',
+                            100: '#DDE7D9',
+                            200: '#8CC63F',
+                            300: '#73BF17',
+                            400: '#60B018',
+                            500: '#73BF17', // Bright Lime
+                            600: '#08570B', // Secondary Green
+                            700: '#003A0C', // Primary Forest Green
+                            800: '#002A08', // Dark Green
+                            900: '#001A05', // Deepest Forest
+                            950: '#001003',
                         },
                         obsidian: {
-                            900: '#090a0f',
+                            900: '#07090e',
                             800: '#0f111a',
                             700: '#161926',
                             600: '#212638'
@@ -76,8 +76,8 @@
         :root {
             --bg-dark: #07090e;
             --card-glass: rgba(15, 18, 28, 0.85);
-            --card-border: rgba(255, 255, 255, 0.12);
-            --emerald-glow: rgba(16, 185, 129, 0.25);
+            --card-border: rgba(115, 191, 23, 0.2);
+            --emerald-glow: rgba(115, 191, 23, 0.15);
             --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -96,7 +96,7 @@
             border: 1px solid var(--card-border);
             box-shadow: 
                 0 30px 60px -12px rgba(0, 0, 0, 0.85),
-                0 0 40px rgba(16, 185, 129, 0.08),
+                0 0 40px rgba(115, 191, 23, 0.08),
                 inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
@@ -112,7 +112,7 @@
             border-radius: 50%;
             filter: blur(100px);
             pointer-events: none;
-            opacity: 0.6;
+            opacity: 0.4;
             animation: floatOrb 12s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -125,7 +125,7 @@
             background: linear-gradient(135deg, 
                 rgba(7, 9, 14, 0.88) 0%, 
                 rgba(7, 9, 14, 0.65) 45%, 
-                rgba(6, 78, 59, 0.75) 100%);
+                rgba(0, 58, 12, 0.45) 100%);
         }
 
         /* Shimmer Animation */
@@ -135,7 +135,7 @@
             left: -100%;
             width: 200%;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.8), transparent);
+            background: linear-gradient(90deg, transparent, rgba(115, 191, 23, 0.6), transparent);
             animation: shimmer 6s infinite linear;
         }
 
@@ -157,22 +157,22 @@
         }
 
         .custom-input:focus {
-            border-color: #10b981;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2), 0 0 20px rgba(16, 185, 129, 0.15);
+            border-color: #73BF17;
+            box-shadow: 0 0 0 4px rgba(115, 191, 23, 0.2), 0 0 20px rgba(115, 191, 23, 0.15);
             background: rgba(255, 255, 255, 0.08);
             outline: none;
         }
 
         /* Submit Button Glow */
         .btn-brand {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            background: linear-gradient(135deg, #003A0C 0%, #08570B 50%, #73BF17 100%);
+            box-shadow: 0 8px 24px -4px rgba(115, 191, 23, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
             transition: var(--transition-smooth);
         }
 
         .btn-brand:hover:not(:disabled) {
-            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-            box-shadow: 0 14px 32px -4px rgba(16, 185, 129, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            background: linear-gradient(135deg, #08570B 0%, #73BF17 100%);
+            box-shadow: 0 14px 32px -4px rgba(115, 191, 23, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
             transform: translateY(-1px);
         }
 
@@ -186,9 +186,9 @@
         }
 
         .custom-checkbox-input:checked + .custom-checkbox-box {
-            background: #10b981;
-            border-color: #10b981;
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+            background: #73BF17;
+            border-color: #73BF17;
+            box-shadow: 0 0 10px rgba(115, 191, 23, 0.4);
         }
 
         /* Loading Spinner */
@@ -329,18 +329,16 @@
         <!-- ================= RIGHT PANEL: AUTH CARD (52%) ================= -->
         <section class="w-full lg:w-[52%] flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 relative z-10 min-h-screen">
 
-            <!-- Mobile Top Logo (Visible on mobile/tablet only) -->
-            <div class="flex lg:hidden items-center justify-between mb-8 pb-4 border-b border-white/10">
-                <div class="flex items-center gap-3">
-                    <div class="h-14 px-2 py-1 bg-transparent flex items-center justify-center">
-                        <img src="<?php echo $logo_url; ?>" alt="AgriERP Logo" class="h-12 w-auto object-contain filter drop-shadow-md">
-                    </div>
-                    <div class="flex flex-col text-left">
-                        <span class="font-extrabold text-white font-heading text-base">AgriERP</span>
-                        <span class="text-[10px] text-emerald-300">Farm Management ERP</span>
-                    </div>
+            <!-- Mobile Top Header with Back to Home (Visible on mobile/tablet only) -->
+            <div class="flex lg:hidden items-center justify-between mb-6 pb-4 border-b border-white/10">
+                <a href="<?php echo base_url(); ?>" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white glass-panel border border-white/20 hover:bg-white/10 transition-all">
+                    <i class="fa-solid fa-arrow-left text-brand-300 text-xs"></i>
+                    <span>Back to Home</span>
+                </a>
+                <div class="flex items-center gap-2">
+                    <img src="<?php echo $logo_url; ?>" alt="KulaCRM Logo" class="h-8 w-auto object-contain filter drop-shadow-md">
+                    <span class="text-xs font-extrabold text-white font-heading">KulaCRM</span>
                 </div>
-                <span class="text-xs text-gray-400 px-2.5 py-1 rounded-full glass-panel">v2026</span>
             </div>
 
             <!-- Auth Form Card Container -->
@@ -371,33 +369,40 @@
                 <div class="glass-card rounded-3xl p-8 sm:p-10 relative overflow-hidden">
                     <div class="shimmer-line"></div>
 
-                    <!-- Top Card Navigation: Security Tag & Language Switcher -->
-                    <div class="flex items-center justify-between mb-4 z-20 relative">
-                        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-semibold text-emerald-300">
-                            <i class="fa-solid fa-lock text-[10px]"></i>
-                            <span>Secure Portal</span>
-                        </div>
+                    <!-- Top Card Navigation: Back Home & Language Switcher -->
+                    <div class="flex items-center justify-between mb-4 z-20 relative gap-2 flex-wrap">
+                        <a href="<?php echo base_url(); ?>" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-gray-200 glass-panel border border-white/20 hover:border-brand-500/50 hover:text-white hover:bg-white/10 transition-all shadow-md backdrop-blur-lg group">
+                            <i class="fa-solid fa-arrow-left text-brand-300 group-hover:-translate-x-0.5 transition-transform text-xs"></i>
+                            <span>Back to Home</span>
+                        </a>
 
-                        <!-- Language Change Button & Dropdown -->
-                        <div class="relative inline-block text-left" id="loginLangContainer">
-                            <button type="button" id="loginLangBtn" onclick="toggleLoginLangDropdown()" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-white glass-panel border border-white/20 hover:border-emerald-400/50 hover:bg-white/10 transition-all shadow-md backdrop-blur-lg">
-                                <i class="fa-solid fa-globe text-emerald-400 text-xs"></i>
-                                <span><?php echo $active_lang_info['flag'] . ' ' . $active_lang_info['native']; ?></span>
-                                <i class="fa-solid fa-chevron-down text-[9px] opacity-70 ml-0.5"></i>
-                            </button>
-                            <div id="loginLangMenu" class="hidden absolute right-0 mt-2 w-52 rounded-2xl glass-card border border-white/20 shadow-2xl backdrop-blur-2xl py-2 z-50 max-h-64 overflow-y-auto">
-                                <div class="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-emerald-400/80 border-b border-white/10 mb-1">Select Language</div>
-                                <?php foreach ($languages_list as $l_key => $l_info): ?>
-                                    <a href="<?php echo base_url('auth/switch_language/' . $l_key); ?>" class="flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-200 hover:text-white hover:bg-emerald-500/20 transition-all rounded-lg mx-1 <?php echo ($active_lang === $l_key) ? 'bg-emerald-500/25 text-emerald-300 font-bold' : ''; ?>">
-                                        <span class="flex items-center gap-2">
-                                            <span class="text-sm"><?php echo $l_info['flag']; ?></span>
-                                            <span><?php echo $l_info['native']; ?></span>
-                                        </span>
-                                        <?php if ($active_lang === $l_key): ?>
-                                            <i class="fa-solid fa-check text-emerald-400 text-xs"></i>
-                                        <?php endif; ?>
-                                    </a>
-                                <?php endforeach; ?>
+                        <div class="flex items-center gap-2">
+                            <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-[11px] font-semibold text-brand-300">
+                                <i class="fa-solid fa-lock text-[10px]"></i>
+                                <span>Secure Portal</span>
+                            </div>
+
+                            <!-- Language Change Button & Dropdown -->
+                            <div class="relative inline-block text-left" id="loginLangContainer">
+                                <button type="button" id="loginLangBtn" onclick="toggleLoginLangDropdown()" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-white glass-panel border border-white/20 hover:border-brand-500/50 hover:bg-white/10 transition-all shadow-md backdrop-blur-lg">
+                                    <i class="fa-solid fa-globe text-brand-300 text-xs"></i>
+                                    <span><?php echo $active_lang_info['flag'] . ' ' . $active_lang_info['native']; ?></span>
+                                    <i class="fa-solid fa-chevron-down text-[9px] opacity-70 ml-0.5"></i>
+                                </button>
+                                <div id="loginLangMenu" class="hidden absolute right-0 mt-2 w-52 rounded-2xl glass-card border border-white/20 shadow-2xl backdrop-blur-2xl py-2 z-50 max-h-64 overflow-y-auto">
+                                    <div class="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-brand-300/80 border-b border-white/10 mb-1">Select Language</div>
+                                    <?php foreach ($languages_list as $l_key => $l_info): ?>
+                                        <a href="<?php echo base_url('auth/switch_language/' . $l_key); ?>" class="flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-200 hover:text-white hover:bg-brand-500/20 transition-all rounded-lg mx-1 <?php echo ($active_lang === $l_key) ? 'bg-brand-500/25 text-brand-300 font-bold' : ''; ?>">
+                                            <span class="flex items-center gap-2">
+                                                <span class="text-sm"><?php echo $l_info['flag']; ?></span>
+                                                <span><?php echo $l_info['native']; ?></span>
+                                            </span>
+                                            <?php if ($active_lang === $l_key): ?>
+                                                <i class="fa-solid fa-check text-brand-300 text-xs"></i>
+                                            <?php endif; ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -434,24 +439,7 @@
                         </div>
                     <?php endif; ?>
 
-                    <!-- Account Type / Quick Role Switcher -->
-                    <div class="mb-6 bg-white/[0.03] p-1.5 rounded-2xl border border-white/10 grid grid-cols-2 gap-1.5">
-                        <button type="button" 
-                                id="btnRoleSuperAdmin" 
-                                onclick="fillSuperAdminRole()" 
-                                class="py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-brand-500/20 border border-brand-500/40 text-brand-300 hover:bg-brand-500/30">
-                            <i class="fa-solid fa-crown text-amber-400"></i>
-                            <span>Super Admin</span>
-                        </button>
 
-                        <button type="button" 
-                                id="btnRoleTenant" 
-                                onclick="fillTenantRole()" 
-                                class="py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-white/[0.04] border border-white/10 text-gray-400 hover:bg-white/[0.08] hover:text-white">
-                            <i class="fa-solid fa-store text-emerald-400"></i>
-                            <span>Tenant Demo</span>
-                        </button>
-                    </div>
 
                     <!-- Login Form (POST -> auth/login) -->
                     <form method="post" action="<?php echo base_url('auth/login'); ?>" autocomplete="on" id="loginForm" class="space-y-5">
@@ -530,10 +518,26 @@
                 </div>
 
                 <!-- Card Footer / Help -->
-                <div class="mt-8 text-center text-xs text-gray-400 space-y-2">
-                    <p>
-                        Need help? Contact <a href="mailto:support@kulacrm.com" class="text-brand-400 hover:underline font-semibold">Support</a> or read our <a href="#" class="text-gray-300 hover:underline">Documentation</a>
+                <div class="mt-8 text-center text-xs text-gray-400 space-y-3">
+                    <p class="text-sm font-medium text-gray-300">
+                        Don't have a workspace? 
+                        <a href="<?php echo base_url('auth/register'); ?>" class="text-brand-300 font-bold hover:underline ml-1">
+                            Create Account <i class="fa-solid fa-chevron-right text-xs ml-0.5"></i>
+                        </a>
                     </p>
+                    <div class="flex items-center justify-center gap-2 flex-wrap pt-2">
+                        <span class="text-gray-400 font-medium">Need help?</span>
+                        <button type="button" onclick="openSupportModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand-500/10 border border-brand-500/30 text-brand-400 hover:text-white hover:bg-brand-500/20 hover:border-brand-400 font-semibold text-xs transition-all duration-300 transform hover:scale-110 hover:-translate-y-0.5 shadow-sm hover:shadow-brand-500/30 cursor-pointer">
+                            <i class="fa-solid fa-headset text-[12px]"></i>
+                            <span>Support</span>
+                        </button>
+                        <span class="text-gray-500">&bull;</span>
+                        <a href="<?php echo base_url('about'); ?>" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-brand-600/30 to-brand-500/20 border border-brand-500/40 text-white font-semibold text-xs transition-all duration-300 transform hover:scale-110 hover:-translate-y-0.5 hover:from-brand-600 hover:to-brand-500 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-500/40 group">
+                            <i class="fa-solid fa-circle-info text-brand-400 group-hover:text-white transition-colors duration-300 text-[12px]"></i>
+                            <span class="tracking-wide">About us</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"></i>
+                        </a>
+                    </div>
                     <p class="text-[11px] text-gray-500">
                         &copy; <?php echo date('Y'); ?> <?php echo !empty($settings->system_vendor) ? $settings->system_vendor : 'KulaCRM'; ?>. All rights reserved. &bull; v2026
                     </p>
@@ -547,28 +551,6 @@
 
     <!-- Client-side Interactive Scripts -->
     <script>
-        function fillSuperAdminRole() {
-            document.getElementById('identity').value = 'ronaldi2040@gmail.com';
-            document.getElementById('password').value = 'password';
-            
-            const btnSuper = document.getElementById('btnRoleSuperAdmin');
-            const btnTenant = document.getElementById('btnRoleTenant');
-
-            btnSuper.className = 'py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-brand-500/20 border border-brand-500/40 text-brand-300';
-            btnTenant.className = 'py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-white/[0.04] border border-white/10 text-gray-400 hover:bg-white/[0.08] hover:text-white';
-        }
-
-        function fillTenantRole() {
-            document.getElementById('identity').value = 'admin@example.com';
-            document.getElementById('password').value = 'password';
-            
-            const btnSuper = document.getElementById('btnRoleSuperAdmin');
-            const btnTenant = document.getElementById('btnRoleTenant');
-
-            btnTenant.className = 'py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-brand-500/20 border border-brand-500/40 text-brand-300';
-            btnSuper.className = 'py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-white/[0.04] border border-white/10 text-gray-400 hover:bg-white/[0.08] hover:text-white';
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             // Password Reveal Toggle
             const togglePasswordBtn = document.getElementById('togglePasswordBtn');
@@ -625,6 +607,106 @@
                 menu.classList.add('hidden');
             }
         });
+    </script>
+
+    <!-- Support Contact Options Modal -->
+    <div id="supportModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300" onclick="if(event.target===this) closeSupportModal()">
+        <div class="relative w-full max-w-md bg-obsidian-900 border border-brand-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-brand-950/80 space-y-6 text-white transform transition-all animate-in fade-in zoom-in-95 duration-200">
+            
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 text-xl shadow-inner">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white tracking-tight">KulaCRM Support</h3>
+                        <p class="text-xs text-gray-400">Softchap Publishing Assistance</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeSupportModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center transition-colors text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Subtitle -->
+            <p class="text-xs text-gray-300 leading-relaxed">
+                Choose your preferred channel to get in touch with our customer service and technical support team:
+            </p>
+
+            <!-- Contact Channels Grid -->
+            <div class="space-y-3">
+                <?php 
+                    $supp_phone = !empty($settings->support_phone) ? $settings->support_phone : '+256766751727';
+                    $supp_email = !empty($settings->support_email) ? $settings->support_email : 'info@chapysocial.com';
+                    $supp_wa    = !empty($settings->support_whatsapp) ? preg_replace('/[^0-9]/', '', $settings->support_whatsapp) : '256766751727';
+                ?>
+                <!-- 1. Direct Call -->
+                <a href="tel:<?php echo htmlspecialchars($supp_phone, ENT_QUOTES); ?>" class="flex items-center justify-between p-4 rounded-2xl bg-obsidian-800 hover:bg-brand-950/60 border border-white/10 hover:border-brand-500/50 transition-all duration-300 transform hover:scale-[1.02] group shadow-sm">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                            <i class="fa-solid fa-phone text-base"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Direct Call</span>
+                            <span class="block text-xs text-gray-400 font-mono"><?php echo htmlspecialchars($supp_phone); ?></span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"></i>
+                </a>
+
+                <!-- 2. WhatsApp Support -->
+                <a href="https://wa.me/<?php echo $supp_wa; ?>?text=Hello%20Softchap%20Support,%20I%20need%20assistance%20with%20KulaCRM" target="_blank" rel="noopener" class="flex items-center justify-between p-4 rounded-2xl bg-obsidian-800 hover:bg-[#25D366]/10 border border-white/10 hover:border-[#25D366]/50 transition-all duration-300 transform hover:scale-[1.02] group shadow-sm">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-[#25D366]/10 border border-[#25D366]/30 flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366] group-hover:text-white transition-all">
+                            <i class="fa-brands fa-whatsapp text-lg"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-sm font-bold text-white group-hover:text-[#25D366] transition-colors">WhatsApp Chat</span>
+                            <span class="block text-xs text-gray-400">Instant messaging support</span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-[#25D366] group-hover:translate-x-1 transition-all"></i>
+                </a>
+
+                <!-- 3. Email Support -->
+                <a href="mailto:<?php echo htmlspecialchars($supp_email, ENT_QUOTES); ?>?subject=KulaCRM%20Support%20Inquiry" class="flex items-center justify-between p-4 rounded-2xl bg-obsidian-800 hover:bg-brand-900/40 border border-white/10 hover:border-brand-400/50 transition-all duration-300 transform hover:scale-[1.02] group shadow-sm">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 group-hover:bg-brand-500 group-hover:text-white transition-all">
+                            <i class="fa-solid fa-envelope text-base"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-sm font-bold text-white group-hover:text-brand-300 transition-colors">Email Support</span>
+                            <span class="block text-xs text-gray-400 font-mono"><?php echo htmlspecialchars($supp_email); ?></span>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-brand-400 group-hover:translate-x-1 transition-all"></i>
+                </a>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-2 text-center text-[11px] text-gray-500 border-t border-white/10">
+                &copy; <?php echo date('Y'); ?> Softchap Publishing &bull; All Channels Monitored 24/7
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openSupportModal() {
+            const modal = document.getElementById('supportModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+        }
+
+        function closeSupportModal() {
+            const modal = document.getElementById('supportModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
     </script>
 </body>
 

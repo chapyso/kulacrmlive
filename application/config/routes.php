@@ -42,6 +42,12 @@ $route['default_controller'] = 'auth';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
+$route['about'] = 'auth/about';
+$route['auth/about'] = 'auth/about';
+$route['landing'] = 'auth/landing';
+$route['auth/landing'] = 'auth/landing';
+
+
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */
@@ -82,6 +88,7 @@ $route['superadmin/stop_impersonating'] = 'superadmin/superadmin/stop_impersonat
 
 // Path-Based Tenant Routes: http://localhost:8080/{slug_name}/...
 $route['(:any)/login'] = 'auth/login';
+$route['(:any)/about'] = 'auth/about';
 $route['(:any)/logout'] = 'auth/logout';
 $route['(:any)/dashboard'] = 'home/index';
 $route['(:any)/livestock'] = 'livestock/index';

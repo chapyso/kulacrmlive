@@ -5,6 +5,7 @@ if (!defined('BASEPATH')) exit('No direct script access allowed');
  * MY_Model - Base Multi-Tenant SaaS Model
  * Extends CI_Model to provide automatic tenant scoping, helper query filters, and data preparation for all models.
  */
+#[AllowDynamicProperties]
 class MY_Model extends CI_Model {
 
     // Global Platform Tables (Managed by Super Admin in PLATFORM context)

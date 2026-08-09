@@ -1,6 +1,6 @@
 <footer class="site-footer">
     <div class="text-center">
-        20<?php echo date('y'); ?> &copy; <?php echo lang('livestock'); ?> | <?php echo lang('livestock_management_system'); ?> <?php echo lang('by'); ?> <?php echo !empty($settings->system_vendor) ? $settings->system_vendor : ''; ?>.
+        20<?php echo date('y'); ?> &copy; <?php echo !empty(lang('livestock')) ? lang('livestock') : 'Livestock ERP'; ?> | <?php echo !empty(lang('livestock_management_system')) ? lang('livestock_management_system') : 'Farm Management System'; ?> <?php echo !empty(lang('by')) ? lang('by') : 'by'; ?> <?php echo !empty($settings->system_vendor) ? htmlspecialchars($settings->system_vendor) : 'KulaCRM'; ?>.
         <a href="<?php echo current_full_url() . '#'; ?>" class="go-top">
             <i class="fa fa-angle-up"></i>
         </a>
@@ -10,7 +10,6 @@
 </section>
 <!-- js placed at the end of the document so the pages load faster -->
 <script type="text/javascript" src="<?php echo base_url('common/js/jquery.js'); ?>"></script>
-<script type="text/javascript" src="<?php echo base_url('common/js/jquery-1.8.3.min.js'); ?>"></script>
 <script type="text/javascript" src="<?php echo base_url('common/js/bootstrap.min.js'); ?>"></script>
 
 
@@ -135,35 +134,157 @@
     $('#my_multi_select3').multiSelect()
 </script>
 
-<!-- Sweet Alert -->
+<!-- Universal Modern SweetAlert2 & Toastr Notification Engine -->
+<style>
+.kula-swal-popup {
+    border-radius: 20px !important;
+    padding: 24px !important;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3) !important;
+    border: 1px solid rgba(226, 232, 240, 0.2) !important;
+}
+.kula-swal-confirm-btn {
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
+}
+.kula-swal-cancel-btn {
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    padding: 10px 20px !important;
+    font-size: 13px !important;
+}
+</style>
 <script>
-    $(document).on("click", ".deleteBySweetAlert", function(e) {
+$(document).ready(function() {
+    // 1. Toastr Options & Session Flash Messages Engine
+    if (typeof toastr !== 'undefined') {
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "showDuration": "300",
+            "hideDuration": "800",
+            "timeOut": "4500",
+            "extendedTimeOut": "2000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
+        <?php if ($this->session->flashdata('feedback')): ?>
+            toastr.info("<?php echo addslashes(strip_tags($this->session->flashdata('feedback'))); ?>", "System Alert");
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('success')): ?>
+            toastr.success("<?php echo addslashes(strip_tags($this->session->flashdata('success'))); ?>", "Success");
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('error')): ?>
+            toastr.error("<?php echo addslashes(strip_tags($this->session->flashdata('error'))); ?>", "Error");
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('message')): ?>
+            toastr.info("<?php echo addslashes(strip_tags($this->session->flashdata('message'))); ?>", "Notice");
+        <?php endif; ?>
+    }
+
+    // 2. Global SweetAlert2 Interceptor for Links/Buttons (.deleteBySweetAlert, .kula-delete-btn, [onclick*="confirm"])
+    $(document).on("click", ".deleteBySweetAlert, .kula-delete-btn, a[onclick*='confirm'], button[onclick*='confirm']", function(e) {
         e.preventDefault();
+        e.stopPropagation();
         var link = $(this).attr("href");
+        var dataMsg = $(this).attr("data-confirm-msg");
         var totalUsedPlace = $(this).attr("total-used");
         var typeName = $(this).attr("type-name");
-        if (totalUsedPlace > 0) {
-            var textPrint = "This Livestock type (" + typeName + ") is used " + totalUsedPlace + " another places. That will be removed. Are you sure you want to delete this item?";
+        var textPrint = "You won't be able to revert this action!";
+
+        if (dataMsg) {
+            textPrint = dataMsg;
+        } else if (totalUsedPlace > 0) {
+            textPrint = "This item (" + (typeName || 'record') + ") is used in " + totalUsedPlace + " other places. Deleting it will remove associated records!";
         } else {
-            var textPrint = "You won't be able to revert this!";
+            var onclickAttr = $(this).attr('onclick') || '';
+            var match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
+            if (match && match[1]) {
+                textPrint = match[1];
+            }
         }
+
+        var isDark = document.documentElement.classList.contains('dark-theme');
+
         Swal.fire({
             title: 'Are you sure?',
             text: textPrint,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa-solid fa-trash" style="margin-right: 6px;"></i> Yes, Delete It!',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                popup: 'kula-swal-popup',
+                confirmButton: 'kula-swal-confirm-btn',
+                cancelButton: 'kula-swal-cancel-btn'
+            },
+            background: isDark ? '#0f172a' : '#ffffff',
+            color: isDark ? '#f8fafc' : '#0f172a'
+        }).then(function(result) {
             if (result.isConfirmed) {
-                window.location.href = link;
-                Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
-            } else {
-                Swal.fire('Canceled!', 'Your imaginary file is safe :)', 'error');
+                if (link && link !== '#' && link !== 'javascript:void(0);') {
+                    window.location.href = link;
+                } else {
+                    var parentForm = $(e.target).closest('form');
+                    if (parentForm.length) parentForm.off('submit').submit();
+                }
             }
         });
+        return false;
     });
+
+    // 3. Global SweetAlert2 Interceptor for Forms (form[onsubmit*="confirm"])
+    $(document).on("submit", "form[onsubmit*='confirm']", function(e) {
+        var form = this;
+        if ($(form).data('swal-passed')) {
+            return true;
+        }
+        e.preventDefault();
+        
+        var onsubmitAttr = $(form).attr('onsubmit') || '';
+        var match = onsubmitAttr.match(/confirm\(['"](.*?)['"]\)/);
+        var textPrint = (match && match[1]) ? match[1] : "Are you sure you want to proceed with this action?";
+        var isDark = document.documentElement.classList.contains('dark-theme');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: textPrint,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa-solid fa-check" style="margin-right: 6px;"></i> Yes, Proceed!',
+            cancelButtonText: 'Cancel',
+            customClass: {
+                popup: 'kula-swal-popup',
+                confirmButton: 'kula-swal-confirm-btn',
+                cancelButton: 'kula-swal-cancel-btn'
+            },
+            background: isDark ? '#0f172a' : '#ffffff',
+            color: isDark ? '#f8fafc' : '#0f172a'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $(form).data('swal-passed', true);
+                form.submit();
+            }
+        });
+        return false;
+    });
+});
 </script>
 
 
@@ -271,28 +392,234 @@
 
 <!-- Enterprise Mobile Bottom Navigation Bar -->
 <div class="kula-mobile-bottom-nav">
-  <a href="<?php echo base_url('home'); ?>" class="kula-mobile-nav-item <?php echo (in_array($this->router->fetch_class(), array('home', 'dashboard'))) ? 'active' : ''; ?>">
-    <i class="fa-solid fa-house"></i>
-    <span>Home</span>
-  </a>
-  <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'livestock') ? 'active' : ''; ?>">
-    <i class="fa-solid fa-cow"></i>
-    <span>Livestock</span>
-  </a>
-  <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-mobile-quick-action" title="Add Livestock">
-    <div class="kula-fab-circle">
-      <i class="fa-solid fa-plus"></i>
-    </div>
-  </a>
-  <a href="<?php echo base_url('vaccine'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'vaccine') ? 'active' : ''; ?>">
-    <i class="fa-solid fa-syringe"></i>
-    <span>Health</span>
-  </a>
-  <a href="<?php echo base_url('profile'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'profile') ? 'active' : ''; ?>">
-    <i class="fa-solid fa-user"></i>
-    <span>Profile</span>
-  </a>
+  <?php if ($this->uri->segment(1) === 'superadmin'): ?>
+    <a href="<?php echo base_url('superadmin'); ?>" class="kula-mobile-nav-item <?php echo (empty($this->uri->segment(2))) ? 'active' : ''; ?>">
+      <i class="fa-solid fa-chart-pie"></i>
+      <span>Overview</span>
+    </a>
+    <a href="<?php echo base_url('superadmin/tenants'); ?>" class="kula-mobile-nav-item <?php echo ($this->uri->segment(2) == 'tenants') ? 'active' : ''; ?>">
+      <i class="fa-solid fa-building"></i>
+      <span>Tenants</span>
+    </a>
+    <a href="<?php echo base_url('superadmin/tenants'); ?>" class="kula-mobile-quick-action" title="Provision Tenant">
+      <div class="kula-fab-circle">
+        <i class="fa-solid fa-plus"></i>
+      </div>
+    </a>
+    <a href="<?php echo base_url('superadmin/subscriptions'); ?>" class="kula-mobile-nav-item <?php echo ($this->uri->segment(2) == 'subscriptions') ? 'active' : ''; ?>">
+      <i class="fa-solid fa-credit-card"></i>
+      <span>Billing</span>
+    </a>
+    <a href="<?php echo base_url('superadmin/settings'); ?>" class="kula-mobile-nav-item <?php echo (in_array($this->uri->segment(2), array('settings', 'profile', 'smtpSettings'))) ? 'active' : ''; ?>">
+      <i class="fa-solid fa-gear"></i>
+      <span>Settings</span>
+    </a>
+  <?php else: ?>
+    <a href="<?php echo base_url('home'); ?>" class="kula-mobile-nav-item <?php echo (in_array($this->router->fetch_class(), array('home', 'dashboard'))) ? 'active' : ''; ?>">
+      <i class="fa-solid fa-house"></i>
+      <span>Home</span>
+    </a>
+    <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'livestock') ? 'active' : ''; ?>">
+      <i class="fa-solid fa-cow"></i>
+      <span>Livestock</span>
+    </a>
+    <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-mobile-quick-action" title="Add Livestock">
+      <div class="kula-fab-circle">
+        <i class="fa-solid fa-plus"></i>
+      </div>
+    </a>
+    <a href="<?php echo base_url('vaccine'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'vaccine') ? 'active' : ''; ?>">
+      <i class="fa-solid fa-syringe"></i>
+      <span>Health</span>
+    </a>
+    <a href="<?php echo base_url('profile'); ?>" class="kula-mobile-nav-item <?php echo ($this->router->fetch_class() == 'profile') ? 'active' : ''; ?>">
+      <i class="fa-solid fa-user"></i>
+      <span>Profile</span>
+    </a>
+  <?php endif; ?>
 </div>
+
+<!-- Modern Universal Sidebar Interactivity Engine -->
+<script>
+(function() {
+    var sidebar = document.getElementById('sidebar');
+    var body = document.body;
+    var isCollapsed = localStorage.getItem('kula_sidebar_collapsed') === 'true';
+    if (isCollapsed && sidebar) {
+        sidebar.classList.add('kula-collapsed');
+        if (body) body.classList.add('kula-sidebar-collapsed-body');
+    }
+})();
+
+// Global Immediate Event Delegation for Sidebar Collapse (Retract), Tree Toggles, and Dropdowns
+document.addEventListener('click', function(e) {
+    var sidebar = document.getElementById('sidebar');
+    var body = document.body;
+
+        // 1. Collapse / Expand Sidebar Toggle (Retracting Feature)
+        var toggleBtn = e.target.closest('#kula-sidebar-toggle-btn, .sidebar-toggle-box');
+        if (toggleBtn) {
+            toggleKulaMobileSidebar(e);
+            return;
+        }
+
+        // 2. Tree Accordion Toggles (Dropdown Submenus)
+        var treeToggle = e.target.closest('.kula-tree-toggle');
+        if (treeToggle) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (sidebar && sidebar.classList.contains('kula-collapsed')) {
+                sidebar.classList.remove('kula-collapsed');
+                if (body) body.classList.remove('kula-sidebar-collapsed-body');
+                localStorage.setItem('kula_sidebar_collapsed', 'false');
+            }
+            var treeParent = treeToggle.closest('.kula-menu-tree');
+            if (treeParent) {
+                treeParent.classList.toggle('open');
+            }
+            return;
+        }
+    });
+
+    // Active Route Highlight Engine
+    (function() {
+        var normalizeUrl = function(u) {
+            return u ? u.split('#')[0].split('?')[0].replace(/\/$/, "") : "";
+        };
+
+        var currentUrl = normalizeUrl(window.location.href);
+        var baseUrl = normalizeUrl("<?php echo base_url(); ?>");
+        var menuLinks = document.querySelectorAll('.kula-menu-item[href], .kula-tree-submenu a[href]');
+
+        if (!menuLinks.length) return;
+
+        menuLinks.forEach(function(link) {
+            link.classList.remove('active');
+        });
+        document.querySelectorAll('.kula-menu-tree').forEach(function(tree) {
+            tree.classList.remove('open');
+        });
+        document.querySelectorAll('.kula-tree-toggle').forEach(function(toggle) {
+            toggle.classList.remove('active');
+        });
+
+        var getModuleSegment = function(url) {
+            if (!url || url.indexOf(baseUrl) !== 0) return "";
+            var path = url.substring(baseUrl.length).replace(/^\//, "");
+            return path.split('/')[0] || "";
+        };
+
+        var currentModule = getModuleSegment(currentUrl);
+        var bestMatchLink = null;
+        var maxScore = -1;
+
+        menuLinks.forEach(function(link) {
+            var linkUrl = normalizeUrl(link.href);
+            if (!linkUrl) return;
+
+            var isBaseLink = (linkUrl === baseUrl || linkUrl === baseUrl + '/index.php');
+            var score = -1;
+
+            if (currentUrl === linkUrl ||
+                linkUrl.replace(/\/listStaff$/, '/staff') === currentUrl ||
+                currentUrl.replace(/\/listStaff$/, '') === linkUrl) {
+                score = 10000 + linkUrl.length;
+            } else if (isBaseLink) {
+                if (currentUrl === baseUrl + '/home' || 
+                    currentUrl === baseUrl + '/dashboard' || 
+                    currentUrl === baseUrl + '/index.php' ||
+                    currentUrl === baseUrl ||
+                    currentModule === "" ||
+                    currentModule === "home" ||
+                    currentModule === "dashboard") {
+                    score = 5000;
+                }
+            } else if (currentUrl.indexOf(linkUrl + '/') === 0) {
+                score = 1000 + linkUrl.length;
+            } else {
+                var linkModule = getModuleSegment(linkUrl);
+                if (currentModule && linkModule && currentModule === linkModule) {
+                    score = 100 + linkUrl.length;
+                }
+            }
+
+            if (score > maxScore) {
+                maxScore = score;
+                bestMatchLink = link;
+            }
+        });
+
+        if (bestMatchLink && maxScore > 0) {
+            bestMatchLink.classList.add('active');
+            var parentTree = bestMatchLink.closest('.kula-menu-tree');
+            if (parentTree) {
+                parentTree.classList.add('open');
+                var parentToggle = parentTree.querySelector('.kula-tree-toggle');
+                if (parentToggle) parentToggle.classList.add('active');
+            }
+        }
+    })();
+
+    // User Popover Toggle
+    var userCardTrigger = document.getElementById('kula-user-card-trigger');
+    var userPopover = document.getElementById('kula-user-popover-menu');
+    var searchInput = document.getElementById('kula-sidebar-search-input');
+
+    if (userCardTrigger && userPopover) {
+        userCardTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userPopover.classList.toggle('show');
+        });
+        document.addEventListener('click', function(e) {
+            if (!userPopover.contains(e.target) && !userCardTrigger.contains(e.target)) {
+                userPopover.classList.remove('show');
+            }
+        });
+    }
+
+    // Quick Search Filter
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            var filter = this.value.toLowerCase().trim();
+            var groups = document.querySelectorAll('.kula-menu-group');
+
+            groups.forEach(function(group) {
+                var hasMatch = false;
+                var items = group.querySelectorAll('.kula-menu-item, .kula-tree-submenu a');
+                
+                items.forEach(function(item) {
+                    var text = item.textContent.toLowerCase();
+                    if (filter === "" || text.indexOf(filter) > -1) {
+                        item.style.display = "";
+                        hasMatch = true;
+                        var tree = item.closest('.kula-menu-tree');
+                        if (tree && filter !== "") tree.classList.add('open');
+                    } else {
+                        if (!item.classList.contains('kula-tree-toggle')) {
+                            item.style.display = "none";
+                        }
+                    }
+                });
+
+                group.style.display = hasMatch ? "" : "none";
+            });
+        });
+
+        // Ctrl+K Shortcut Focus
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                var s = document.getElementById('sidebar');
+                var b = document.body;
+                if (s && s.classList.contains('kula-collapsed')) {
+                    s.classList.remove('kula-collapsed');
+                    if (b) b.classList.remove('kula-sidebar-collapsed-body');
+                    localStorage.setItem('kula_sidebar_collapsed', 'false');
+                }
+                if (searchInput) searchInput.focus();
+            }
+        });
+</script>
 
 <!-- Field Productivity Helper -->
 <script src="<?php echo base_url('common/js/field-productivity.js'); ?>"></script>

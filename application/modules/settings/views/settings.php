@@ -205,6 +205,94 @@ $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolow
                         </div>
 
                         <?php if ($is_superadmin): ?>
+                        <!-- SECTION: LOGIN & FOOTER BUTTON MANAGEMENT (SUPPORT & ABOUT US) -->
+                        <div style="margin-top: 36px; margin-bottom: 24px; border-top: 2px dashed #e2e8f0; padding-top: 28px;">
+                            <div style="margin-bottom: 20px;">
+                                <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">
+                                    <i class="fa-solid fa-headset" style="color: #059669; margin-right: 8px;"></i> Support &amp; About Us Buttons Management
+                                </h3>
+                                <span style="font-size: 13px; color: #64748b; font-weight: 500;">Manage Support phone, email, WhatsApp channel, and About Us destination for login and footer buttons.</span>
+                            </div>
+
+                            <div style="background: #f8fafc; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">
+                                                <i class="fa-solid fa-phone" style="color: #10b981; margin-right: 6px;"></i> Support Direct Call Phone Number
+                                            </label>
+                                            <input type="text" class="form-control" name="support_phone" value="<?php echo htmlspecialchars($settings->support_phone ?? '+256766751727', ENT_QUOTES); ?>" placeholder="+256 766 751 727" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;">
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">
+                                                <i class="fa-solid fa-envelope" style="color: #3b82f6; margin-right: 6px;"></i> Support Contact Email Address
+                                            </label>
+                                            <input type="email" class="form-control" name="support_email" value="<?php echo htmlspecialchars($settings->support_email ?? 'info@chapysocial.com', ENT_QUOTES); ?>" placeholder="info@chapysocial.com" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">
+                                                <i class="fa-brands fa-whatsapp" style="color: #25D366; margin-right: 6px;"></i> Support WhatsApp Number (Digits only)
+                                            </label>
+                                            <input type="text" class="form-control" name="support_whatsapp" value="<?php echo htmlspecialchars($settings->support_whatsapp ?? '256766751727', ENT_QUOTES); ?>" placeholder="256766751727" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;">
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">
+                                                <i class="fa-solid fa-circle-info" style="color: #6366f1; margin-right: 6px;"></i> About Us Page Link Target / Route
+                                            </label>
+                                            <input type="text" class="form-control" name="about_us_url" value="<?php echo htmlspecialchars($settings->about_us_url ?? 'about', ENT_QUOTES); ?>" placeholder="about" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="margin-top: 16px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                                    <div class="col-md-12">
+                                        <h4 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0 0 16px 0;">
+                                            <i class="fa-solid fa-file-lines" style="color: #6366f1; margin-right: 6px;"></i> About Us Page Content Management
+                                        </h4>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">About Us Main Heading</label>
+                                            <input type="text" class="form-control" name="about_us_heading" value="<?php echo htmlspecialchars($settings->about_us_heading ?? 'Livestock & Farm Management Platform', ENT_QUOTES); ?>" placeholder="Livestock & Farm Management Platform" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;">
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">About Us Subheading / Introduction</label>
+                                            <textarea class="form-control" name="about_us_subheading" rows="3" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;"><?php echo htmlspecialchars($settings->about_us_subheading ?? 'KulaCRM is a comprehensive livestock and farm management platform developed by Softchap Publishing to help farmers and livestock businesses manage their operations from one centralized system.', ENT_QUOTES); ?></textarea>
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Our Vision Statement</label>
+                                            <textarea class="form-control" name="about_us_vision" rows="3" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;"><?php echo htmlspecialchars($settings->about_us_vision ?? 'To become a leading digital livestock and farm management platform that empowers farmers and agricultural businesses with simple, reliable and intelligent technology for better farm management and sustainable growth.', ENT_QUOTES); ?></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Our Mission Statement</label>
+                                            <textarea class="form-control" name="about_us_mission" rows="3" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;"><?php echo htmlspecialchars($settings->about_us_mission ?? 'To provide farmers and livestock businesses with an accessible, reliable and comprehensive digital platform that simplifies livestock management, improves operational visibility, strengthens financial control and supports better decision-making.', ENT_QUOTES); ?></textarea>
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Our Purpose Statement</label>
+                                            <textarea class="form-control" name="about_us_purpose" rows="3" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;"><?php echo htmlspecialchars($settings->about_us_purpose ?? 'Our purpose is to make livestock management more organized, measurable and accessible through technology. KulaCRM helps transform farm records from scattered manual processes into structured digital information.', ENT_QUOTES); ?></textarea>
+                                        </div>
+
+                                        <div class="form-group" style="margin-bottom: 20px;">
+                                            <label style="font-weight: 700; font-size: 13px; color: #334155; margin-bottom: 6px; display: block;">Our Commitment Statement</label>
+                                            <textarea class="form-control" name="about_us_commitment" rows="3" style="border-radius: 10px; padding: 10px 14px; font-size: 13px;"><?php echo htmlspecialchars($settings->about_us_commitment ?? 'At Softchap Publishing, we believe technology should make agricultural management simpler, more organized and more actionable. KulaCRM is built around the real operational flow of livestock businesses.', ENT_QUOTES); ?></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- SECTION 2: PAYMENT GATEWAYS & EAST AFRICAN MOBILE MONEY INTEGRATIONS -->
                         <div style="margin-top: 36px; margin-bottom: 24px; border-top: 2px dashed #e2e8f0; padding-top: 28px;">
                             <div style="margin-bottom: 20px;">

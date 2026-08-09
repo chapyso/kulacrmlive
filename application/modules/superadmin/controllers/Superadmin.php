@@ -181,25 +181,104 @@ class Superadmin extends MY_Controller {
         redirect('superadmin/tenants');
     }
 
-    public function update_plan() {
+    public function save_plan() {
         $id = (int)$this->input->post('id');
+        $name = trim($this->input->post('name'));
+        $code = strtolower(preg_replace('/[^a-z0-9_-]/', '', $this->input->post('code')));
         $price_monthly = (float)$this->input->post('price_monthly');
         $price_yearly = (float)$this->input->post('price_yearly');
         $max_users = (int)$this->input->post('max_users');
         $max_livestock = (int)$this->input->post('max_livestock');
         $max_sheds = (int)$this->input->post('max_sheds');
+        $is_active = $this->input->post('is_active') !== null ? (int)$this->input->post('is_active') : 1;
 
-        if ($id) {
-            $this->db->where('id', $id)->update('subscription_plans', array(
-                'price_monthly' => $price_monthly,
-                'price_yearly' => $price_yearly,
-                'max_users' => $max_users,
-                'max_livestock' => $max_livestock,
-                'max_sheds' => $max_sheds
-            ));
-            $this->session->set_flashdata('feedback', 'Subscription Plan Limits Updated');
+        if (empty($name)) {
+            $this->session->set_flashdata('feedback', 'Error: Plan name cannot be empty!');
+            redirect('superadmin/plans');
+            return;
         }
+
+        if (empty($code)) {
+            $code = strtolower(preg_replace('/[^a-z0-9_-]/', '', $name));
+        }
+
+        $data = array(
+            'name'          => $name,
+            'code'          => $code,
+            'price_monthly' => $price_monthly,
+            'price_yearly'  => $price_yearly,
+            'max_users'     => $max_users,
+            'max_livestock' => $max_livestock,
+            'max_sheds'     => $max_sheds,
+            'is_active'     => $is_active
+        );
+
+        if ($id > 0) {
+            // Check code uniqueness excluding current plan
+            $exists = $this->db->where('code', $code)->where('id !=', $id)->get('subscription_plans')->row();
+            if ($exists) {
+                $this->session->set_flashdata('feedback', 'Error: Plan code already exists for another plan!');
+                redirect('superadmin/plans');
+                return;
+            }
+            $this->db->where('id', $id)->update('subscription_plans', $data);
+            $this->session->set_flashdata('feedback', 'Subscription Plan Updated Successfully');
+        } else {
+            // Check code uniqueness
+            $exists = $this->db->get_where('subscription_plans', array('code' => $code))->row();
+            if ($exists) {
+                $this->session->set_flashdata('feedback', 'Error: Plan code already exists!');
+                redirect('superadmin/plans');
+                return;
+            }
+            $this->db->insert('subscription_plans', $data);
+            $this->session->set_flashdata('feedback', 'New Subscription Plan Created Successfully');
+        }
+
         redirect('superadmin/plans');
+    }
+
+    public function update_plan() {
+        $this->save_plan();
+    }
+
+    public function delete_plan($id) {
+        $id = (int)$id;
+        $plan = $this->db->get_where('subscription_plans', array('id' => $id))->row();
+        if (!$plan) {
+            $this->session->set_flashdata('feedback', 'Error: Plan not found!');
+            redirect('superadmin/plans');
+            return;
+        }
+
+        // Check if any tenant is using this plan
+        $tenant_count = $this->db->where('plan_id', $id)->count_all_results('tenants');
+        if ($tenant_count > 0) {
+            $this->session->set_flashdata('feedback', "Cannot delete plan '{$plan->name}': {$tenant_count} tenant(s) are currently assigned to this plan. Please reassign them first.");
+            redirect('superadmin/plans');
+            return;
+        }
+
+        $this->db->where('id', $id)->delete('subscription_plans');
+        $this->session->set_flashdata('feedback', "Subscription plan '{$plan->name}' deleted successfully.");
+        redirect('superadmin/plans');
+    }
+
+    public function delete_tenant($id) {
+        $id = (int)$id;
+        $tenant = $this->db->get_where('tenants', array('id' => $id))->row();
+        if ($tenant) {
+            $name = $tenant->name;
+            $this->db->where('tenant_id', $id)->delete('users');
+            $this->db->where('tenant_id', $id)->delete('subscriptions');
+            $this->db->where('tenant_id', $id)->delete('settings');
+            $this->db->where('id', $id)->delete('tenants');
+
+            $this->session->set_flashdata('feedback', "Tenant '{$name}' and all associated data deleted successfully.");
+        } else {
+            $this->session->set_flashdata('feedback', 'Error: Tenant not found.');
+        }
+        redirect('superadmin/tenants');
     }
 
     public function impersonate($id) {

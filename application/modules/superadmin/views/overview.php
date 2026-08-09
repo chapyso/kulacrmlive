@@ -125,8 +125,11 @@
                                                     <a href="<?php echo base_url('superadmin/impersonate/' . $t->id); ?>" class="btn btn-xs btn-primary" style="border-radius: 6px; font-weight: 700; background: #6366f1; border-color: #6366f1; margin-right: 4px;" title="Impersonate Tenant Workspace">
                                                         <i class="fa-solid fa-user-secret"></i> Impersonate &rarr;
                                                     </a>
-                                                    <a href="<?php echo base_url('superadmin/toggle_status/' . $t->id); ?>" class="btn btn-xs <?php echo ($t->status == 'active') ? 'btn-danger' : 'btn-success'; ?>" style="border-radius: 6px; font-weight: 700;">
+                                                    <a href="<?php echo base_url('superadmin/toggle_status/' . $t->id); ?>" class="btn btn-xs <?php echo ($t->status == 'active') ? 'btn-warning' : 'btn-success'; ?>" style="border-radius: 6px; font-weight: 700; margin-right: 4px;">
                                                         <?php echo ($t->status == 'active') ? 'Suspend' : 'Activate'; ?>
+                                                    </a>
+                                                    <a href="<?php echo base_url('superadmin/delete_tenant/' . $t->id); ?>" data-confirm-msg="Are you sure you want to permanently delete tenant <?php echo htmlspecialchars($t->name); ?> and all associated users/data?" class="btn btn-xs btn-danger kula-delete-btn" style="border-radius: 6px; font-weight: 700;" title="Delete Tenant">
+                                                        <i class="fa-solid fa-trash"></i> Delete
                                                     </a>
                                                 </td>
                                             </tr>

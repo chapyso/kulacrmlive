@@ -149,6 +149,37 @@ class Settings extends MY_Controller
                 $data['login_title'] = $login_title;
             }
 
+            if ($this->input->post('support_phone') !== null) {
+                $data['support_phone'] = trim($this->input->post('support_phone'));
+            }
+            if ($this->input->post('support_email') !== null) {
+                $data['support_email'] = trim($this->input->post('support_email'));
+            }
+            if ($this->input->post('support_whatsapp') !== null) {
+                $data['support_whatsapp'] = trim($this->input->post('support_whatsapp'));
+            }
+            if ($this->input->post('about_us_url') !== null) {
+                $data['about_us_url'] = trim($this->input->post('about_us_url'));
+            }
+            if ($this->input->post('about_us_heading') !== null) {
+                $data['about_us_heading'] = trim($this->input->post('about_us_heading'));
+            }
+            if ($this->input->post('about_us_subheading') !== null) {
+                $data['about_us_subheading'] = trim($this->input->post('about_us_subheading'));
+            }
+            if ($this->input->post('about_us_vision') !== null) {
+                $data['about_us_vision'] = trim($this->input->post('about_us_vision'));
+            }
+            if ($this->input->post('about_us_mission') !== null) {
+                $data['about_us_mission'] = trim($this->input->post('about_us_mission'));
+            }
+            if ($this->input->post('about_us_purpose') !== null) {
+                $data['about_us_purpose'] = trim($this->input->post('about_us_purpose'));
+            }
+            if ($this->input->post('about_us_commitment') !== null) {
+                $data['about_us_commitment'] = trim($this->input->post('about_us_commitment'));
+            }
+
             // Process Light / Primary Logo Upload
             if (!empty($_FILES['img_url']['name'])) {
                 $rawName = basename($_FILES['img_url']['name']);

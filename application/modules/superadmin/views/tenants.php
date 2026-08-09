@@ -47,11 +47,10 @@
                                                     <i class="fa-solid fa-store" style="color: #6366f1; margin-right: 8px;"></i>
                                                     <?php echo htmlspecialchars($t->name); ?>
                                                 </td>
-                                                <td style="padding: 14px 20px; font-family: monospace; color: #6366f1; font-weight: 600;">
-                                                    <?php 
-                                                    $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost:8080';
-                                                    echo ($t->slug === 'default') ? base_url() : 'http://' . htmlspecialchars($t->slug) . '.' . $host; 
-                                                    ?>
+                                                <td style="padding: 14px 20px; font-family: monospace; font-weight: 600;">
+                                                    <a href="<?php echo base_url($t->slug); ?>" target="_blank" style="color: #6366f1; text-decoration: underline;" title="Open Tenant Workspace">
+                                                        <?php echo htmlspecialchars($t->slug); ?>
+                                                    </a>
                                                 </td>
                                                 <td style="padding: 14px 20px; color: #475569;">
                                                     <?php echo htmlspecialchars($t->email); ?>
@@ -81,8 +80,11 @@
                                                     <a href="<?php echo base_url('superadmin/impersonate/' . $t->id); ?>" class="btn btn-xs btn-primary" style="border-radius: 6px; font-weight: 700; background: #6366f1; border-color: #6366f1; margin-right: 4px;" title="Impersonate Tenant Workspace">
                                                         <i class="fa-solid fa-user-secret"></i> Impersonate &rarr;
                                                     </a>
-                                                    <a href="<?php echo base_url('superadmin/toggle_status/' . $t->id); ?>" class="btn btn-xs <?php echo ($t->status == 'active') ? 'btn-danger' : 'btn-success'; ?>" style="border-radius: 6px; font-weight: 700;">
+                                                    <a href="<?php echo base_url('superadmin/toggle_status/' . $t->id); ?>" class="btn btn-xs <?php echo ($t->status == 'active') ? 'btn-warning' : 'btn-success'; ?>" style="border-radius: 6px; font-weight: 700; margin-right: 4px;">
                                                         <i class="fa-solid fa-power-off"></i> <?php echo ($t->status == 'active') ? 'Suspend' : 'Activate'; ?>
+                                                    </a>
+                                                    <a href="<?php echo base_url('superadmin/delete_tenant/' . $t->id); ?>" data-confirm-msg="Are you sure you want to permanently delete tenant <?php echo htmlspecialchars($t->name); ?> and all associated users/data?" class="btn btn-xs btn-danger kula-delete-btn" style="border-radius: 6px; font-weight: 700;" title="Delete Tenant">
+                                                        <i class="fa-solid fa-trash"></i> Delete
                                                     </a>
                                                 </td>
                                             </tr>
@@ -226,8 +228,9 @@
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    $('.edit-tenant-btn').on('click', function() {
+$(document).ready(function() {
+    $(document).on('click', '.edit-tenant-btn', function(e) {
+        e.preventDefault();
         var id = $(this).data('id');
         var name = $(this).data('name');
         var slug = $(this).data('slug');
@@ -246,6 +249,14 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#edit_tenant_status').val(status);
 
         $('#editTenantModal').modal('show');
+    });
+
+    $(document).on('click', '.kula-delete-btn', function(e) {
+        var msg = $(this).data('confirm-msg') || 'Are you sure you want to delete this tenant?';
+        if (!confirm(msg)) {
+            e.preventDefault();
+            return false;
+        }
     });
 });
 </script>

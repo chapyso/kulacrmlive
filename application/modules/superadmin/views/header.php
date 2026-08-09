@@ -3,7 +3,11 @@
 <head>
     <base href="<?php echo base_url(); ?>">
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="<?php echo base_url('manifest.json'); ?>">
     <link rel="icon" type="image/x-icon" href="<?php echo get_favicon_url($settings ?? null); ?>">
     <link rel="shortcut icon" href="<?php echo get_favicon_url($settings ?? null); ?>">
     <title>SaaS Platform Control Panel | Super Admin</title>
@@ -11,9 +15,12 @@
     <!-- Bootstrap core CSS -->
     <link href="<?php echo base_url('common/css/bootstrap.min.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('common/css/bootstrap-reset.css'); ?>" rel="stylesheet">
-    <!-- FontAwesome 6 -->
+    <!-- FontAwesome 4.7 & 6 -->
+    <link href="<?php echo base_url('common/assets/font-awesome-4.7.0/css/font-awesome.min.css'); ?>" rel="stylesheet" />
     <link href="<?php echo base_url('common/assets/font-awesome/css/all.min.css'); ?>" rel="stylesheet" />
     <link href="<?php echo base_url('common/assets/font-awesome/css/fontawesome.css'); ?>" rel="stylesheet" />
+
+    <link rel="stylesheet" href="<?php echo base_url('common/assets/data-tables/DT_bootstrap.css'); ?>" />
     <!-- Google Fonts Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,6 +28,8 @@
     <!-- Custom styles -->
     <link href="<?php echo base_url('common/css/style.css'); ?>" rel="stylesheet">
     <link href="<?php echo base_url('common/css/style-responsive.css'); ?>" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="<?php echo base_url('common/assets/select2/select2.min.css'); ?>" />
+    <link rel="stylesheet" href="<?php echo base_url('common/css/toastr.min.css'); ?>">
     <link href="<?php echo base_url('common/css/custom.css'); ?>?v=<?php echo time(); ?>" rel="stylesheet">
 
     <style>
@@ -38,7 +47,7 @@
     </style>
     <script>
       (function() {
-        var theme = localStorage.getItem('kula_theme') || 'dark';
+        var theme = localStorage.getItem('kula_theme') || 'light';
         if (theme === 'dark') {
           document.documentElement.classList.add('dark-theme');
           document.documentElement.classList.remove('light-theme');
@@ -113,8 +122,24 @@
                     </ul>
                 </div>
 
-                <span class="kula-top-vendor-title hidden-xs">Kula SaaS Platform Administration</span>
-                <span class="superadmin-badge">SYSTEM OWNER</span>
+                <?php
+                    $sa_hour = (int) date('H');
+                    if ($sa_hour < 12) {
+                        $sa_greeting = 'Good morning';
+                        $sa_emoji = '👋';
+                    } elseif ($sa_hour < 17) {
+                        $sa_greeting = 'Good afternoon';
+                        $sa_emoji = '☀️';
+                    } else {
+                        $sa_greeting = 'Good evening';
+                        $sa_emoji = '🌙';
+                    }
+                    $sa_user = $this->ion_auth->user()->row();
+                    $sa_name = !empty($sa_user->first_name) ? $sa_user->first_name : ($sa_user->username ?? 'Admin');
+                ?>
+                <span class="kula-top-vendor-title hidden-xs" style="font-weight: 700; font-size: 13px;">
+                    <?php echo $sa_greeting; ?>, <?php echo htmlspecialchars($sa_name, ENT_QUOTES); ?>! <?php echo $sa_emoji; ?>
+                </span>
             </div>
 
             <div class="top-nav">
@@ -254,7 +279,7 @@
                 <div class="kula-menu-group">
                     <div class="kula-group-title">Tenant Workspaces</div>
 
-                    <a href="<?php echo base_url('superadmin/tenants'); ?>" class="kula-menu-item" data-tooltip="Impersonate Tenant Workspace">
+                    <a href="<?php echo base_url('superadmin/tenants#impersonate'); ?>" class="kula-menu-item" data-tooltip="Impersonate Tenant Workspace">
                         <div class="kula-menu-icon"><i class="fa-solid fa-arrow-right-to-bracket" style="color: #ec4899;"></i></div>
                         <span class="kula-menu-text">Impersonate Workspace</span>
                     </a>

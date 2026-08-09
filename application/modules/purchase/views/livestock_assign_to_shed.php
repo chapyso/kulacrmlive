@@ -4,7 +4,7 @@
     <section class="wrapper site-min-height">
         <!-- page start-->
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-12 col-12">
                 <section class="panel">
                     <header class="panel-heading noprint">
                         <i class="fa-solid fa-people-carry-box"></i> <?php echo lang('assign_to_shed'); ?>
@@ -156,7 +156,7 @@
                 </section>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-12 col-12">
                 <section class="panel">
                     <header class="panel-heading noprint">
                         <i class="fas fa-stream"></i> <?php echo lang('assigned_lists'); ?>

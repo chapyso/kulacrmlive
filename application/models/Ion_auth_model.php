@@ -29,6 +29,7 @@ if (!defined('BASEPATH'))
  * Requirements: PHP5 or above
  *
  */
+#[AllowDynamicProperties]
 class Ion_auth_model extends MY_Model
 {
 

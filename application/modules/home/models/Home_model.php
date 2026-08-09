@@ -3,6 +3,7 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
+#[AllowDynamicProperties]
 class Home_model extends MY_Model
 {
 
