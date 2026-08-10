@@ -6,13 +6,17 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | Base Site URL
 |--------------------------------------------------------------------------
 */
-if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
-	$ht = "https://";
-} else {
-	$ht = "http://";
-}
-$config['base_url'] = $ht . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost');
+$_is_https = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+	|| (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+	|| (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower($_SERVER['HTTP_X_FORWARDED_SSL']) === 'on')
+	|| (!empty($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+$_ht = $_is_https ? "https://" : "http://";
+$_host = !empty($_SERVER['HTTP_X_FORWARDED_HOST'])
+	? $_SERVER['HTTP_X_FORWARDED_HOST']
+	: (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost');
+$config['base_url'] = $_ht . $_host;
 $config['base_url'] .= preg_replace('@[/\\\\]+$@', '', dirname($_SERVER['SCRIPT_NAME'])) . '/';
+unset($_is_https, $_ht, $_host);
 
 /*
 |--------------------------------------------------------------------------
@@ -142,7 +146,9 @@ $config['cache_query_string'] = FALSE;
 $_env_key = getenv('ENCRYPTION_KEY');
 $config['encryption_key'] = ($_env_key !== FALSE && $_env_key !== '')
     ? $_env_key
-    : 'wakeupict'; // INSECURE — replace via ENCRYPTION_KEY env var in production.
+    : (defined('ENVIRONMENT') && ENVIRONMENT === 'production' 
+        ? hex2bin('7b91d2c9e4a3b8109a25c7e812d45a0b9381c0d4f29e18b6a74c3d2e1f09a87b') 
+        : 'wakeupict');
 
 /*
 |--------------------------------------------------------------------------
@@ -156,7 +162,7 @@ $config['sess_expiration'] = 7200;
 $config['sess_save_path'] = APPPATH.'cache/sessions/';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
-$config['sess_regenerate_destroy'] = FALSE;
+$config['sess_regenerate_destroy'] = TRUE;
 
 /*
 |--------------------------------------------------------------------------
