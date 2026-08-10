@@ -62,7 +62,7 @@ RUN chown -R www-data:www-data /var/www/html \
 EXPOSE 80
 
 # Container Healthcheck for Coolify / Docker / Traefik
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD curl -f -s http://127.0.0.1/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f -s http://127.0.0.1/health.php || exit 1
 
 CMD ["apache2-foreground"]
