@@ -28,8 +28,9 @@ Options -Indexes
 
 RewriteEngine On
 
-# Redirect HTTP to HTTPS in production
+# Redirect HTTP to HTTPS in production (respecting reverse proxy SSL termination)
 RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteCond %{HTTP_HOST} ^(www\.)?kulacrm\.com [NC]
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
