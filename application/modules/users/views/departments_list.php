@@ -11,7 +11,7 @@
                     <p style="margin:4px 0 0; color:#64748b; font-size:0.875rem;">Manage company departments, operational units, and staff job title classifications.</p>
                 </div>
                 <div>
-                    <?php if ($this->has_permission('settings.update')) { ?>
+                    <?php if (has_permission('settings.update')) { ?>
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addDeptModal" style="background:#2563eb; border:none; padding:8px 16px; border-radius:6px; font-weight:600; color:#fff;">
                         <i class="fa-solid fa-plus mr-1"></i> Add Department
                     </button>

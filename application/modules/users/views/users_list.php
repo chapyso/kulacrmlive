@@ -11,12 +11,12 @@
                     <p style="margin:4px 0 0; color:#64748b; font-size:0.875rem;">Manage company staff accounts, roles, departments, and active access status.</p>
                 </div>
                 <div class="btn-group" style="display:flex; gap:10px;">
-                    <?php if ($this->has_permission('users.invite')) { ?>
+                    <?php if (has_permission('users.invite')) { ?>
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteUserModal" style="background:#2563eb; border:none; padding:8px 16px; border-radius:6px; font-weight:600; color:#fff;">
                         <i class="fa-solid fa-paper-plane mr-1"></i> Invite User
                     </button>
                     <?php } ?>
-                    <?php if ($this->has_permission('users.create')) { ?>
+                    <?php if (has_permission('users.create')) { ?>
                     <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#createUserModal" style="border:1px solid #2563eb; color:#2563eb; background:transparent; padding:8px 16px; border-radius:6px; font-weight:600;">
                         <i class="fa-solid fa-user-plus mr-1"></i> Add Direct User
                     </button>
@@ -109,7 +109,7 @@
                                     <?php echo !empty($u->last_login_at) ? date('M d, Y H:i', strtotime($u->last_login_at)) : 'Never'; ?>
                                 </td>
                                 <td style="padding:12px; text-align:right;">
-                                    <?php if ($this->has_permission('users.update')) { ?>
+                                    <?php if (has_permission('users.update')) { ?>
                                     <form method="post" action="<?php echo base_url('users/update_status'); ?>" style="display:inline;">
                                         <input type="hidden" name="user_id" value="<?php echo $u->user_id; ?>">
                                         <?php if ($u->status == 'active') { ?>

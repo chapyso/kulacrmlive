@@ -213,7 +213,9 @@ class Users extends MY_Controller {
 
         foreach ($matrix as $role_id => $pids) {
             $role = $this->Rbac_model->getRoleById($role_id);
-            if ($role && ($role->is_system == 0 || $role->id != 1)) { // Do not restrict Owner role
+            // System roles or custom roles belonging to this tenant
+            if ($role && ($role->is_system == 1 || (int)$role->tenant_id === (int)$tenant_id)) {
+                if ($role->id == 1) continue; // Owner role retains all system permissions
                 $this->Rbac_model->updateRolePermissions($role_id, $pids);
             }
         }
@@ -221,6 +223,24 @@ class Users extends MY_Controller {
         $this->log_audit('PERMISSION_MATRIX_UPDATE', $tenant_id, array('updated_roles' => array_keys($matrix)));
         $this->session->set_flashdata('success', 'Permission matrix saved successfully.');
         redirect('users/permission_matrix');
+    }
+
+    /**
+     * Delete Custom Tenant Role
+     */
+    public function delete_role($role_id) {
+        $this->check_permission('roles.manage');
+        $tenant_id = $this->tenant_id ?: 1;
+
+        $role = $this->Rbac_model->getRoleById($role_id);
+        if ($role && $role->is_system == 0 && (int)$role->tenant_id === (int)$tenant_id) {
+            $this->Rbac_model->deleteRole($role_id, $tenant_id);
+            $this->log_audit('ROLE_DELETE', $tenant_id, array('role_id' => $role_id, 'name' => $role->name));
+            $this->session->set_flashdata('success', 'Custom role "' . $role->name . '" deleted successfully.');
+        } else {
+            $this->session->set_flashdata('error', 'Unable to delete role or permission denied.');
+        }
+        redirect('users/roles');
     }
 
     /**

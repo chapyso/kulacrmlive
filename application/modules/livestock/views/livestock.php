@@ -14,6 +14,10 @@
             </div>
 
             <div class="hero-actions-right" style="gap: 8px; flex-wrap: wrap;">
+                <a href="<?php echo base_url('kula_ai/vision'); ?>" class="hero-export-btn" style="background: linear-gradient(135deg, #10b981, #059669); text-decoration: none; color: #fff;">
+                    <i class="fa-solid fa-eye"></i> KulaAI Vision Scan
+                </a>
+
                 <a data-toggle="modal" href="#myModal" class="hero-export-btn" style="background: #047857; text-decoration: none;">
                     <i class="fa-solid fa-plus-circle"></i> <?php echo lang('add_new_livestock'); ?>
                 </a>

@@ -244,4 +244,143 @@ class Email_service_model extends CI_Model
 
         return @$this->email->send();
     }
+
+    /**
+     * 5. User / Account Created Notification Email
+     */
+    public function send_account_created_email($to_email, $user_name, $login_url, $password = null)
+    {
+        $this->init_smtp();
+        $smtp = $this->db->get('saas_smtp_settings')->row();
+        $from_email = $smtp ? $smtp->from_email : 'info@chapysocial.com';
+        $from_name = $smtp ? $smtp->from_name : 'KulaCRM Support';
+
+        $title = "Your Account Has Been Created - KulaCRM";
+        $body = '
+            <h2 style="color: #047857; margin-top: 0;">Hello ' . html_escape($user_name) . '! 👋</h2>
+            <p>Your user account on KulaCRM multi-tenant farm ERP has been successfully created.</p>
+
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 18px; border-radius: 12px; margin: 20px 0;">
+                <p style="margin: 0 0 8px 0; font-weight: 700; color: #065f46;">Account Access Details:</p>
+                <p style="margin: 0 0 4px 0;"><strong>Email / Username:</strong> ' . html_escape($to_email) . '</p>
+                <p style="margin: 0 0 4px 0;"><strong>Login Page:</strong> <a href="' . $login_url . '" style="color: #047857;">' . $login_url . '</a></p>
+                ' . ($password ? '<p style="margin: 0;"><strong>Temporary Password:</strong> ' . html_escape($password) . '</p>' : '') . '
+            </div>
+
+            <div style="text-align: center; margin: 28px 0;">
+                <a href="' . $login_url . '" style="background: #047857; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 10px; font-weight: 700; display: inline-block;">Log In To Account &rarr;</a>
+            </div>
+
+            <p style="font-size: 13px; color: #64748b;">If you did not request this account, please contact your system administrator.</p>
+        ';
+
+        $this->email->from($from_email, $from_name);
+        $this->email->to($to_email);
+        $this->email->subject($title);
+        $this->email->message($this->wrap_html_template($title, $body));
+
+        return @$this->email->send();
+    }
+
+    /**
+     * 6. Password Change / Reset Notification Email
+     */
+    public function send_password_changed_email($to_email, $user_name)
+    {
+        $this->init_smtp();
+        $smtp = $this->db->get('saas_smtp_settings')->row();
+        $from_email = $smtp ? $smtp->from_email : 'info@chapysocial.com';
+        $from_name = $smtp ? $smtp->from_name : 'KulaCRM Security';
+
+        $title = "Security Alert: Password Changed - KulaCRM";
+        $body = '
+            <h2 style="color: #0f172a; margin-top: 0;">Hello ' . html_escape($user_name) . ',</h2>
+            <p>This email confirms that the password for your account (<strong>' . html_escape($to_email) . '</strong>) was recently changed.</p>
+
+            <div style="background: #fffbeb; border: 1px solid #fde68a; padding: 16px; border-radius: 10px; margin: 20px 0; font-size: 14px;">
+                <p style="margin: 0; color: #92400e; font-weight: 600;">🔒 If you initiated this change, no further action is required.</p>
+            </div>
+
+            <p style="font-size: 13px; color: #64748b;">If you did <strong>NOT</strong> change your password, please contact your farm administrator or reset your password immediately.</p>
+        ';
+
+        $this->email->from($from_email, $from_name);
+        $this->email->to($to_email);
+        $this->email->subject($title);
+        $this->email->message($this->wrap_html_template($title, $body));
+
+        return @$this->email->send();
+    }
+
+    /**
+     * 7. Livestock Inventory Added Notification Email
+     */
+    public function send_livestock_added_email($to_email, $farm_name, $bill_no, $total_amount, $item_count)
+    {
+        $this->init_smtp();
+        $smtp = $this->db->get('saas_smtp_settings')->row();
+        $from_email = $smtp ? $smtp->from_email : 'info@chapysocial.com';
+        $from_name = $smtp ? $smtp->from_name : 'KulaCRM Inventory';
+
+        $title = "New Livestock Purchase Added - " . html_escape($farm_name);
+        $body = '
+            <h2 style="color: #047857; margin-top: 0;">New Livestock Stock Logged 🐮🐓</h2>
+            <p>New livestock inventory items have been successfully recorded for <strong>' . html_escape($farm_name) . '</strong>.</p>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 18px; border-radius: 12px; margin: 20px 0;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    ' . ($bill_no ? '<tr><td style="padding: 6px 0; color: #64748b;">Invoice / Bill No:</td><td style="padding: 6px 0; font-weight: 700; text-align: right; color: #0f172a;">' . html_escape($bill_no) . '</td></tr>' : '') . '
+                    <tr>
+                        <td style="padding: 6px 0; color: #64748b;">Line Items Added:</td>
+                        <td style="padding: 6px 0; font-weight: 700; text-align: right; color: #047857;">' . (int)$item_count . ' record(s)</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; color: #64748b;">Total Purchase Amount:</td>
+                        <td style="padding: 6px 0; font-weight: 800; text-align: right; color: #0f172a;">' . number_format((float)$total_amount, 2) . '</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <a href="' . base_url('purchase/listPurchase') . '" style="background: #047857; color: #ffffff; padding: 10px 24px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; display: inline-block;">View Purchase Records</a>
+            </div>
+        ';
+
+        $this->email->from($from_email, $from_name);
+        $this->email->to($to_email);
+        $this->email->subject($title);
+        $this->email->message($this->wrap_html_template($title, $body));
+
+        return @$this->email->send();
+    }
+
+    /**
+     * 8. Account Profile Update Notification Email
+     */
+    public function send_account_updated_email($to_email, $user_name, $update_details = 'Profile details updated')
+    {
+        $this->init_smtp();
+        $smtp = $this->db->get('saas_smtp_settings')->row();
+        $from_email = $smtp ? $smtp->from_email : 'info@chapysocial.com';
+        $from_name = $smtp ? $smtp->from_name : 'KulaCRM Account System';
+
+        $title = "Account Information Updated - KulaCRM";
+        $body = '
+            <h2 style="color: #0f172a; margin-top: 0;">Hello ' . html_escape($user_name) . ',</h2>
+            <p>Your KulaCRM account information (<strong>' . html_escape($to_email) . '</strong>) was recently updated.</p>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 10px; margin: 20px 0; font-size: 14px;">
+                <p style="margin: 0; color: #334155;"><strong>Details:</strong> ' . html_escape($update_details) . '</p>
+            </div>
+
+            <p style="font-size: 13px; color: #64748b;">If you did not make or authorize these changes, please notify your system administrator immediately.</p>
+        ';
+
+        $this->email->from($from_email, $from_name);
+        $this->email->to($to_email);
+        $this->email->subject($title);
+        $this->email->message($this->wrap_html_template($title, $body));
+
+        return @$this->email->send();
+    }
 }

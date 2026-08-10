@@ -11,7 +11,7 @@
                     <p style="margin:4px 0 0; color:#64748b; font-size:0.875rem;">Manage system immutable roles and create custom organizational roles with granular permissions.</p>
                 </div>
                 <div class="btn-group" style="display:flex; gap:10px;">
-                    <?php if ($this->has_permission('roles.manage')) { ?>
+                    <?php if (has_permission('roles.manage')) { ?>
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createRoleModal" style="background:#2563eb; border:none; padding:8px 16px; border-radius:6px; font-weight:600; color:#fff;">
                         <i class="fa-solid fa-plus-circle mr-1"></i> Create Custom Role
                     </button>
@@ -48,7 +48,14 @@
                         </div>
                         <div style="border-top:1px solid #f1f5f9; pt:12px; margin-top:auto; display:flex; justify-content:space-between; align-items:center; padding-top:12px;">
                             <span style="font-size:0.8rem; color:#94a3b8;"><i class="fa-solid fa-key mr-1"></i> Granular Controls</span>
-                            <a href="<?php echo base_url('users/permission_matrix'); ?>" class="btn btn-sm btn-link" style="color:#2563eb; font-weight:600; text-decoration:none;">View Matrix &rarr;</a>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <a href="<?php echo base_url('users/permission_matrix'); ?>" class="btn btn-sm btn-link" style="color:#2563eb; font-weight:600; text-decoration:none; padding:0;">View Matrix &rarr;</a>
+                                <?php if (!$role->is_system && has_permission('roles.manage')) { ?>
+                                    <a href="<?php echo base_url('users/delete_role/' . $role->id); ?>" class="btn btn-sm text-danger" onclick="return confirm('Are you sure you want to delete this custom role? Users assigned to this role will lose its permissions.');" style="padding:2px 6px; font-size:0.75rem; border:1px solid #fca5a5; border-radius:4px; color:#dc2626; background:#fef2f2;" title="Delete Custom Role">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                <?php } ?>
+                            </div>
                         </div>
                     </div>
                     <?php } ?>

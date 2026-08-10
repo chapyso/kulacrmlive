@@ -888,8 +888,8 @@
     <!-- 10. Final CTA Banner -->
     <section class="cta-section">
         <div class="container">
-            <div class="cta-box">
-                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(115, 191, 23, 0.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--bright-lime); font-size: 24px;">
+            <div class="cta-glass-card">
+                <div class="cta-badge">
                     <i class="fas fa-seedling"></i>
                 </div>
                 <h2 class="cta-title">Ready to Take Control of Your Farm?</h2>
@@ -910,11 +910,11 @@
                     <p>
                         KulaCRM is a product of Softchap Publishing. Empowering farmers with technology.
                     </p>
-                    <div style="display: flex; gap: 14px; margin-top: 16px; font-size: 16px; color: var(--bright-lime);">
-                        <a href="#" style="color: inherit;"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" style="color: inherit;"><i class="fab fa-twitter"></i></a>
-                        <a href="#" style="color: inherit;"><i class="fab fa-youtube"></i></a>
-                        <a href="#" style="color: inherit;"><i class="fab fa-linkedin-in"></i></a>
+                    <div style="display: flex; gap: 10px; margin-top: 18px;">
+                        <a href="#" class="footer-social-link" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="footer-social-link" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="footer-social-link" title="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="footer-social-link" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
 
@@ -959,10 +959,10 @@
 
                 <div class="newsletter-box">
                     <h4 class="footer-column-title">NEWSLETTER</h4>
-                    <p style="font-size: 12px; margin-bottom: 12px;">Subscribe to get farm management tips and product updates.</p>
+                    <p style="font-size: 13px; margin-bottom: 12px; color: rgba(220, 235, 222, 0.75);">Subscribe to get farm management tips and product updates.</p>
                     <form action="javascript:void(0);">
                         <input type="email" placeholder="Enter your email" required>
-                        <button type="submit" class="btn-primary btn-lime" style="width: 100%; border-radius: 6px; justify-content: center; padding: 10px; margin-top: 8px;">
+                        <button type="submit" class="btn-primary btn-lime" style="width: 100%; border-radius: 12px; justify-content: center; padding: 12px; margin-top: 8px;">
                             Subscribe
                         </button>
                     </form>

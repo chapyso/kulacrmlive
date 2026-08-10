@@ -980,6 +980,11 @@ $lang['vaccine_popup_message_five'] = "Lembre-se de uma coisa, você não pode c
 $lang['vaccine_popup_message_six'] = "Você pode adicionar vacina desperdiçada do estoque clicando no botão <b>Vacina desperdiçada</b>. A vacina será deduzida do seu estoque.";
 $lang['vaccine_popup_message_seven'] = "Criando uma vacina você tem que adicionar a unidade de vacina. Para isso vá para configurações e unidade de configuração.";
 
+$lang['vaccine_route_popup_message_one'] = "Este é o módulo de Roteamento de Vacinas onde você pode definir e gerenciar os métodos de administração para vacinas de gado (ex: Intramuscular, Subcutânea, Oral).";
+$lang['vaccine_route_popup_message_two'] = "Clique em <b>Adicionar Novo Roteamento</b> para criar um novo método com nome e descrição.";
+$lang['vaccine_route_popup_message_three'] = "Rotas definidas podem ser selecionadas ao configurar doses de vacinas e cronogramas de vacinação.";
+$lang['vaccine_route_popup_message_four'] = "Rotas atualmente em uso por doses ativas de vacinas não podem ser excluídas para manter a integridade dos dados.";
+
 $lang['vaccination_popup_message_one'] = "Após atribuir vacina para <b>gado</b> e <b>Variante</b>, aqui você pode ver a data de vacinação do galpão. Também você pode ver o galpão <b> última data de emissão da vacina</b>, <b>última data de vacinação</b> e <b>próxima data de vacinação</b>.";
 $lang['vaccination_popup_message_two'] = "Após atribuir vacina para <b>gado</b> e <b>Variante</b>, aqui você pode ver a data de vacinação do galpão.";
 $lang['vaccination_popup_message_three'] = "Para completar a dose de vacinação, vá para <b>Cronograma de Vacinas</b> e complete a dose. Se o lote estiver ativo você pode emitir a dose, caso contrário não.";

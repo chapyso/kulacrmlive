@@ -985,6 +985,11 @@ $lang['vaccine_popup_message_five'] = "Remember one thing, you can't complete do
 $lang['vaccine_popup_message_six'] = "You can add wasted vaccine from stock by clicking <b>Wasted vaccine</b> button. It will deducted vaccine from your stock.";
 $lang['vaccine_popup_message_seven'] = "Creating a vaccine you have to add vaccine unit. For that go to settings and setup unit.";
 
+$lang['vaccine_route_popup_message_one'] = "This is the Vaccine Routing module where you can define and manage administration methods for livestock vaccines (e.g., Intramuscular, Subcutaneous, Oral).";
+$lang['vaccine_route_popup_message_two'] = "Click <b>Add New Routing</b> to create a new route method with a name and description.";
+$lang['vaccine_route_popup_message_three'] = "Defined routes can be selected when configuring vaccine dosages and assigning vaccination schedules to livestock.";
+$lang['vaccine_route_popup_message_four'] = "Routes currently assigned to active vaccine doses cannot be deleted to maintain record data integrity.";
+
 $lang['vaccination_popup_message_one'] = "After assign vaccine for <b>livestock</b> and <b>Variant</b> wise, here you can see shed wise vaccination date. Also you can see shed wise <b>last vaccine issue date</b>, <b>last vaccinated date</b> and <b>next vaccination date</b>.";
 $lang['vaccination_popup_message_two'] = "After assign vaccine for <b>livestock</b> and <b>Variant</b> wise, here you can see shed wise vaccination date.";
 $lang['vaccination_popup_message_three'] = "To complete vaccination dose, go to <b>Vaccine Schedule</b> and complete dose. If the batch is active you can issue dose, otherwise you can't.";
@@ -1034,3 +1039,20 @@ $lang['kind'] = 'Kind';
 $lang['details'] = 'Details';
 $lang['by'] = 'By';
 $lang['when'] = 'When';
+
+// Additional Module Popups
+$lang['staff_popup_message_one'] = "Manage farm personnel, team members, and role assignments.";
+$lang['staff_popup_message_two'] = "Click <b>Add Staff</b> to register new employees with contact details and staff types.";
+
+$lang['supplier_popup_message_one'] = "Manage livestock and farm input suppliers and vendors.";
+$lang['supplier_popup_message_two'] = "Click <b>Add New Supplier</b> to maintain vendor contact records, ledger transactions, and purchase history.";
+
+$lang['client_popup_message_one'] = "Manage customer accounts and clients for livestock and farm product sales.";
+$lang['client_popup_message_two'] = "Click <b>Add New Client</b> to register new buyers and track billing records.";
+
+$lang['sale_popup_message_one'] = "Track all livestock and farm product sales transactions and invoices.";
+$lang['sale_popup_message_two'] = "Click <b>Add New Sale</b> to generate sales invoices for clients.";
+
+$lang['unit_popup_message_one'] = "Define unit measurements (e.g., Kg, Liters, Bags, Doses) for products, food, and vaccines.";
+
+$lang['product_category_popup_message_one'] = "Categorize farm yield and products (e.g., Dairy, Poultry, Eggs, Meat, Fertilizer).";

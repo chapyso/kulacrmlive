@@ -978,6 +978,11 @@ $lang['vaccine_popup_message_five'] = "Recuerde una cosa, no puede completar las
 $lang['vaccine_popup_message_six'] = "Puede agregar la vacuna desperdiciada del inventario haciendo clic en el botón <b>Vacuna desperdiciada</b>. Se deducirá la vacuna de su inventario.";
 $lang['vaccine_popup_message_seven'] = "Para crear una vacuna, debe agregar la unidad de vacunas. Para eso, vaya a la configuración y la unidad de configuración.";
 
+$lang['vaccine_route_popup_message_one'] = "Este es el módulo de Rutas de Vacunas donde puede definir y administrar los métodos de administración para vacunas ganaderas (ej. Intramuscular, Subcutánea, Oral).";
+$lang['vaccine_route_popup_message_two'] = "Haga clic en <b>Agregar nueva ruta</b> para crear un nuevo método de ruta con un nombre y una descripción.";
+$lang['vaccine_route_popup_message_three'] = "Las rutas definidas se pueden seleccionar al configurar las dosis de vacuna y asignar programas de vacunación.";
+$lang['vaccine_route_popup_message_four'] = "Las rutas actualmente en uso por dosis de vacuna activas no se pueden eliminar para mantener la integridad de los datos.";
+
 $lang['vaccination_popup_message_one'] = "Después de asignar la vacuna para el <b>ganado</b> y la <b>variante</b>, aquí puede ver la fecha de vacunación en el caso del cobertizo. También puede ver la fecha de vacunación en el caso del cobertizo <b> fecha de emisión de la última vacuna</b>, <b>fecha de la última vacunación</b> y <b>fecha de la próxima vacunación</b>.";
 $lang['vaccination_popup_message_two'] = "Después de asignar la vacuna para el <b>ganado</b> y la <b>variante</b>, aquí puede ver la fecha de vacunación para el cobertizo.";
 $lang['vaccination_popup_message_three'] = "Para completar la dosis de vacunación, vaya a <b>Calendario de vacunas</b> y complete la dosis. Si el lote está activo, puede emitir la dosis; de lo contrario, no.";

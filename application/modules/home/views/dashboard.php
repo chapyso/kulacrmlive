@@ -48,6 +48,8 @@
      <link rel="stylesheet" href="<?php echo base_url('common/css/toastr.min.css'); ?>">
      <!-- 2026 Donezo Emerald Design System (LAST CSS LOADED) -->
      <link href="<?php echo base_url('common/css/custom.css'); ?>?v=<?php echo time(); ?>" rel="stylesheet">
+     <!-- Mobile Data Preview & Zero-Scroll Mobile Cards -->
+     <link href="<?php echo base_url('common/css/mobile-data-preview.css'); ?>?v=<?php echo time(); ?>" rel="stylesheet">
      <script>
        (function() {
          var theme = localStorage.getItem('kula_theme') || 'light';
@@ -74,7 +76,8 @@
          <?php endif; ?>
          <header class="header white-bg">
             <div class="kula-top-header-left" style="display: flex; align-items: center; gap: 16px;">
-                <button type="button" id="kula-mobile-hamburger" class="btn-mobile-hamburger" title="Toggle Navigation Menu" onclick="toggleKulaMobileSidebar()">
+                <!-- Mobile Hamburger Sidebar Toggle Button -->
+                <button type="button" id="kula-mobile-hamburger" class="btn-mobile-hamburger" title="Toggle Sidebar Menu" onclick="toggleKulaMobileSidebar(event)">
                     <i class="fa-solid fa-bars"></i>
                 </button>
 
@@ -135,8 +138,8 @@
 
             </div>
 
-            <div class="top-nav">
-                <div class="kula-header-actions" style="display: flex; align-items: center; gap: 14px;">
+            <div class="top-nav" style="margin-top: 0; margin-right: 15%; display: flex; align-items: center;">
+                <div class="kula-header-actions" style="display: flex; align-items: center; gap: 12px; margin-right: 0;">
                     <!-- Interactive Real-Time Notification Bell & Popover -->
                     <div class="dropdown" id="kulaNotificationDropdown" style="position: relative;">
                         <button type="button" class="kula-header-icon-btn dropdown-toggle" data-toggle="dropdown" id="notificationBellBtn" title="Notifications" aria-expanded="false">
@@ -245,6 +248,16 @@
                      <a href="<?php echo base_url(); ?>" class="kula-menu-item" data-tooltip="<?php echo lang('dashboard'); ?>">
                          <div class="kula-menu-icon"><i class="fa-solid fa-house"></i></div>
                          <span class="kula-menu-text"><?php echo lang('dashboard'); ?></span>
+                     </a>
+
+                     <a href="<?php echo base_url('kula_ai/intelligence'); ?>" class="kula-menu-item" data-tooltip="Kula Intelligence">
+                         <div class="kula-menu-icon" style="background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><i class="fa-solid fa-brain"></i></div>
+                         <span class="kula-menu-text">Kula Intelligence</span>
+                     </a>
+
+                     <a href="<?php echo base_url('kula_ai/vision'); ?>" class="kula-menu-item" data-tooltip="KulaAI Vision">
+                         <div class="kula-menu-icon" style="color: #10b981;"><i class="fa-solid fa-eye"></i></div>
+                         <span class="kula-menu-text">KulaAI Vision</span>
                      </a>
 
                      <?php if (has_permission('livestock.view')) { ?>
@@ -496,206 +509,3 @@
              </div>
          </aside>
          <!--sidebar end-->
- 
-         <!-- Mobile Backdrop Overlay -->
-         <div id="kula-mobile-backdrop" onclick="toggleKulaMobileSidebar()"></div>
- 
-         <!-- Modern Sidebar Interactive JS Script -->
-         <script>
-          function toggleKulaMobileSidebar(e) {
-              if (e) {
-                  if (e.preventDefault) e.preventDefault();
-                  if (e.stopPropagation) e.stopPropagation();
-              }
-              var sidebar = document.getElementById('sidebar');
-              var backdrop = document.getElementById('kula-mobile-backdrop');
-              var body = document.body;
-              if (sidebar) {
-                  if (window.innerWidth <= 991) {
-                      sidebar.classList.toggle('kula-mobile-open');
-                      if (backdrop) backdrop.classList.toggle('show');
-                  } else {
-                      sidebar.classList.toggle('kula-collapsed');
-                      var collapsed = sidebar.classList.contains('kula-collapsed');
-                      if (body) {
-                          if (collapsed) {
-                              body.classList.add('kula-sidebar-collapsed-body');
-                          } else {
-                              body.classList.remove('kula-sidebar-collapsed-body');
-                          }
-                      }
-                      localStorage.setItem('kula_sidebar_collapsed', collapsed);
-                  }
-              }
-          }
-
-          // Global Immediate Event Delegation for Sidebar Collapse (Retract), Tree Toggles, and Dropdowns
-          document.addEventListener('click', function(e) {
-              var sidebar = document.getElementById('sidebar');
-              var body = document.body;
-
-              // 1. Collapse / Expand Sidebar Toggle (Retracting Feature)
-              var toggleBtn = e.target.closest('#kula-sidebar-toggle-btn, .sidebar-toggle-box');
-              if (toggleBtn) {
-                  toggleKulaMobileSidebar(e);
-                  return;
-              }
-
-                // 2. Tree Accordion Toggles (Dropdown Submenus)
-                var treeToggle = e.target.closest('.kula-tree-toggle');
-                if (treeToggle) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (sidebar && sidebar.classList.contains('kula-collapsed')) {
-                        sidebar.classList.remove('kula-collapsed');
-                        if (body) body.classList.remove('kula-sidebar-collapsed-body');
-                        localStorage.setItem('kula_sidebar_collapsed', 'false');
-                    }
-                    var treeParent = treeToggle.closest('.kula-menu-tree');
-                    if (treeParent) {
-                        treeParent.classList.toggle('open');
-                    }
-                    return;
-                }
-            });
- 
-             // Active Route Highlight Engine
-             (function() {
-                 var normalizeUrl = function(u) {
-                     return u ? u.split('#')[0].split('?')[0].replace(/\/$/, "") : "";
-                 };
-
-                 var currentUrl = normalizeUrl(window.location.href);
-                 var baseUrl = normalizeUrl("<?php echo base_url(); ?>");
-                 var menuLinks = document.querySelectorAll('.kula-menu-item[href], .kula-tree-submenu a[href]');
-
-                 if (!menuLinks.length) return;
-
-                 menuLinks.forEach(function(link) {
-                     link.classList.remove('active');
-                 });
-                 document.querySelectorAll('.kula-menu-tree').forEach(function(tree) {
-                     tree.classList.remove('open');
-                 });
-                 document.querySelectorAll('.kula-tree-toggle').forEach(function(toggle) {
-                     toggle.classList.remove('active');
-                 });
-
-                 var getModuleSegment = function(url) {
-                     if (!url || url.indexOf(baseUrl) !== 0) return "";
-                     var path = url.substring(baseUrl.length).replace(/^\//, "");
-                     return path.split('/')[0] || "";
-                 };
-
-                 var currentModule = getModuleSegment(currentUrl);
-                 var bestMatchLink = null;
-                 var maxScore = -1;
-
-                 menuLinks.forEach(function(link) {
-                     var linkUrl = normalizeUrl(link.href);
-                     if (!linkUrl) return;
-
-                     var isBaseLink = (linkUrl === baseUrl || linkUrl === baseUrl + '/index.php');
-                     var score = -1;
-
-                     if (currentUrl === linkUrl ||
-                         linkUrl.replace(/\/listStaff$/, '/staff') === currentUrl ||
-                         currentUrl.replace(/\/listStaff$/, '') === linkUrl) {
-                         score = 10000 + linkUrl.length;
-                     } else if (isBaseLink) {
-                         if (currentUrl === baseUrl + '/home' || 
-                             currentUrl === baseUrl + '/dashboard' || 
-                             currentUrl === baseUrl + '/index.php' ||
-                             currentUrl === baseUrl ||
-                             currentModule === "" ||
-                             currentModule === "home" ||
-                             currentModule === "dashboard") {
-                             score = 5000;
-                         }
-                     } else if (currentUrl.indexOf(linkUrl + '/') === 0) {
-                         score = 1000 + linkUrl.length;
-                     } else {
-                         var linkModule = getModuleSegment(linkUrl);
-                         if (currentModule && linkModule && currentModule === linkModule) {
-                             score = 100 + linkUrl.length;
-                         }
-                     }
-
-                     if (score > maxScore) {
-                         maxScore = score;
-                         bestMatchLink = link;
-                     }
-                 });
-
-                 if (bestMatchLink && maxScore > 0) {
-                     bestMatchLink.classList.add('active');
-                     var parentTree = bestMatchLink.closest('.kula-menu-tree');
-                     if (parentTree) {
-                         parentTree.classList.add('open');
-                         var parentToggle = parentTree.querySelector('.kula-tree-toggle');
-                         if (parentToggle) parentToggle.classList.add('active');
-                     }
-                 }
-             })();
- 
-             // User Popover Toggle
-             var userCardTrigger = document.getElementById('kula-user-card-trigger');
-             var userPopover = document.getElementById('kula-user-popover-menu');
-             var searchInput = document.getElementById('kula-sidebar-search-input');
-
-             if (userCardTrigger && userPopover) {
-                 userCardTrigger.addEventListener('click', function(e) {
-                     e.stopPropagation();
-                     userPopover.classList.toggle('show');
-                 });
-                 document.addEventListener('click', function(e) {
-                     if (!userPopover.contains(e.target) && !userCardTrigger.contains(e.target)) {
-                         userPopover.classList.remove('show');
-                     }
-                 });
-             }
- 
-             // Quick Search Filter
-             if (searchInput) {
-                 searchInput.addEventListener('input', function() {
-                     var filter = this.value.toLowerCase().trim();
-                     var groups = document.querySelectorAll('.kula-menu-group');
- 
-                     groups.forEach(function(group) {
-                         var hasMatch = false;
-                         var items = group.querySelectorAll('.kula-menu-item, .kula-tree-submenu a');
-                         
-                         items.forEach(function(item) {
-                             var text = item.textContent.toLowerCase();
-                             if (filter === "" || text.indexOf(filter) > -1) {
-                                 item.style.display = "";
-                                 hasMatch = true;
-                                 var tree = item.closest('.kula-menu-tree');
-                                 if (tree && filter !== "") tree.classList.add('open');
-                             } else {
-                                 if (!item.classList.contains('kula-tree-toggle')) {
-                                     item.style.display = "none";
-                                 }
-                             }
-                         });
- 
-                         group.style.display = hasMatch ? "" : "none";
-                     });
-                 });
- 
-                 // Ctrl+K Shortcut Focus
-                 document.addEventListener('keydown', function(e) {
-                     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-                         e.preventDefault();
-                         var s = document.getElementById('sidebar');
-                         var b = document.body;
-                         if (s && s.classList.contains('kula-collapsed')) {
-                             s.classList.remove('kula-collapsed');
-                             if (b) b.classList.remove('kula-sidebar-collapsed-body');
-                             localStorage.setItem('kula_sidebar_collapsed', 'false');
-                         }
-                         if (searchInput) searchInput.focus();
-                     }
-                 });
-             }
-         </script>

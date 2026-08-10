@@ -182,6 +182,20 @@ class Purchase extends MY_Controller
         }
 
         $this->db->trans_complete();
+
+        // Send livestock purchase notification email
+        $this->load->model('email_service_model');
+        $_curr_user = $this->ion_auth->user()->row();
+        $_settings   = $this->settings_model->getSettings();
+        $_farm_name  = $_settings ? $_settings->system_vendor : 'Your Farm';
+        $this->email_service_model->send_livestock_added_email(
+            $_curr_user->email,
+            $_farm_name,
+            $pur_bill_no,
+            $pur_grand_total,
+            count($pur_unit_price)
+        );
+
         $this->session->set_flashdata('success', 'Purchase added successfully.');
         redirect("purchase/purchase");
     }

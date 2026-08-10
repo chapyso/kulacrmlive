@@ -196,6 +196,19 @@ class Shed extends MY_Controller
             'ld_created_by' => $this->ion_auth->user()->row()->user_id
         );
         $this->purchase_model->insertPurchase('livestock_death_quantity', $ValueData);
+
+        // Send emergency mortality alert email
+        $this->load->model('email_service_model');
+        $_shed = $this->shed_model->getShedById($ld_shed_id);
+        $_shed_name = $_shed ? $_shed->sh_title : 'Unknown Shed';
+        $_curr_user = $this->ion_auth->user()->row();
+        $this->email_service_model->send_emergency_mortality_alert(
+            $_curr_user->email,
+            $_shed_name,
+            $ld_death_quantity,
+            $ld_death_reason
+        );
+
         $this->session->set_flashdata('success', 'Death record added successfully.');
         redirect("shed/addShedWiseLivestockDeath?sh_id=$ld_shed_id");
     }

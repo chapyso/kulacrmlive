@@ -5,6 +5,7 @@
         <header class="panel-heading bg-info">
             <i class="fa fa-money"></i> <?= lang('total'); ?> <?= lang('payable'); ?> <?= lang('financial_report'); ?>
 
+            <button class="export" type="button" onclick="KulaAIChat.open('Explain the financial report summary including income, expenses, and outstanding debts.')" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: #ffffff; margin-right: 8px; border: none; border-radius: 6px; padding: 4px 10px; font-weight: 700; cursor: pointer;"><i class="fa-solid fa-wand-magic-sparkles"></i> Explain with KulaAI</button>
             <button class="export" onclick="javascript:window.print();"><i class="fa-solid fa-print"></i> <?php echo lang('print'); ?></button>
         </header>
 
@@ -349,15 +350,63 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- /.Date to Date Report View -->
                     </div>
                 </section>
             </div>
         </div>
 
-
-
-
+        <!-- ======================== Livestock Mortality & Vaccination Overview ======================== -->
+        <div class="row">
+            <div class="col-md-12">
+                <header class="panel-heading" style="background: #0284c7 !important; color: #ffffff !important;">
+                    <i class="fa-solid fa-notes-medical"></i> <?= lang('livestock'); ?> <?= lang('death'); ?> & <?= lang('vaccine'); ?> <?= lang('report'); ?>
+                </header>
+                <section class="panel">
+                    <div class="panel-body card__box">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="col-sm-6 col-xs-12">
+                                    <div class="info-box" style="background: #fff5f5; border: 1px solid #fee2e2; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <h4 style="margin:0; font-weight: 700; color: #991b1b;"><i class="fa-solid fa-skull-crossbones"></i> <?= lang('total_death'); ?></h4>
+                                            <p style="margin: 5px 0 0 0; color: #64748b; font-size: 13px;"><?= lang('total'); ?> <?= lang('death_quantity'); ?></p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span style="font-size: 24px; font-weight: 800; color: #991b1b;">
+                                                <?php
+                                                $totalDeaths = $this->report_model->getSumData('livestock_death_quantity', 'ld_death_quantity', ['ld_status' => 1]);
+                                                echo ($totalDeaths ? $totalDeaths : 0) . ' ' . $settings->unit;
+                                                ?>
+                                            </span>
+                                            <br>
+                                            <a href="<?= base_url('report/viewLivestockDeathReport'); ?>" style="font-size: 12px; font-weight: 600; color: #dc2626; text-decoration: underline;"><?= lang('death_reports'); ?> &rarr;</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-xs-12">
+                                    <div class="info-box" style="background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <h4 style="margin:0; font-weight: 700; color: #166534;"><i class="fa-solid fa-syringe"></i> <?= lang('vaccinated_status'); ?></h4>
+                                            <p style="margin: 5px 0 0 0; color: #64748b; font-size: 13px;"><?= lang('total'); ?> <?= lang('total_used'); ?> <?= lang('vaccine'); ?> <?= lang('doses'); ?></p>
+                                        </div>
+                                        <div class="text-right">
+                                            <span style="font-size: 24px; font-weight: 800; color: #166534;">
+                                                <?php
+                                                $totalVaccinated = $this->report_model->getSumData('vaccine_dose_status', 'vds_vaccine_used_quantity', ['vds_status' => 1]);
+                                                echo ($totalVaccinated ? $totalVaccinated : 0);
+                                                ?>
+                                            </span>
+                                            <br>
+                                            <a href="<?= base_url('vaccine/listVaccinatedShed'); ?>" style="font-size: 12px; font-weight: 600; color: #16a34a; text-decoration: underline;"><?= lang('vaccination_schedule'); ?> &rarr;</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
 
         <!-- ======================== Date to date finance report ======================== -->
         <div class="row">
@@ -396,7 +445,7 @@
                         </div>
                         <div class="row">
                             <div class="col-xs-12">
-                                <div class="col-xs-4">
+                                <div class="col-md-3 col-sm-6 col-xs-12">
                                     <table class="table">
                                         <tr class="report__card__color">
                                             <th colspan="4" class="text-center"><?= lang('payment_amount_statement'); ?></th>
@@ -541,7 +590,7 @@
                                         </tr>
                                     </table>
                                 </div>
-                                <div class="col-xs-4">
+                                <div class="col-md-3 col-sm-6 col-xs-12">
                                     <table class="table">
                                         <tr class="report__card__color">
                                             <th colspan="4" class="text-center"><?= lang('received_amount_statement'); ?></th>
@@ -627,8 +676,54 @@
                                     </table>
                                 </div>
 
+                                <div class="col-md-3 col-sm-6 col-xs-12">
+                                    <table class="table">
+                                        <tr class="report__card__color">
+                                            <th colspan="2" class="text-center"># <?= lang('death'); ?> & <?= lang('vaccine'); ?> <?= lang('statement'); ?></th>
+                                        </tr>
+                                        <tr>
+                                            <th>#<?= lang('name'); ?></th>
+                                            <th><?= lang('quantity'); ?></th>
+                                        </tr>
+                                        <tr>
+                                            <td><?= lang('death'); ?></td>
+                                            <td>
+                                                <?php
+                                                $deathsDateToDate = $this->report_model->getSumData('livestock_death_quantity', 'ld_death_quantity', [
+                                                    'ld_status' => 1,
+                                                    'DATE(ld_death_date)>=' => $start_date_value_format,
+                                                    'DATE(ld_death_date)<=' => $end_date_value_format
+                                                ]);
+                                                echo ($deathsDateToDate ? $deathsDateToDate : 0) . ' ' . $settings->unit;
+                                                ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><?= lang('vaccinated_status'); ?></td>
+                                            <td>
+                                                <?php
+                                                $vaccinatedDateToDate = $this->report_model->getSumData('vaccine_dose_status', 'vds_vaccine_used_quantity', [
+                                                    'vds_status' => 1,
+                                                    'DATE(vds_created_at)>=' => $start_date_value_format,
+                                                    'DATE(vds_created_at)<=' => $end_date_value_format
+                                                ]);
+                                                echo ($vaccinatedDateToDate ? $vaccinatedDateToDate : 0);
+                                                ?>
+                                            </td>
+                                        </tr>
+                                        <tr class="table__row">
+                                            <td><?= lang('total'); ?>: </td>
+                                            <td>
+                                                <?php
+                                                $totalRecordedDateToDate = ($deathsDateToDate ? $deathsDateToDate : 0) + ($vaccinatedDateToDate ? $vaccinatedDateToDate : 0);
+                                                echo $totalRecordedDateToDate;
+                                                ?>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
 
-                                <div class="col-xs-4 table__rows">
+                                <div class="col-md-3 col-sm-6 col-xs-12 table__rows">
                                     <table class="table">
                                         <tr class="report__card__color">
                                             <th colspan="2" class="text-center">#<?= lang('date_to_date_total_amount_statement'); ?></th>

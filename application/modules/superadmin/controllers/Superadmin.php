@@ -190,6 +190,7 @@ class Superadmin extends MY_Controller {
         $max_users = (int)$this->input->post('max_users');
         $max_livestock = (int)$this->input->post('max_livestock');
         $max_sheds = (int)$this->input->post('max_sheds');
+        $has_ai_access = $this->input->post('has_ai_access') ? 1 : 0;
         $is_active = $this->input->post('is_active') !== null ? (int)$this->input->post('is_active') : 1;
 
         if (empty($name)) {
@@ -210,6 +211,7 @@ class Superadmin extends MY_Controller {
             'max_users'     => $max_users,
             'max_livestock' => $max_livestock,
             'max_sheds'     => $max_sheds,
+            'has_ai_access' => $has_ai_access,
             'is_active'     => $is_active
         );
 
@@ -236,6 +238,43 @@ class Superadmin extends MY_Controller {
         }
 
         redirect('superadmin/plans');
+    }
+
+    public function ai_settings() {
+        if ($this->input->post()) {
+            $ai_enabled = $this->input->post('ai_enabled') ? 1 : 0;
+            $default_provider = trim($this->input->post('default_provider') ?? 'gemini');
+            $api_key = trim($this->input->post('api_key') ?? '');
+            $model_name = trim($this->input->post('model_name') ?? 'gemini-1.5-flash');
+            $allow_tenant_custom_keys = $this->input->post('allow_tenant_custom_keys') ? 1 : 0;
+
+            $update_data = array(
+                'ai_enabled' => $ai_enabled,
+                'default_provider' => $default_provider,
+                'model_name' => $model_name,
+                'allow_tenant_custom_keys' => $allow_tenant_custom_keys
+            );
+
+            if (!empty($api_key)) {
+                $update_data['api_key'] = $api_key;
+            }
+
+            $this->db->where('id', 1)->update('ai_global_settings', $update_data);
+            $this->session->set_flashdata('feedback', 'Global KulaAI Settings Saved Successfully!');
+            redirect('superadmin/ai_settings');
+            return;
+        }
+
+        $data = array();
+        $data['settings'] = $this->db->get_where('ai_global_settings', array('id' => 1))->row();
+        if (empty($data['settings'])) {
+            $this->db->insert('ai_global_settings', array('id' => 1, 'ai_enabled' => 1, 'default_provider' => 'gemini'));
+            $data['settings'] = $this->db->get_where('ai_global_settings', array('id' => 1))->row();
+        }
+
+        $this->load->view('header');
+        $this->load->view('ai_settings', $data);
+        $this->load->view('home/footer');
     }
 
     public function update_plan() {

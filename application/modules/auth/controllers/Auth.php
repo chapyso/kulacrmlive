@@ -221,6 +221,15 @@ class Auth extends MY_Controller {
                 $this->db->insert('settings', $default_settings);
             }
 
+            // Send welcome email to new tenant
+            $this->load->model('email_service_model');
+            $this->email_service_model->send_account_created_email(
+                $email,
+                $name,
+                base_url('auth/login'),
+                $password
+            );
+
             // Auto-login the new user
             if ($this->ion_auth->login($email, $password, false)) {
                 $this->session->set_userdata('tenant_id', (int)$tenant_id);
@@ -302,6 +311,13 @@ class Auth extends MY_Controller {
             if ($change) {
                 //if the password was successfully changed
                 $this->session->set_flashdata('message', $this->ion_auth->messages());
+                // Send password changed notification email
+                $this->load->model('email_service_model');
+                $_curr_user = $this->ion_auth->user()->row();
+                $this->email_service_model->send_password_changed_email(
+                    $_curr_user->email,
+                    trim($_curr_user->first_name . ' ' . $_curr_user->last_name)
+                );
                 $this->logout();
             } else {
                 $this->session->set_flashdata('message', $this->ion_auth->errors());
@@ -428,6 +444,12 @@ class Auth extends MY_Controller {
                     if ($change) {
                         //if the password was successfully changed
                         $this->session->set_flashdata('message', $this->ion_auth->messages());
+                        // Send password reset notification email
+                        $this->load->model('email_service_model');
+                        $this->email_service_model->send_password_changed_email(
+                            $user->email,
+                            trim($user->first_name . ' ' . $user->last_name)
+                        );
                         redirect("auth/login", 'refresh');
                     } else {
                         $this->session->set_flashdata('message', $this->ion_auth->errors());
@@ -534,6 +556,14 @@ class Auth extends MY_Controller {
             //check to see if we are creating the user
             //redirect them back to the admin page
             $this->session->set_flashdata('message', $this->ion_auth->messages());
+            // Send account created notification email
+            $this->load->model('email_service_model');
+            $this->email_service_model->send_account_created_email(
+                $email,
+                trim($this->input->post('first_name') . ' ' . $this->input->post('last_name')),
+                base_url('auth/login'),
+                $password
+            );
             redirect("auth", 'refresh');
         } else {
             //display the create user form
@@ -651,6 +681,21 @@ class Auth extends MY_Controller {
                 if ($this->ion_auth->update($user->id, $data)) {
                     //redirect them back to the admin page if admin, or to the base url if non admin
                     $this->session->set_flashdata('message', $this->ion_auth->messages());
+                    // Send account update notification email
+                    $this->load->model('email_service_model');
+                    $_update_details = 'Account profile details updated';
+                    if ($this->input->post('password')) {
+                        $_update_details = 'Account profile and password updated';
+                        $this->email_service_model->send_password_changed_email(
+                            $user->email,
+                            trim($this->input->post('first_name') . ' ' . $this->input->post('last_name'))
+                        );
+                    }
+                    $this->email_service_model->send_account_updated_email(
+                        $user->email,
+                        trim($this->input->post('first_name') . ' ' . $this->input->post('last_name')),
+                        $_update_details
+                    );
                     if ($this->ion_auth->is_admin()) {
                         redirect('auth', 'refresh');
                     } else {

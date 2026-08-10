@@ -1136,7 +1136,7 @@ CREATE TABLE `vaccine_dose_assigned_quantity` (
   `vdq_vccn_id` int(11) NOT NULL DEFAULT 0,
   `vdq_dose_serial` int(11) NOT NULL DEFAULT 0,
   `vdq_vcc_id` int(11) NOT NULL DEFAULT 0,
-  `vdq_vaccination_date` date NOT NULL DEFAULT '1970-01-01',
+  `vdq_vaccination_date` varchar(255) NOT NULL DEFAULT '0',
   `vdq_vaccine_route` int(11) NOT NULL DEFAULT 0,
   `vdq_description` varchar(500) NOT NULL DEFAULT '',
   `vdq_status` int(11) NOT NULL DEFAULT 0,

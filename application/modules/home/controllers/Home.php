@@ -49,6 +49,7 @@ class Home extends MY_Controller
         // Auto scan farm alerts
         $this->notification_model->auto_generate_farm_alerts();
 
+
         $this->load->view('dashboard', $data); // just the header file
         $this->load->view('home', $data);
         $this->load->view('footer');

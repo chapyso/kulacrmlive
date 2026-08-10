@@ -42,6 +42,8 @@
 
 <!--script for this page only-->
 <script src="<?php echo base_url('common/js/editable-table.js'); ?>"></script>
+<!-- Mobile Data Preview Engine -->
+<script src="<?php echo base_url('common/js/mobile-data-preview.js'); ?>?v=<?php echo time(); ?>"></script>
 
 <!-- END JAVASCRIPTS -->
 <script>
@@ -72,18 +74,7 @@
 </script>
 
 
-<script>
-    $(window).scroll(function() {
 
-        if ($(this).scrollTop() > 0) {
-            $('.top_menu_title').fadeOut();
-            $('.top-nav').fadeOut();
-        } else {
-            $('.top_menu_title').fadeIn();
-            $('.top-nav').fadeIn();
-        }
-    });
-</script>
 <script type="text/javascript" src="<?php echo base_url('common/assets/select2/select2.min.js'); ?>"></script>
 
 
@@ -373,12 +364,30 @@ $(document).ready(function() {
         }
     }
 
-    function toggleKulaMobileSidebar() {
+    function toggleKulaMobileSidebar(e) {
+        if (e) {
+            if (e.preventDefault) e.preventDefault();
+            if (e.stopPropagation) e.stopPropagation();
+        }
         var sidebar = document.getElementById('sidebar');
         var backdrop = document.getElementById('kula-mobile-backdrop');
+        var body = document.body;
         if (sidebar) {
-            sidebar.classList.toggle('kula-mobile-open');
-            if (backdrop) backdrop.classList.toggle('show');
+            if (window.innerWidth <= 991) {
+                sidebar.classList.toggle('kula-mobile-open');
+                if (backdrop) backdrop.classList.toggle('show');
+            } else {
+                sidebar.classList.toggle('kula-collapsed');
+                var collapsed = sidebar.classList.contains('kula-collapsed');
+                if (body) {
+                    if (collapsed) {
+                        body.classList.add('kula-sidebar-collapsed-body');
+                    } else {
+                        body.classList.remove('kula-sidebar-collapsed-body');
+                    }
+                }
+                localStorage.setItem('kula_sidebar_collapsed', collapsed);
+            }
         }
     }
 
@@ -388,7 +397,7 @@ $(document).ready(function() {
     })();
 </script>
 
-<div id="kula-mobile-backdrop" onclick="toggleKulaMobileSidebar()"></div>
+<div id="kula-mobile-backdrop" onclick="toggleKulaMobileSidebar(event)"></div>
 
 <!-- Enterprise Mobile Bottom Navigation Bar -->
 <div class="kula-mobile-bottom-nav">
@@ -401,7 +410,7 @@ $(document).ready(function() {
       <i class="fa-solid fa-building"></i>
       <span>Tenants</span>
     </a>
-    <a href="<?php echo base_url('superadmin/tenants'); ?>" class="kula-mobile-quick-action" title="Provision Tenant">
+    <a href="javascript:void(0);" onclick="toggleKulaQuickActions(event)" class="kula-mobile-quick-action" title="Quick Actions & KulaAI Vision">
       <div class="kula-fab-circle">
         <i class="fa-solid fa-plus"></i>
       </div>
@@ -423,7 +432,7 @@ $(document).ready(function() {
       <i class="fa-solid fa-cow"></i>
       <span>Livestock</span>
     </a>
-    <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-mobile-quick-action" title="Add Livestock">
+    <a href="javascript:void(0);" onclick="toggleKulaQuickActions(event)" class="kula-mobile-quick-action" title="Quick Actions & KulaAI Vision">
       <div class="kula-fab-circle">
         <i class="fa-solid fa-plus"></i>
       </div>
@@ -439,8 +448,139 @@ $(document).ready(function() {
   <?php endif; ?>
 </div>
 
-<!-- Modern Universal Sidebar Interactivity Engine -->
+<!-- Kula Mobile Quick Actions & KulaAI Vision Sheet Modal -->
+<div id="kula-quick-actions-backdrop" onclick="closeKulaQuickActions()"></div>
+<div id="kula-quick-actions-sheet">
+  <div class="kula-qa-handle-bar"></div>
+  <div class="kula-qa-header">
+    <div class="kula-qa-title-group">
+      <span class="kula-qa-icon-badge"><i class="fa-solid fa-bolt"></i></span>
+      <div>
+        <h4 class="kula-qa-title">Quick Actions</h4>
+        <p class="kula-qa-subtitle">Launch AI Vision scan or perform quick tasks</p>
+      </div>
+    </div>
+    <button type="button" class="kula-qa-close-btn" onclick="closeKulaQuickActions()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- Featured KulaAI Vision Card -->
+  <a href="<?php echo base_url('kula_ai/vision'); ?>" class="kula-qa-vision-card">
+    <div class="kula-qa-vision-icon-wrap">
+      <i class="fa-solid fa-eye"></i>
+      <span class="kula-qa-vision-pulse"></span>
+    </div>
+    <div class="kula-qa-vision-content">
+      <div class="kula-qa-vision-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> KulaAI Vision System</div>
+      <h5 class="kula-qa-vision-heading">Launch KulaAI Vision Scan</h5>
+      <p class="kula-qa-vision-desc">Real-time camera livestock counting, identification & tracking</p>
+    </div>
+    <div class="kula-qa-vision-arrow">
+      <i class="fa-solid fa-chevron-right"></i>
+    </div>
+  </a>
+
+  <!-- Secondary Actions Grid -->
+  <?php if ($this->uri->segment(1) === 'superadmin'): ?>
+    <div class="kula-qa-grid">
+      <a href="<?php echo base_url('superadmin/tenants'); ?>" class="kula-qa-grid-item">
+        <div class="kula-qa-item-icon bg-indigo"><i class="fa-solid fa-building"></i></div>
+        <span class="kula-qa-item-label">Provision Tenant</span>
+      </a>
+      <a href="<?php echo base_url('superadmin/subscriptions'); ?>" class="kula-qa-grid-item">
+        <div class="kula-qa-item-icon bg-emerald"><i class="fa-solid fa-credit-card"></i></div>
+        <span class="kula-qa-item-label">Billing</span>
+      </a>
+      <a href="<?php echo base_url('superadmin/settings'); ?>" class="kula-qa-grid-item">
+        <div class="kula-qa-item-icon bg-blue"><i class="fa-solid fa-gear"></i></div>
+        <span class="kula-qa-item-label">Settings</span>
+      </a>
+      <a href="javascript:void(0);" onclick="triggerKulaAiChat()" class="kula-qa-grid-item">
+        <div class="kula-qa-item-icon bg-purple"><i class="fa-solid fa-robot"></i></div>
+        <span class="kula-qa-item-label">KulaAI Chat</span>
+      </a>
+    </div>
+  <?php else: ?>
+    <div class="kula-qa-grid">
+      <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-qa-grid-item">
+        <div class="kula-qa-item-icon bg-emerald"><i class="fa-solid fa-cow"></i></div>
+        <span class="kula-qa-item-label">Add Livestock</span>
+      </a>
+      <a href="<?php echo base_url('vaccine'); ?>" class="kula-qa-grid-item">
+        <div class="kula-qa-item-icon bg-blue"><i class="fa-solid fa-syringe"></i></div>
+        <span class="kula-qa-item-label">Log Health</span>
+      </a>
+      <a href="javascript:void(0);" onclick="triggerKulaAiChat()" class="kula-qa-grid-item">
+        <div class="kula-qa-item-icon bg-purple"><i class="fa-solid fa-robot"></i></div>
+        <span class="kula-qa-item-label">KulaAI Chat</span>
+      </a>
+    </div>
+  <?php endif; ?>
+</div>
+
+<!-- Modern Universal Sidebar & Quick Actions Interactivity Engine -->
 <script>
+function triggerKulaAiChat() {
+    closeKulaQuickActions();
+    if (window.KulaAIChat && typeof window.KulaAIChat.open === 'function') {
+        window.KulaAIChat.open();
+    } else if (typeof openKulaAiModal === 'function') {
+        openKulaAiModal();
+    } else {
+        var triggerBtn = document.getElementById('kula-ai-trigger-btn');
+        if (triggerBtn) triggerBtn.click();
+    }
+}
+
+function openKulaAiModal() {
+    if (window.KulaAIChat && typeof window.KulaAIChat.open === 'function') {
+        window.KulaAIChat.open();
+    } else {
+        var triggerBtn = document.getElementById('kula-ai-trigger-btn');
+        if (triggerBtn) triggerBtn.click();
+    }
+}
+
+function toggleKulaQuickActions(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    var sheet = document.getElementById('kula-quick-actions-sheet');
+    var backdrop = document.getElementById('kula-quick-actions-backdrop');
+    var fabIcons = document.querySelectorAll('.kula-fab-circle i');
+    
+    if (!sheet) return;
+    
+    var isOpen = sheet.classList.contains('active');
+    if (isOpen) {
+        closeKulaQuickActions();
+    } else {
+        sheet.classList.add('active');
+        if (backdrop) backdrop.classList.add('active');
+        fabIcons.forEach(function(icon) {
+            icon.style.transform = 'rotate(45deg)';
+        });
+    }
+}
+
+function closeKulaQuickActions() {
+    var sheet = document.getElementById('kula-quick-actions-sheet');
+    var backdrop = document.getElementById('kula-quick-actions-backdrop');
+    var fabIcons = document.querySelectorAll('.kula-fab-circle i');
+    
+    if (sheet) sheet.classList.remove('active');
+    if (backdrop) backdrop.classList.remove('active');
+    fabIcons.forEach(function(icon) {
+        icon.style.transform = 'rotate(0deg)';
+    });
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeKulaQuickActions();
+    }
+});
+
 (function() {
     var sidebar = document.getElementById('sidebar');
     var body = document.body;
@@ -456,23 +596,27 @@ document.addEventListener('click', function(e) {
     var sidebar = document.getElementById('sidebar');
     var body = document.body;
 
-        // 1. Collapse / Expand Sidebar Toggle (Retracting Feature)
-        var toggleBtn = e.target.closest('#kula-sidebar-toggle-btn, .sidebar-toggle-box');
+        // 1. Collapse / Expand Sidebar Toggle (Single toggle next to logo / mobile header)
+        var toggleBtn = e.target.closest('#kula-sidebar-toggle-btn, .sidebar-toggle-box, #kula-mobile-hamburger, .btn-mobile-hamburger');
         if (toggleBtn) {
             toggleKulaMobileSidebar(e);
             return;
         }
 
-        // 2. Tree Accordion Toggles (Dropdown Submenus)
-        var treeToggle = e.target.closest('.kula-tree-toggle');
-        if (treeToggle) {
-            e.preventDefault();
-            e.stopPropagation();
+        // 2. Tree Accordion Toggles & Sidebar Menu Item Clicks
+        var menuItem = e.target.closest('#sidebar .kula-menu-item, #sidebar a');
+        if (menuItem) {
             if (sidebar && sidebar.classList.contains('kula-collapsed')) {
                 sidebar.classList.remove('kula-collapsed');
                 if (body) body.classList.remove('kula-sidebar-collapsed-body');
                 localStorage.setItem('kula_sidebar_collapsed', 'false');
             }
+        }
+
+        var treeToggle = e.target.closest('.kula-tree-toggle');
+        if (treeToggle) {
+            e.preventDefault();
+            e.stopPropagation();
             var treeParent = treeToggle.closest('.kula-menu-tree');
             if (treeParent) {
                 treeParent.classList.toggle('open');
@@ -619,6 +763,29 @@ document.addEventListener('click', function(e) {
                 if (searchInput) searchInput.focus();
             }
         });
+    }
+
+    // Disappear / Collapse Sidebar when scrolling down (Stays hidden when scrolling up)
+    (function() {
+        var lastScrollTop = 0;
+        window.addEventListener('scroll', function() {
+            var sidebar = document.getElementById('sidebar');
+            var body = document.body;
+            if (!sidebar || window.innerWidth <= 991) return;
+
+            var st = window.pageYOffset || document.documentElement.scrollTop;
+            if (st > lastScrollTop && st > 30) {
+                // User scrolls DOWN -> Sidebar disappears / collapses
+                if (!sidebar.classList.contains('kula-collapsed')) {
+                    sidebar.classList.add('kula-collapsed');
+                    if (body) body.classList.add('kula-sidebar-collapsed-body');
+                    localStorage.setItem('kula_sidebar_collapsed', 'true');
+                }
+            }
+            // Scrolling UP (st < lastScrollTop) intentionally does nothing so sidebar STAYS HIDDEN
+            lastScrollTop = st <= 0 ? 0 : st;
+        }, { passive: true });
+    })();
 </script>
 
 <!-- Field Productivity Helper -->
@@ -739,6 +906,8 @@ $(document).ready(function() {
     });
 });
 </script>
+
+<?php $this->load->view('kula_ai/ai_chat_modal'); ?>
 
 </body>
 

@@ -31,6 +31,17 @@ class Vaccine extends MY_Controller
         if (!$this->ion_auth->in_group(array('admin'))) {
             redirect('home/permission');
         }
+
+        // Auto-fix DB column type for vdq_vaccination_date (Must be VARCHAR to store day numbers like '10' without MySQL DATE 1292 error)
+        if ($this->db->table_exists('vaccine_dose_assigned_quantity')) {
+            $fields = $this->db->field_data('vaccine_dose_assigned_quantity');
+            foreach ($fields as $f) {
+                if ($f->name === 'vdq_vaccination_date' && strtolower($f->type) === 'date') {
+                    $this->db->query("ALTER TABLE vaccine_dose_assigned_quantity MODIFY vdq_vaccination_date VARCHAR(255) NOT NULL DEFAULT '0'");
+                    break;
+                }
+            }
+        }
     }
 
     public function index()

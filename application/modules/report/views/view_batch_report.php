@@ -7,6 +7,7 @@
             <section class="panel">
                 <header class="panel-heading bg-info">
                     <i class="fa-solid fa-chart-pie"></i> <?= lang('batch_reports'); ?>
+                    <button class="export" type="button" onclick="KulaAIChat.open('Explain this batch report, mortality trends, feed usage, and batch performance.')" style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: #ffffff; margin-right: 8px; border: none; border-radius: 6px; padding: 4px 10px; font-weight: 700; cursor: pointer;"><i class="fa-solid fa-wand-magic-sparkles"></i> Explain with KulaAI</button>
                     <button class="export" onclick="javascript:window.print();"><i class="fa-solid fa-print"></i> <?php echo lang('print'); ?></button>
                 </header>
 

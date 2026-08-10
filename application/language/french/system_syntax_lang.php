@@ -964,6 +964,11 @@ $lang['vaccine_popup_message_five'] = "N'oubliez pas une chose, vous ne pouvez p
 $lang['vaccine_popup_message_six'] = "Vous pouvez ajouter les vaccins perdus du stock en cliquant sur le bouton <b>Vaccin perdu</b>. Cela déduira les vaccins de votre stock.";
 $lang['vaccine_popup_message_seven'] = "Pour créer un vaccin, vous devez ajouter une unité de vaccin. Pour cela, allez dans les paramètres et l'unité de configuration.";
 
+$lang['vaccine_route_popup_message_one'] = "C'est le module de routage des vaccins où vous pouvez définir et gérer les méthodes d'administration des vaccins pour le bétail (ex: Intramusculaire, Sous-cutané, Oral).";
+$lang['vaccine_route_popup_message_two'] = "Cliquez sur <b>Ajouter une nouvelle route</b> pour créer une nouvelle méthode de routage avec un nom et une description.";
+$lang['vaccine_route_popup_message_three'] = "Les routes définies peuvent être sélectionnées lors de la configuration des doses de vaccin et des calendriers de vaccination.";
+$lang['vaccine_route_popup_message_four'] = "Les routes utilisées par des doses de vaccin actives ne peuvent pas être supprimées afin de protéger l'intégrité des données.";
+
 $lang['vaccination_popup_message_one'] = "Après avoir attribué le vaccin pour le <b>bétail</b> et la <b>variante</b>, vous pouvez voir ici la date de vaccination. Vous pouvez également voir la date de vaccination <b> date de délivrance du dernier vaccin</b>, <b>date de la dernière vaccination</b> et <b>date de la prochaine vaccination</b>.";
 $lang['vaccination_popup_message_two'] = "Après avoir attribué le vaccin pour le <b>bétail</b> et la <b>variante</b>, vous pouvez voir ici la date de vaccination par sage.";
 $lang['vaccination_popup_message_three'] = "Pour terminer la dose de vaccination, allez à <b>Calendrier de vaccination</b> et complétez la dose. Si le lot est actif, vous pouvez délivrer la dose, sinon vous ne pouvez pas.";

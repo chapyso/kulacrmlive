@@ -71,7 +71,7 @@
                         </table>
                     </div>
 
-                    <?php if ($this->has_permission('roles.manage')) { ?>
+                    <?php if (has_permission('roles.manage')) { ?>
                     <div style="margin-top:20px; text-align:right;">
                         <button type="submit" class="btn btn-primary btn-lg" style="background:#2563eb; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-weight:700;">
                             <i class="fa-solid fa-floppy-disk mr-2"></i> Save Matrix Changes

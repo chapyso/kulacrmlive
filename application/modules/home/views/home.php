@@ -35,7 +35,132 @@
                 </a>
             </div>
         </div>
- 
+
+        <!-- KULA AI FEATURE HIGHLIGHT BANNER -->
+        <style>
+            .kula-ai-feature-banner {
+                margin: 16px 0 20px 0;
+                padding: 16px 22px;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+                flex-wrap: wrap;
+                transition: border-color 0.2s, box-shadow 0.2s;
+            }
+            .kula-ai-feature-banner:hover {
+                border-color: #cbd5e1;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            }
+            body.dark-theme .kula-ai-feature-banner,
+            html.dark-theme .kula-ai-feature-banner {
+                background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+                border-color: rgba(255, 255, 255, 0.08) !important;
+                box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.3) !important;
+            }
+            .kula-ai-banner-title {
+                font-size: 14.5px;
+                font-weight: 800;
+                color: #0f172a;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            body.dark-theme .kula-ai-banner-title,
+            html.dark-theme .kula-ai-banner-title {
+                color: #ffffff !important;
+            }
+            .kula-ai-banner-desc {
+                margin: 3px 0 0 0;
+                font-size: 12.5px;
+                color: #64748b;
+                line-height: 1.4;
+            }
+            body.dark-theme .kula-ai-banner-desc,
+            html.dark-theme .kula-ai-banner-desc {
+                color: #94a3b8 !important;
+            }
+            .kula-ai-btn-primary {
+                white-space: nowrap;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 16px;
+                background: linear-gradient(135deg, #047857 0%, #059669 100%);
+                color: #ffffff !important;
+                border-radius: 10px;
+                font-weight: 700;
+                font-size: 12.5px;
+                text-decoration: none;
+                transition: opacity 0.2s, transform 0.15s;
+                box-shadow: 0 4px 12px rgba(4, 120, 87, 0.25);
+            }
+            .kula-ai-btn-primary:hover {
+                opacity: 0.92;
+                transform: translateY(-1px);
+                color: #ffffff !important;
+            }
+            .kula-ai-btn-secondary {
+                white-space: nowrap;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 16px;
+                background: #f1f5f9;
+                color: #0f172a !important;
+                border: 1px solid #cbd5e1;
+                border-radius: 10px;
+                font-weight: 700;
+                font-size: 12.5px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            .kula-ai-btn-secondary:hover {
+                background: #e2e8f0;
+            }
+            body.dark-theme .kula-ai-btn-secondary,
+            html.dark-theme .kula-ai-btn-secondary {
+                background: rgba(255, 255, 255, 0.08) !important;
+                color: #f8fafc !important;
+                border-color: rgba(255, 255, 255, 0.15) !important;
+            }
+            body.dark-theme .kula-ai-btn-secondary:hover,
+            html.dark-theme .kula-ai-btn-secondary:hover {
+                background: rgba(255, 255, 255, 0.15) !important;
+            }
+        </style>
+
+        <div class="kula-ai-feature-banner">
+            <div style="display: flex; align-items: center; gap: 14px; flex: 1 1 320px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #047857, #10b981); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(4, 120, 87, 0.35);">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <div class="kula-ai-banner-title">
+                        <span>KulaAI Agribusiness &amp; Predictive Intelligence</span>
+                        <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 10px;">Active</span>
+                    </div>
+                    <p class="kula-ai-banner-desc">
+                        Ask KulaAI anything — real-time farm predictive mortality insights, custom agribusiness plans, veterinary disease advice, feed formulations, and financial forecasts.
+                    </p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                <a href="<?php echo base_url('kula_ai/intelligence'); ?>" class="kula-ai-btn-primary">
+                    <i class="fa-solid fa-chart-line"></i> View Kula Intelligence Page
+                </a>
+                <button type="button" onclick="KulaAIChat.toggle()" class="kula-ai-btn-secondary">
+                    <i class="fa-solid fa-comment-dots" style="color: #047857;"></i> Chat Assistant
+                </button>
+            </div>
+        </div>
+
+
+
          <?php
          // Alert cards — counts only; thresholds come from Settings.
          $lowStockThreshold = isset($settings->low_stock_threshold) ? (int) $settings->low_stock_threshold : 10;

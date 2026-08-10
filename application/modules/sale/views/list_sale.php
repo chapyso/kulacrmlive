@@ -29,11 +29,17 @@
                     <i class="fa-solid fa-print" style="color: #475569;"></i>
                     <span><?php echo lang('print'); ?></span>
                 </button>
+
+                <a data-toggle="modal" href="#informationPopup" class="hero-date-pill" style="text-decoration: none; border: 1px solid #e9d5ff; background: #faf5ff;">
+                    <i class="fa-solid fa-circle-question" style="color: #9333ea;"></i>
+                    <span style="color: #9333ea;"><?= lang('information'); ?></span>
+                </a>
             </div>
         </div>
                             <?php $csv_qs = http_build_query(array_filter(array('from' => $filter_from, 'to' => $filter_to))); ?>
                             <a class="button button-info" href="<?php echo base_url('sale/exportCSV') . ($csv_qs ? '?' . $csv_qs : ''); ?>" style="margin-left:6px;"><i class="fas fa-file-csv"></i> Export CSV</a>
                             <button class="export" onclick="javascript:window.print();"><i class="fa-solid fa-print"></i> <?php echo lang('print'); ?></button>
+                            <a data-toggle="modal" href="#informationPopup" class="button button-purple export"><i class="fa-solid fa-circle-question"></i> <?= lang('information'); ?></a>
                             <?php $this->load->view('_partials/date_range_filter', array(
                                 'action_url' => base_url('sale/listSale'),
                                 'clear_url'  => base_url('sale/listSale'),

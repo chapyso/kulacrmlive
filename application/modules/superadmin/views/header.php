@@ -64,7 +64,8 @@
         <!--header start-->
         <header class="header white-bg">
             <div class="kula-top-header-left" style="display: flex; align-items: center; gap: 8px;">
-                <button type="button" id="kula-mobile-hamburger" class="btn-mobile-hamburger" title="Toggle Navigation Menu" onclick="toggleKulaMobileSidebar()">
+                <!-- Mobile Hamburger Sidebar Toggle Button -->
+                <button type="button" id="kula-mobile-hamburger" class="btn-mobile-hamburger" title="Toggle Sidebar Menu" onclick="toggleKulaMobileSidebar(event)">
                     <i class="fa-solid fa-bars"></i>
                 </button>
 
@@ -262,6 +263,11 @@
                     <a href="<?php echo base_url('superadmin/plans'); ?>" class="kula-menu-item" data-tooltip="Plan Builder & Limits">
                         <div class="kula-menu-icon"><i class="fa-solid fa-layer-group" style="color: #a855f7;"></i></div>
                         <span class="kula-menu-text">Plan Builder &amp; Limits</span>
+                    </a>
+
+                    <a href="<?php echo base_url('superadmin/ai_settings'); ?>" class="kula-menu-item" data-tooltip="KulaAI Settings">
+                        <div class="kula-menu-icon"><i class="fa-solid fa-wand-magic-sparkles" style="color: #8b5cf6;"></i></div>
+                        <span class="kula-menu-text">KulaAI Engine Settings</span>
                     </a>
 
                     <a href="<?php echo base_url('superadmin/settings'); ?>" class="kula-menu-item" data-tooltip="Platform Settings">
