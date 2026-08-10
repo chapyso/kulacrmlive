@@ -4,6 +4,22 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- 1. Create SaaS Subscription Plans Table
+CREATE TABLE IF NOT EXISTS `saas_smtp_settings` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `from_name` VARCHAR(255) DEFAULT 'Menyuus',
+  `from_email` VARCHAR(255) DEFAULT 'info@chapysocial.com',
+  `enable_queue` VARCHAR(50) DEFAULT 'No',
+  `mail_driver` VARCHAR(50) DEFAULT 'SMTP',
+  `smtp_host` VARCHAR(255) DEFAULT 'smtppro.zoho.com',
+  `smtp_port` INT(11) DEFAULT 465,
+  `mail_username` VARCHAR(255) DEFAULT 'info@chapysocial.com',
+  `mail_password` VARCHAR(255) DEFAULT 'Baale@256',
+  `smtp_encryption` VARCHAR(50) DEFAULT 'ssl',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `subscription_plans` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,

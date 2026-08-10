@@ -419,6 +419,24 @@ class Superadmin extends MY_Controller {
     public function smtpSettings() {
         $data = array();
         $data['settings'] = $this->settings_model->getSettings();
+
+        if (!$this->db->table_exists('saas_smtp_settings')) {
+            $this->db->query("CREATE TABLE IF NOT EXISTS `saas_smtp_settings` (
+              `id` INT AUTO_INCREMENT PRIMARY KEY,
+              `from_name` VARCHAR(255) DEFAULT 'Menyuus',
+              `from_email` VARCHAR(255) DEFAULT 'info@chapysocial.com',
+              `enable_queue` VARCHAR(50) DEFAULT 'No',
+              `mail_driver` VARCHAR(50) DEFAULT 'SMTP',
+              `smtp_host` VARCHAR(255) DEFAULT 'smtppro.zoho.com',
+              `smtp_port` INT DEFAULT 465,
+              `mail_username` VARCHAR(255) DEFAULT 'info@chapysocial.com',
+              `mail_password` VARCHAR(255) DEFAULT 'Baale@256',
+              `smtp_encryption` VARCHAR(50) DEFAULT 'ssl',
+              `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+        }
+
         $data['smtp'] = $this->db->get('saas_smtp_settings')->row();
         if (!$data['smtp']) {
             $data['smtp'] = (object) array(
