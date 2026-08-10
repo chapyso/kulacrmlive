@@ -61,4 +61,8 @@ RUN chown -R www-data:www-data /var/www/html \
 # Expose standard HTTP port
 EXPOSE 80
 
+# Container Healthcheck for Coolify / Docker / Traefik
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
+
 CMD ["apache2-foreground"]
