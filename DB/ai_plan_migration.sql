@@ -1,11 +1,5 @@
 -- KulaAI Super Admin Subscription Plan & AI Settings Migration
 
-ALTER TABLE `subscription_plans` ADD COLUMN IF NOT EXISTS `has_ai_access` TINYINT(1) NOT NULL DEFAULT 1;
-
--- Set Default AI Access per Tier
-UPDATE `subscription_plans` SET `has_ai_access` = 0 WHERE `code` IN ('free', 'starter');
-UPDATE `subscription_plans` SET `has_ai_access` = 1 WHERE `code` IN ('pro', 'enterprise');
-
 -- Global AI Settings Table
 CREATE TABLE IF NOT EXISTS `ai_global_settings` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
