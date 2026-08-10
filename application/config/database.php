@@ -49,10 +49,10 @@ $active_group = 'default';
 $active_record = TRUE;
 if (!defined('DATABASENAME') || DATABASENAME == 'offline') {
     // ── Local development (Laravel Herd / XAMPP / Laragon) ──────────────────
-    $db['default']['hostname'] = 'localhost';
-    $db['default']['username'] = 'root';
-    $db['default']['password'] = '';
-    $db['default']['database'] = 'livestock';
+    $db['default']['hostname'] = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: 'localhost';
+    $db['default']['username'] = getenv('DB_USER') ?: getenv('DB_USERNAME') ?: 'root';
+    $db['default']['password'] = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: '';
+    $db['default']['database'] = getenv('DB_NAME') ?: getenv('DB_DATABASE') ?: 'livestock';
     $db['default']['dbdriver'] = 'mysqli';
     $db['default']['dbprefix'] = '';
     $db['default']['pconnect'] = TRUE;

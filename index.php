@@ -49,9 +49,19 @@
  * Switch between the "offline" (local) and "online" connection
  * groups defined in application/config/database.php
  */
-	$db = 'offline';   // ← uncomment for local development
-	//$db = 'online';     // ← production: fill credentials in application/config/database.php
+	$_db_group_env = getenv('CI_DB_GROUP');
+	$_host_header = strtolower(isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ''));
+	if (!empty($_db_group_env)) {
+		$db = $_db_group_env;
+	} else if (!empty($_host_header) && (strpos($_host_header, 'kulacrm') !== false || strpos($_host_header, '62.169.26.224') !== false)) {
+		$db = 'online';
+	} else if (file_exists('/.dockerenv') || getenv('DOCKER_CONTAINER')) {
+		$db = 'online';
+	} else {
+		$db = 'offline';
+	}
 	define('DATABASENAME', $db);
+	unset($_db_group_env, $_host_header);
 
 /*
  *---------------------------------------------------------------
