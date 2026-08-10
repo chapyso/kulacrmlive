@@ -67,9 +67,10 @@
                                                 </td>
                                                 <td style="padding: 14px 20px; text-align: right;">
                                                     <button type="button" class="btn btn-xs btn-default edit-tenant-btn" 
+                                                        onclick="openEditTenantModal(this)"
                                                         data-id="<?php echo $t->id; ?>"
                                                         data-name="<?php echo htmlspecialchars($t->name); ?>"
-                                                        data-slug="<?php echo htmlspecialchars($t->slug); ?>"
+                                                        data-slug="<?php echo htmlspecialchars(isset($t->slug_name) && !empty($t->slug_name) ? $t->slug_name : $t->slug); ?>"
                                                         data-email="<?php echo htmlspecialchars($t->email); ?>"
                                                         data-phone="<?php echo htmlspecialchars(isset($t->phone) ? $t->phone : ''); ?>"
                                                         data-plan="<?php echo $t->plan_id; ?>"
@@ -103,41 +104,41 @@
             <div class="modal-dialog">
                 <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
                     <div class="modal-header" style="background: #0f172a; color: #ffffff;">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color: #fff;">&times;</button>
+                        <button type="button" class="close" data-dismiss="modal" onclick="$('#provisionModal').hide().removeClass('in show');" aria-hidden="true" style="color: #fff;">&times;</button>
                         <h4 class="modal-title" style="font-weight: 800;"><i class="fa-solid fa-plus-circle" style="color: #6366f1;"></i> Provision New SaaS Tenant</h4>
                     </div>
                     <form action="<?php echo base_url('superadmin/save_tenant'); ?>" method="post">
                         <div class="modal-body" style="padding: 24px;">
                             <div class="form-group">
-                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Company / Farm Name</label>
-                                <input type="text" name="name" class="form-control" placeholder="e.g. Green Pastures Farm" required style="border-radius: 8px;">
+                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Organization / Farm Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="e.g. Green Valley Farm" required style="border-radius: 8px;">
                             </div>
 
                             <div class="form-group">
-                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Subdomain Slug</label>
+                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Tenant Path Slug (slug_name)</label>
                                 <div class="input-group">
-                                    <input type="text" name="slug" class="form-control" placeholder="greenpastures" required style="border-radius: 8px 0 0 8px; font-family: monospace;">
-                                    <span class="input-group-addon" style="border-radius: 0 8px 8px 0;">.localhost</span>
+                                    <span class="input-group-addon" style="border-radius: 8px 0 0 8px; font-family: monospace;">http://localhost:8080/</span>
+                                    <input type="text" name="slug" class="form-control" placeholder="e.g. greenvalley" required style="border-radius: 0 8px 8px 0; font-family: monospace;">
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Owner Email</label>
-                                <input type="email" name="email" class="form-control" placeholder="owner@greenpastures.com" required style="border-radius: 8px;">
+                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Owner Email Address</label>
+                                <input type="email" name="email" class="form-control" placeholder="owner@farm.com" required style="border-radius: 8px;">
                             </div>
 
                             <div class="form-group">
-                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Owner Password (Optional Initial Password)</label>
-                                <input type="password" name="password" class="form-control" placeholder="Enter initial password" style="border-radius: 8px;">
+                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Owner Initial Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="Set secure password" required style="border-radius: 8px;">
                             </div>
 
                             <div class="form-group">
                                 <label style="font-weight: 700; font-size: 12px; color: #334155;">Phone Number</label>
-                                <input type="text" name="phone" class="form-control" placeholder="+1 555 019 2834" style="border-radius: 8px;">
+                                <input type="text" name="phone" class="form-control" placeholder="+256700000000" style="border-radius: 8px;">
                             </div>
 
                             <div class="form-group">
-                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Assign Subscription Plan</label>
+                                <label style="font-weight: 700; font-size: 12px; color: #334155;">Select Subscription Plan</label>
                                 <?php $curr = !empty($settings->currency) ? htmlspecialchars($settings->currency) : 'UGX'; ?>
                                 <select name="plan_id" class="form-control" style="border-radius: 8px;">
                                     <?php foreach ($plans as $p): ?>
@@ -147,7 +148,7 @@
                             </div>
                         </div>
                         <div class="modal-footer" style="background: #f8fafc;">
-                            <button type="button" class="btn btn-default" data-dismiss="modal" style="border-radius: 8px; font-weight: 700;">Cancel</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="$('#provisionModal').hide().removeClass('in show');" style="border-radius: 8px; font-weight: 700;">Cancel</button>
                             <button type="submit" class="btn btn-primary" style="border-radius: 8px; font-weight: 700; background: #6366f1; border: none;">Provision Tenant Now</button>
                         </div>
                     </form>
@@ -160,7 +161,7 @@
             <div class="modal-dialog">
                 <div class="modal-content" style="border-radius: 16px; overflow: hidden;">
                     <div class="modal-header" style="background: #0f172a; color: #ffffff;">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" style="color: #fff;">&times;</button>
+                        <button type="button" class="close" data-dismiss="modal" onclick="$('#editTenantModal').hide().removeClass('in show');" aria-hidden="true" style="color: #fff;">&times;</button>
                         <h4 class="modal-title" style="font-weight: 800;"><i class="fa-solid fa-pen-to-square" style="color: #6366f1;"></i> Edit SaaS Tenant Details</h4>
                     </div>
                     <form action="<?php echo base_url('superadmin/save_tenant'); ?>" method="post">
@@ -217,7 +218,7 @@
                             </div>
                         </div>
                         <div class="modal-footer" style="background: #f8fafc;">
-                            <button type="button" class="btn btn-default" data-dismiss="modal" style="border-radius: 8px; font-weight: 700;">Cancel</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" onclick="$('#editTenantModal').hide().removeClass('in show');" style="border-radius: 8px; font-weight: 700;">Cancel</button>
                             <button type="submit" class="btn btn-primary" style="border-radius: 8px; font-weight: 700; background: #6366f1; border: none;">Save Changes</button>
                         </div>
                     </form>
@@ -228,27 +229,40 @@
 </section>
 
 <script>
+function openEditTenantModal(btn) {
+    var $btn = $(btn);
+    var id = $btn.data('id');
+    var name = $btn.data('name');
+    var slug = $btn.data('slug');
+    var email = $btn.data('email');
+    var phone = $btn.data('phone');
+    var plan = $btn.data('plan');
+    var status = $btn.data('status');
+
+    $('#edit_tenant_id').val(id);
+    $('#edit_tenant_name').val(name);
+    $('#edit_tenant_slug').val(slug);
+    $('#edit_tenant_email').val(email);
+    $('#edit_tenant_password').val('');
+    $('#edit_tenant_phone').val(phone);
+    $('#edit_tenant_plan').val(plan);
+    $('#edit_tenant_status').val(status);
+
+    var modalEl = document.getElementById('editTenantModal');
+    if (modalEl) {
+        if (typeof $(modalEl).modal === 'function') {
+            $(modalEl).modal('show');
+        } else {
+            modalEl.style.display = 'block';
+            modalEl.classList.add('in', 'show');
+        }
+    }
+}
+
 $(document).ready(function() {
     $(document).on('click', '.edit-tenant-btn', function(e) {
         e.preventDefault();
-        var id = $(this).data('id');
-        var name = $(this).data('name');
-        var slug = $(this).data('slug');
-        var email = $(this).data('email');
-        var phone = $(this).data('phone');
-        var plan = $(this).data('plan');
-        var status = $(this).data('status');
-
-        $('#edit_tenant_id').val(id);
-        $('#edit_tenant_name').val(name);
-        $('#edit_tenant_slug').val(slug);
-        $('#edit_tenant_email').val(email);
-        $('#edit_tenant_password').val('');
-        $('#edit_tenant_phone').val(phone);
-        $('#edit_tenant_plan').val(plan);
-        $('#edit_tenant_status').val(status);
-
-        $('#editTenantModal').modal('show');
+        openEditTenantModal(this);
     });
 
     $(document).on('click', '.kula-delete-btn', function(e) {
