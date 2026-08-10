@@ -10,10 +10,29 @@
     SetEnvIfNoCase Host "^localhost"                CI_ENV=development
     SetEnvIfNoCase Host "^127\.0\.0\.1"             CI_ENV=development
     SetEnvIfNoCase Host "^\[::1\]"                  CI_ENV=development
-    SetEnvIfNoCase Host "^livestock\.lifedigital\.space$" CI_ENV=development
 </IfModule>
 
+# Block access to sensitive system files, git, sql dumps, environment files
+<FilesMatch "^\.|\.(sql|env|json|bak|config|log|md|sh|lock)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Disable Directory Browsing
+Options -Indexes
+
 RewriteEngine On
+
+# Redirect HTTP to HTTPS in production
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} ^(www\.)?kulacrm\.com [NC]
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php?/$1 [L]

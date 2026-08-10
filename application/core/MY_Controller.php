@@ -16,6 +16,7 @@ class MY_Controller extends MX_Controller {
 
     public function __construct() {
         parent::__construct();
+        $this->enforce_security_headers();
         $this->load->library('session');
         $this->load->database();
         if (!isset($this->ion_auth)) {
@@ -25,6 +26,40 @@ class MY_Controller extends MX_Controller {
         $this->resolve_context();
         $this->check_application_guard();
         $this->init_language();
+    }
+
+    /**
+     * Production Security Headers Engine
+     */
+    protected function enforce_security_headers() {
+        if (headers_sent()) return;
+
+        // 1. Strict-Transport-Security (HSTS) when HTTPS is active
+        $is_https = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+            || (!empty($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+
+        if ($is_https) {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+        }
+
+        // 2. Anti-Clickjacking Frame Guard
+        header('X-Frame-Options: SAMEORIGIN');
+
+        // 3. MIME-Type Sniffing Protection
+        header('X-Content-Type-Options: nosniff');
+
+        // 4. Referrer Policy
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+
+        // 5. Permissions Policy (Restrict camera/microphone unless intentionally requested)
+        header('Permissions-Policy: camera=(self), microphone=(), geolocation=(self)');
+
+        // 6. XSS Protection legacy fallback
+        header('X-XSS-Protection: 1; mode=block');
+
+        // 7. Remove PHP server signature
+        header_remove('X-Powered-By');
     }
 
     /**

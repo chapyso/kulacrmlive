@@ -25,70 +25,91 @@ class Profile extends MY_Controller
 
     public function index()
     {
-        $user = $this->ion_auth->user()->row();
-        if ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin')) {
+        if ($this->is_super_admin()) {
             redirect('superadmin/profile');
+            return;
         }
 
         $data = array();
         $id = $this->ion_auth->get_user_id();
         $data['profile'] = $this->profile_model->getProfileById($id);
         $data['settings'] = $this->settings_model->getSettings();
-        $this->load->view('home/dashboard', $data); // just the header file
+        $this->load->view('home/dashboard', $data);
         $this->load->view('profile', $data);
-        $this->load->view('home/footer'); // just the footer file
+        $this->load->view('home/footer');
     }
 
     public function addNew()
     {
+        $ion_user_id = $this->ion_auth->get_user_id();
+        $name = trim((string)$this->input->post('name'));
+        $email = trim((string)$this->input->post('email'));
+        $password = (string)$this->input->post('password');
 
-        $id = $this->input->post('id');
-        $name = $this->input->post('name');
-        $password = $this->input->post('password');
-        $email = $this->input->post('email');
+        $is_super = $this->is_super_admin();
+        $redirect_target = $is_super ? 'superadmin/profile' : 'profile';
+
         $this->load->library('form_validation');
-        $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
-        // Validating Name Field
-        $this->form_validation->set_rules('name', 'Name', 'trim|required|min_length[5]|max_length[100]');
-        // Validating Password Field
+        $this->form_validation->set_error_delimiters('<div class="alert alert-danger mb-2">', '</div>');
+        $this->form_validation->set_rules('name', 'Name', 'trim|required|min_length[2]|max_length[100]');
+        $this->form_validation->set_rules('email', 'Email', 'trim|required|valid_email|max_length[100]');
+
         if (!empty($password)) {
             $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[5]|max_length[100]');
         }
-        // Validating Email Field
-        $this->form_validation->set_rules('email', 'Email', 'trim|required|min_length[5]|max_length[100]');
 
         if ($this->form_validation->run() == FALSE) {
-            $data = array();
-            $id = $this->ion_auth->get_user_id();
-            $data['settings'] = $this->settings_model->getSettings();
-            $data['profile'] = $this->profile_model->getProfileById($id);
-            $this->load->view('home/dashboard', $data); // just the header file
-            $this->load->view('profile', $data);
-            $this->load->view('home/footer'); // just the footer file
-        } else {
-            $data = array();
-            $data = array(
-                'name' => $name,
+            $this->session->set_flashdata('error', validation_errors() ? validation_errors() : 'Validation failed. Please check your inputs.');
+            redirect($redirect_target);
+            return;
+        }
+
+        // Check if email belongs to another user
+        $email_exists = $this->db->where('email', $email)->where('id !=', $ion_user_id)->get('users')->row();
+        if ($email_exists) {
+            $this->session->set_flashdata('error', 'The email address "' . html_escape($email) . '" is already in use by another user.');
+            redirect($redirect_target);
+            return;
+        }
+
+        // Prepare data for Ion Auth update
+        $update_data = array(
+            'username' => $name,
+            'email'    => $email,
+        );
+
+        if (!empty($password)) {
+            $update_data['password'] = $password;
+        }
+
+        if ($this->ion_auth->update($ion_user_id, $update_data)) {
+            // Sync role-specific profile table if present
+            $profile_data = array(
+                'name'  => $name,
                 'email' => $email,
             );
-            $username = $this->input->post('name');
-            $ion_user_id = $this->ion_auth->get_user_id();
-            $group_id = $this->profile_model->getUsersGroups($ion_user_id)->row()->group_id;
-            $group_name = $this->profile_model->getGroups($group_id)->row()->name;
-            $group_name = strtolower($group_name);
-            if (empty($password)) {
-                $password = $this->db->get_where('users', array('id' => $ion_user_id))->row()->password;
-            } else {
-                $password = $this->ion_auth_model->hash_password($password);
+
+            $user_groups_query = $this->profile_model->getUsersGroups($ion_user_id);
+            if ($user_groups_query && $user_groups_query->num_rows() > 0) {
+                foreach ($user_groups_query->result() as $ug) {
+                    $group_query = $this->profile_model->getGroups($ug->group_id);
+                    if ($group_query && $group_query->num_rows() > 0) {
+                        $group_row = $group_query->row();
+                        if (!empty($group_row->name)) {
+                            $group_name = strtolower($group_row->name);
+                            $this->profile_model->updateProfile($ion_user_id, $profile_data, $group_name);
+                        }
+                    }
+                }
             }
-            $this->profile_model->updateIonUser($username, $email, $password, $ion_user_id);
-            if (!$this->ion_auth->in_group('admin')) {
-                $this->profile_model->updateProfile($ion_user_id, $data, $group_name);
-            }
-            // Loading View
+
             $this->session->set_flashdata('success', 'Profile updated successfully.');
-            redirect('profile');
+        } else {
+            $auth_errors = $this->ion_auth->errors();
+            $this->session->set_flashdata('error', !empty($auth_errors) ? strip_tags($auth_errors) : 'Failed to update profile.');
         }
+
+        redirect($redirect_target);
     }
 }
 
