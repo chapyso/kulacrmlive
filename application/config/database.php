@@ -49,13 +49,14 @@ $active_group = 'default';
 $active_record = TRUE;
 if (!defined('DATABASENAME') || DATABASENAME == 'offline') {
     // ── Local development (Laravel Herd / XAMPP / Laragon) ──────────────────
-    $db['default']['hostname'] = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: 'localhost';
+    $default_host = file_exists('/.dockerenv') ? 'kula-db' : '127.0.0.1';
+    $db['default']['hostname'] = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: $default_host;
     $db['default']['username'] = getenv('DB_USER') ?: getenv('DB_USERNAME') ?: 'root';
-    $db['default']['password'] = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: '';
+    $db['default']['password'] = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: (file_exists('/.dockerenv') ? 'kula_root_pass' : '');
     $db['default']['database'] = getenv('DB_NAME') ?: getenv('DB_DATABASE') ?: 'livestock';
     $db['default']['dbdriver'] = 'mysqli';
     $db['default']['dbprefix'] = '';
-    $db['default']['pconnect'] = TRUE;
+    $db['default']['pconnect'] = FALSE;
     $db['default']['db_debug'] = TRUE;
     $db['default']['cache_on'] = FALSE;
     $db['default']['cachedir'] = '';
