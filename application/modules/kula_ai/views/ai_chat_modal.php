@@ -770,7 +770,16 @@
                 error: function(xhr, status, error) {
                     const elem = document.getElementById(loadingId);
                     if (elem) {
-                        elem.innerHTML = '⚠️ Service response error. Please try again.';
+                        let msg = 'Service response error. Please try again.';
+                        if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
+                            msg = xhr.responseJSON.error;
+                        } else if (xhr && xhr.responseText) {
+                            try {
+                                const parsed = JSON.parse(xhr.responseText);
+                                if (parsed && parsed.error) msg = parsed.error;
+                            } catch(e) {}
+                        }
+                        elem.innerHTML = '⚠️ ' + msg;
                     }
                     stream.scrollTop = stream.scrollHeight;
                 }
