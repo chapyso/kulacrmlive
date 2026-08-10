@@ -66,15 +66,15 @@ if (!defined('DATABASENAME') || DATABASENAME == 'offline') {
     $db['default']['stricton'] = FALSE;
 } else {
     // ── Production / live server ─────────────────────────────────────────────
-    // Fill in the credentials provided by your hosting control panel.
-    $db['default']['hostname'] = 'localhost';       // usually localhost
-    $db['default']['username'] = 'YOUR_DB_USERNAME';
-    $db['default']['password'] = 'YOUR_DB_PASSWORD';
-    $db['default']['database'] = 'YOUR_DB_NAME';
+    // Reads from environment variables (DB_HOST, DB_USER, DB_PASS, DB_NAME)
+    $db['default']['hostname'] = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: 'kula-db';
+    $db['default']['username'] = getenv('DB_USER') ?: getenv('DB_USERNAME') ?: 'root';
+    $db['default']['password'] = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: 'kula_root_pass';
+    $db['default']['database'] = getenv('DB_NAME') ?: getenv('DB_DATABASE') ?: 'livestock';
     $db['default']['dbdriver'] = 'mysqli';
     $db['default']['dbprefix'] = '';
     $db['default']['pconnect'] = FALSE;
-    $db['default']['db_debug'] = FALSE;             // never expose DB errors in production
+    $db['default']['db_debug'] = (defined('ENVIRONMENT') && ENVIRONMENT === 'development'); // Disable DB debug in production
     $db['default']['cache_on'] = FALSE;
     $db['default']['cachedir'] = '';
     $db['default']['char_set'] = 'utf8';
