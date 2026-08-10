@@ -762,21 +762,25 @@
                         `;
                     } else if (data && data.response) {
                         elem.innerHTML = KulaAIChat.formatMarkdown(data.response);
+                    } else if (data && data.error) {
+                        elem.innerHTML = '⚠️ ' + data.error;
                     } else {
-                        elem.innerHTML = '⚠️ ' + ((data && data.error) ? data.error : 'Unable to retrieve answer.');
+                        elem.innerHTML = '⚠️ Unable to retrieve answer. Please refresh and try again.';
                     }
                     stream.scrollTop = stream.scrollHeight;
                 },
                 error: function(xhr, status, error) {
                     const elem = document.getElementById(loadingId);
                     if (elem) {
-                        let msg = 'Service response error. Please try again.';
-                        if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
-                            msg = xhr.responseJSON.error;
+                        let msg = 'Service connection error. Please refresh and log in to use KulaAI.';
+                        if (xhr && xhr.responseJSON) {
+                            if (xhr.responseJSON.error) msg = xhr.responseJSON.error;
+                            else if (xhr.responseJSON.response) msg = xhr.responseJSON.response;
                         } else if (xhr && xhr.responseText) {
                             try {
                                 const parsed = JSON.parse(xhr.responseText);
                                 if (parsed && parsed.error) msg = parsed.error;
+                                else if (parsed && parsed.response) msg = parsed.response;
                             } catch(e) {}
                         }
                         elem.innerHTML = '⚠️ ' + msg;

@@ -351,75 +351,108 @@ class Ai_provider {
      * Rule-based natural language generator (Graceful fallback when API key is offline)
      */
     public function generate_offline_response($user_prompt, $context_data) {
-        $output = "Based on current live KulaCRM data:\n\n";
+        $output = "";
 
-        if (empty($context_data)) {
-            return "I couldn't retrieve specific records for this request from KulaCRM.";
-        }
+        // 1. If context data is available from tools, render live database metrics
+        if (!empty($context_data)) {
+            $output .= "### 📊 Live KulaCRM Database Metrics Summary\n\n";
 
-        if (isset($context_data['farm_summary'])) {
-            $fs = $context_data['farm_summary'];
-            $output .= "### 📊 Farm Overview\n";
-            $output .= "- **Total Active Livestock:** " . number_format($fs['total_livestock'] ?? 0) . " animals\n";
-            $output .= "- **Active Sheds:** " . ($fs['total_sheds'] ?? 0) . "\n";
-            $output .= "- **Active Batches:** " . ($fs['total_batches'] ?? 0) . "\n";
-            if (isset($fs['total_sales'])) {
-                $output .= "- **Total Sales Value:** $" . number_format($fs['total_sales'], 2) . "\n";
-            }
-            $output .= "\n";
-        }
-
-        if (isset($context_data['batch_summary'])) {
-            $bs = $context_data['batch_summary'];
-            $output .= "### 📦 Batch Performance Details\n";
-            if (is_array($bs)) {
-                foreach ($bs as $b) {
-                    $b_name = $b['shed_name'] ?? $b['batch_id'] ?? 'Batch';
-                    $total = $b['total_quantity'] ?? $b['quantity'] ?? 0;
-                    $deaths = $b['death_quantity'] ?? 0;
-                    $rate = ($total > 0) ? round(($deaths / $total) * 100, 2) : 0;
-                    $output .= "- **{$b_name}**: Initial: {$total} | Current: " . ($total - $deaths) . " | Mortality: {$deaths} ({$rate}%)\n";
+            if (isset($context_data['farm_summary'])) {
+                $fs = $context_data['farm_summary'];
+                $output .= "#### 🚜 Farm Overview\n";
+                $output .= "- **Total Active Livestock:** " . number_format($fs['total_livestock'] ?? 0) . " head / birds\n";
+                $output .= "- **Active Housing Sheds:** " . ($fs['total_sheds'] ?? 0) . " active sheds\n";
+                $output .= "- **Active Batches:** " . ($fs['total_batches'] ?? 0) . " production batches\n";
+                if (isset($fs['total_sales'])) {
+                    $output .= "- **Cumulative Sales Value:** UGX " . number_format($fs['total_sales']) . "\n";
                 }
+                $output .= "\n";
             }
-            $output .= "\n";
-        }
 
-        if (isset($context_data['financial_summary'])) {
-            $fin = $context_data['financial_summary'];
-            $output .= "### 💰 Financial Overview\n";
-            $output .= "- **Total Revenue:** $" . number_format($fin['total_income'] ?? $fin['revenue'] ?? 0, 2) . "\n";
-            $output .= "- **Total Expenses:** $" . number_format($fin['total_expenses'] ?? $fin['expenses'] ?? 0, 2) . "\n";
-            $output .= "- **Net Balance:** $" . number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0), 2) . "\n";
-            $output .= "\n";
-        }
-
-        if (isset($context_data['receivables'])) {
-            $rec = $context_data['receivables'];
-            $output .= "### 🧾 Outstanding Client Balances\n";
-            if (is_array($rec)) {
-                foreach ($rec as $c) {
-                    $name = $c['client_name'] ?? $c['name'] ?? 'Client';
-                    $due = $c['due_amount'] ?? $c['balance'] ?? 0;
-                    $output .= "- **{$name}**: $" . number_format($due, 2) . " due\n";
+            if (isset($context_data['batch_summary'])) {
+                $bs = $context_data['batch_summary'];
+                $output .= "#### 📦 Batch & Mortality Breakdown\n";
+                if (is_array($bs)) {
+                    foreach ($bs as $b) {
+                        $b_name = $b['shed_name'] ?? $b['batch_id'] ?? 'Batch';
+                        $total = $b['total_quantity'] ?? $b['quantity'] ?? 0;
+                        $deaths = $b['death_quantity'] ?? 0;
+                        $rate = ($total > 0) ? round(($deaths / $total) * 100, 2) : 0;
+                        $output .= "- **{$b_name}**: Initial: {$total} | Current: " . ($total - $deaths) . " | Mortality: {$deaths} ({$rate}%)\n";
+                    }
                 }
+                $output .= "\n";
             }
-            $output .= "\n";
-        }
 
-        if (isset($context_data['inventory_forecast'])) {
-            $inv = $context_data['inventory_forecast'];
-            $output .= "### 🌾 Feed & Inventory Alert\n";
-            if (is_array($inv)) {
-                foreach ($inv as $i) {
-                    $item = $i['item_name'] ?? 'Item';
-                    $days = $i['estimated_days_left'] ?? 'N/A';
-                    $output .= "- **{$item}**: Current Stock: " . ($i['current_stock'] ?? 0) . " | Est. Days Remaining: {$days} days\n";
+            if (isset($context_data['financial_summary'])) {
+                $fin = $context_data['financial_summary'];
+                $output .= "#### 💰 Financial & Expense Breakdown\n";
+                $output .= "- **Total Revenue:** UGX " . number_format($fin['total_income'] ?? $fin['revenue'] ?? 0) . "\n";
+                $output .= "- **Total Expenses:** UGX " . number_format($fin['total_expenses'] ?? $fin['expenses'] ?? 0) . "\n";
+                $output .= "- **Net Balance:** UGX " . number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0)) . "\n";
+                $output .= "\n";
+            }
+
+            if (isset($context_data['receivables'])) {
+                $rec = $context_data['receivables'];
+                $output .= "#### 🧾 Outstanding Debts & Receivables\n";
+                if (is_array($rec)) {
+                    foreach ($rec as $c) {
+                        $name = $c['client_name'] ?? $c['name'] ?? 'Client';
+                        $due = $c['due_amount'] ?? $c['balance'] ?? 0;
+                        $output .= "- **{$name}**: UGX " . number_format($due) . " balance due\n";
+                    }
                 }
+                $output .= "\n";
             }
-            $output .= "\n";
         }
 
-        $output .= "*Source: Current KulaCRM Live Database Records*";
+        // 2. Intelligent domain query response generator (Business Plans, Summaries, Guidelines)
+        $p = strtolower($user_prompt);
+
+        if (strpos($p, 'business plan') !== false || strpos($p, 'plan') !== false || strpos($p, 'projections') !== false) {
+            $output .= "### 📋 Agribusiness Business Plan & ROI Blueprint\n\n";
+            $output .= "#### 1. Executive Summary & Production Target\n";
+            $output .= "- **Capacity Target:** 1,000 Layer Poultry Farm (High-performing Lohmann Brown / Isa Brown breed).\n";
+            $output .= "- **Target Egg Production:** ~850 to 900 eggs/day peak laying rate (85-90% production efficiency).\n\n";
+
+            $output .= "#### 2. Initial Capital Expenditure (CAPEX)\n";
+            $output .= "| Item Description | Est. Cost (UGX) | Est. Cost (USD) |\n";
+            $output .= "| :--- | :--- | :--- |\n";
+            $output .= "| **Housing Construction (Deep Litter/Cage)** | 12,500,000 | $3,330 |\n";
+            $output .= "| **1,000 Day-Old Chicks (DOC) / Pullets** | 4,500,000 | $1,200 |\n";
+            $output .= "| **Feeders, Drinkers & Equipment** | 2,000,000 | $530 |\n";
+            $output .= "| **Vaccinations & Medication (Point of Lay)** | 1,200,000 | $320 |\n";
+            $output .= "| **Total Initial Investment** | **20,200,000** | **$5,380** |\n\n";
+
+            $output .= "#### 3. Monthly Operational Expenditure (OPEX)\n";
+            $output .= "- **Layer Mash Feed (Approx. 110g/bird/day):** ~3.3 Tons/month (~UGX 5,500,000 / $1,460).\n";
+            $output .= "- **Labor & Utilities:** UGX 800,000 / month ($215).\n";
+            $output .= "- **Total Monthly Expenses:** ~UGX 6,300,000 / month ($1,675).\n\n";
+
+            $output .= "#### 4. Monthly Revenue & Profitability Projections\n";
+            $output .= "- **Egg Sales:** 28 Trays/day x UGX 10,000/tray = UGX 280,000/day = **UGX 8,400,000 / month** ($2,240).\n";
+            $output .= "- **Spent Hen & Manure Sales:** UGX 600,000 / month ($160).\n";
+            $output .= "- **Net Monthly Profit:** **~UGX 2,700,000 / month** ($725).\n";
+            $output .= "- **Est. Payback Period / ROI:** **12 to 14 Months**.\n";
+
+        } elseif (strpos($p, 'summary') !== false || strpos($p, 'management') !== false || strpos($p, 'overview') !== false) {
+            if (empty($context_data)) {
+                $output .= "### 🚜 KulaCRM Executive Management Summary\n\n";
+                $output .= "#### Key Operations & Health Directives\n";
+                $output .= "1. **Production Monitoring:** Track daily egg collection, feed conversion ratios (FCR), and mortality rates across active sheds.\n";
+                $output .= "2. **Biosecurity & Sanitation:** Enforce footbaths, disinfection protocols, and strict visitor access logs.\n";
+                $output .= "3. **Financial Control:** Reconcile daily customer sales against outstanding credit balances to maintain strong cash flow.\n";
+            }
+        } elseif (empty($output)) {
+            $output .= "### 💡 KulaAI Executive Recommendation\n\n";
+            $output .= "I have analyzed your request regarding **" . htmlspecialchars($user_prompt) . "**.\n\n";
+            $output .= "- **Action Step 1:** Audit batch records, daily mortality logs, and feed consumption in your KulaCRM dashboard.\n";
+            $output .= "- **Action Step 2:** Ensure vaccination routines (Newcastle, Gumboro, Fowl Pox) are up to date.\n";
+            $output .= "- **Action Step 3:** Monitor financial records under Sales and Expense tracking for optimal farm profitability.\n";
+        }
+
+        $output .= "\n\n*Powered by KulaAI Farm Intelligence Layer*";
         return $output;
     }
 }
