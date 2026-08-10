@@ -270,6 +270,11 @@
                         <span class="kula-menu-text">KulaAI Engine Settings</span>
                     </a>
 
+                    <a href="<?php echo base_url('superadmin/currency'); ?>" class="kula-menu-item" data-tooltip="Currency Management">
+                        <div class="kula-menu-icon"><i class="fa-solid fa-coins" style="color: #f59e0b;"></i></div>
+                        <span class="kula-menu-text">Currency Management</span>
+                    </a>
+
                     <a href="<?php echo base_url('superadmin/settings'); ?>" class="kula-menu-item" data-tooltip="Platform Settings">
                         <div class="kula-menu-icon"><i class="fa-solid fa-sliders" style="color: #f59e0b;"></i></div>
                         <span class="kula-menu-text">Platform Settings</span>

@@ -504,4 +504,121 @@ class Superadmin extends MY_Controller {
 
         redirect('superadmin/smtpSettings');
     }
+
+    public function currency() {
+        $data = array();
+        $data['settings'] = $this->settings_model->getSettings();
+        
+        if (!$this->db->table_exists('saas_currencies')) {
+            $this->load->dbforge();
+            $this->dbforge->add_field(array(
+                'id' => array('type' => 'INT', 'constraint' => 11, 'auto_increment' => TRUE),
+                'code' => array('type' => 'VARCHAR', 'constraint' => 10),
+                'name' => array('type' => 'VARCHAR', 'constraint' => 100),
+                'symbol' => array('type' => 'VARCHAR', 'constraint' => 20),
+                'exchange_rate' => array('type' => 'DECIMAL', 'constraint' => '15,4', 'default' => '1.0000'),
+                'symbol_position' => array('type' => 'ENUM("prefix","suffix")', 'default' => 'prefix'),
+                'decimal_digits' => array('type' => 'INT', 'constraint' => 11, 'default' => 2),
+                'is_default' => array('type' => 'TINYINT', 'constraint' => 1, 'default' => 0),
+                'is_active' => array('type' => 'TINYINT', 'constraint' => 1, 'default' => 1),
+                'created_at' => array('type' => 'DATETIME', 'null' => TRUE),
+                'updated_at' => array('type' => 'DATETIME', 'null' => TRUE)
+            ));
+            $this->dbforge->add_key('id', TRUE);
+            $this->dbforge->add_key('code');
+            $this->dbforge->create_table('saas_currencies', TRUE);
+        }
+
+        $data['currencies'] = $this->db->order_by('is_default', 'DESC')->order_by('code', 'ASC')->get('saas_currencies')->result();
+        
+        $this->load->view('superadmin/header', $data);
+        $this->load->view('superadmin/currency', $data);
+        $this->load->view('home/footer');
+    }
+
+    public function save_currency() {
+        $id = $this->input->post('id');
+        $code = strtoupper(trim($this->input->post('code')));
+        $name = trim($this->input->post('name'));
+        $symbol = trim($this->input->post('symbol'));
+        $exchange_rate = (float)$this->input->post('exchange_rate');
+        $symbol_position = $this->input->post('symbol_position') === 'suffix' ? 'suffix' : 'prefix';
+        $decimal_digits = (int)$this->input->post('decimal_digits');
+        $is_active = $this->input->post('is_active') ? 1 : 0;
+        $is_default = $this->input->post('is_default') ? 1 : 0;
+
+        if (empty($code) || empty($name) || empty($symbol)) {
+            $this->session->set_flashdata('feedback', 'Error: Currency Code, Name, and Symbol are required.');
+            redirect('superadmin/currency');
+            return;
+        }
+
+        if ($is_default) {
+            $this->db->update('saas_currencies', array('is_default' => 0));
+            $this->db->where('id', 1)->update('settings', array('currency' => $symbol));
+        }
+
+        $currency_data = array(
+            'code' => $code,
+            'name' => $name,
+            'symbol' => $symbol,
+            'exchange_rate' => $exchange_rate > 0 ? $exchange_rate : 1.0000,
+            'symbol_position' => $symbol_position,
+            'decimal_digits' => $decimal_digits >= 0 ? $decimal_digits : 2,
+            'is_active' => $is_active,
+            'is_default' => $is_default,
+            'updated_at' => date('Y-m-d H:i:s')
+        );
+
+        if (!empty($id)) {
+            $this->db->where('id', (int)$id)->update('saas_currencies', $currency_data);
+            $this->session->set_flashdata('feedback', "Currency '{$code}' updated successfully.");
+        } else {
+            $currency_data['created_at'] = date('Y-m-d H:i:s');
+            $this->db->insert('saas_currencies', $currency_data);
+            $this->session->set_flashdata('feedback', "New currency '{$code}' added successfully.");
+        }
+
+        redirect('superadmin/currency');
+    }
+
+    public function set_default_currency($id) {
+        $id = (int)$id;
+        $curr = $this->db->get_where('saas_currencies', array('id' => $id))->row();
+        if ($curr) {
+            $this->db->update('saas_currencies', array('is_default' => 0));
+            $this->db->where('id', $id)->update('saas_currencies', array('is_default' => 1, 'is_active' => 1));
+            $this->db->where('id', 1)->update('settings', array('currency' => $curr->symbol));
+            $this->session->set_flashdata('feedback', "Base platform currency set to {$curr->name} ({$curr->code}).");
+        } else {
+            $this->session->set_flashdata('feedback', 'Error: Currency not found.');
+        }
+        redirect('superadmin/currency');
+    }
+
+    public function toggle_currency($id) {
+        $id = (int)$id;
+        $curr = $this->db->get_where('saas_currencies', array('id' => $id))->row();
+        if ($curr) {
+            $new_status = $curr->is_active ? 0 : 1;
+            $this->db->where('id', $id)->update('saas_currencies', array('is_active' => $new_status));
+            $status_str = $new_status ? 'activated' : 'disabled';
+            $this->session->set_flashdata('feedback', "Currency {$curr->code} {$status_str} successfully.");
+        }
+        redirect('superadmin/currency');
+    }
+
+    public function delete_currency($id) {
+        $id = (int)$id;
+        $curr = $this->db->get_where('saas_currencies', array('id' => $id))->row();
+        if ($curr) {
+            if ($curr->is_default) {
+                $this->session->set_flashdata('feedback', 'Error: Cannot delete the default platform base currency.');
+            } else {
+                $this->db->where('id', $id)->delete('saas_currencies');
+                $this->session->set_flashdata('feedback', "Currency {$curr->code} deleted successfully.");
+            }
+        }
+        redirect('superadmin/currency');
+    }
 }
