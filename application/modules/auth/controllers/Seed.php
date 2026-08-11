@@ -187,12 +187,8 @@ class Seed extends MX_Controller {
 
         try {
             ob_start();
-            $this->load->model('settings/settings_model');
-            $data = array();
-            $data['settings'] = $this->settings_model->getSettings();
-            $this->load->view('home/dashboard', $data);
-            $this->load->view('home/home', $data);
-            $this->load->view('home/footer');
+            $this->load->module('home');
+            $this->home->index();
             $out = ob_get_clean();
             echo json_encode(array('status' => true, 'output_length' => strlen($out)));
         } catch (Throwable $e) {
