@@ -125,9 +125,15 @@ class Seed extends MX_Controller {
         // 8. Sync password Baale@256 for all active tenant users
         $this->db->query("UPDATE `users` SET `password` = '$pass_hash' WHERE `active` = 1");
 
+        $user_summary = array();
+        foreach ($all_tenant_users as $tu) {
+            $user_summary[] = array('id' => $tu->id, 'email' => $tu->email, 'username' => $tu->username, 'account_type' => $tu->account_type ?? 'tenant_user');
+        }
+
         echo json_encode(array(
             'status'  => true,
-            'message' => 'Super Admin accounts, tenant group permissions, and tenant passwords seeded and verified successfully!'
+            'message' => 'Super Admin accounts, tenant group permissions, and tenant passwords seeded and verified successfully!',
+            'users'   => $user_summary
         ));
     }
 }
