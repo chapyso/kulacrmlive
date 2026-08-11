@@ -22,6 +22,12 @@ class Seed extends MX_Controller {
             return;
         }
 
+        $action = $this->input->get('action');
+        if ($action === 'debug_home') {
+            $this->debug_home();
+            return;
+        }
+
         // 1. Modify users.tenant_id to allow NULL
         $this->db->query("ALTER TABLE `users` MODIFY COLUMN `tenant_id` INT(11) NULL DEFAULT NULL");
 
