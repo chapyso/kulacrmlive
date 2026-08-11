@@ -125,16 +125,46 @@ class Seed extends MX_Controller {
         // 8. Sync password Baale@256 for all active tenant users
         $this->db->query("UPDATE `users` SET `password` = '$pass_hash' WHERE `active` = 1");
 
+        // 9. Sync Tenant #1 & slug parity (ensure slug 'default' and 'kulafarms' exist)
+        if ($this->db->table_exists('tenants')) {
+            $t1 = $this->db->get_where('tenants', array('id' => 1))->row();
+            if ($t1) {
+                $this->db->where('id', 1)->update('tenants', array(
+                    'name'      => 'Kula Demo Farm',
+                    'slug'      => 'default',
+                    'slug_name' => 'kulafarms',
+                    'status'    => 'active',
+                    'plan_id'   => 4
+                ));
+            } else {
+                $this->db->insert('tenants', array(
+                    'id'        => 1,
+                    'name'      => 'Kula Demo Farm',
+                    'slug'      => 'default',
+                    'slug_name' => 'kulafarms',
+                    'email'     => 'admin@kulacrm.com',
+                    'status'    => 'active',
+                    'plan_id'   => 4
+                ));
+            }
+
+            // Ensure tenant_id = 1 on active tenant users
+            $this->db->query("UPDATE `users` SET `tenant_id` = 1 WHERE `account_type` = 'tenant_user' OR `account_type` IS NULL");
+        }
+
         $all_users = $this->db->get('users')->result();
         $user_summary = array();
         foreach ($all_users as $tu) {
-            $user_summary[] = array('id' => $tu->id, 'email' => $tu->email, 'username' => $tu->username, 'account_type' => $tu->account_type ?? 'tenant_user');
+            $user_summary[] = array('id' => $tu->id, 'email' => $tu->email, 'username' => $tu->username, 'account_type' => $tu->account_type ?? 'tenant_user', 'tenant_id' => $tu->tenant_id ?? null);
         }
+
+        $all_tenants = $this->db->table_exists('tenants') ? $this->db->get('tenants')->result() : array();
 
         echo json_encode(array(
             'status'  => true,
-            'message' => 'Super Admin accounts, tenant group permissions, and tenant passwords seeded and verified successfully!',
-            'users'   => $user_summary
+            'message' => 'Super Admin accounts, tenant group permissions, tenant passwords, and tenant #1 plan parity seeded successfully!',
+            'users'   => $user_summary,
+            'tenants' => $all_tenants
         ));
     }
 }
