@@ -94,6 +94,7 @@ class MY_Model extends CI_Model {
             if ($this->db->field_exists('tenant_id', $table ? $table : '')) {
                 $this->db->group_start();
                 $this->db->where($col, $tenant_id);
+                $this->db->or_where($col, 1);
                 $this->db->or_where($col, 0);
                 $this->db->or_where($col . ' IS NULL', null, false);
                 $this->db->group_end();

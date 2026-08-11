@@ -845,7 +845,7 @@
                      </header>
                      <div class="panel-body">
                          <div style="overflow-x:auto;">
-                             <table class="table table-striped table-hover table-bordered" id="editable-sample">
+                             <table class="table table-striped table-hover table-bordered" id="dashboard-food-stock-table">
                                  <thead>
                                      <tr>
                                          <th><?php echo lang('serialNo'); ?></th>
