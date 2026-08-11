@@ -6139,7 +6139,9 @@ html.dark-theme .kula-hero-card .hero-date-pill {
     width: 280px !important;
     min-width: 280px !important;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.35) !important;
+    background: #ffffff !important;
+    opacity: 1 !important;
   }
   .dark-theme #sidebar {
     background: #0f172a !important;
@@ -6153,6 +6155,32 @@ html.dark-theme .kula-hero-card .hero-date-pill {
     visibility: visible !important;
     display: flex !important;
     flex-direction: column !important;
+    background: #ffffff !important;
+    opacity: 1 !important;
+  }
+  .dark-theme #sidebar.kula-mobile-open {
+    background: #0f172a !important;
+  }
+  #sidebar.kula-mobile-open .kula-menu-item {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+  }
+  .dark-theme #sidebar.kula-mobile-open .kula-menu-item {
+    color: #f8fafc !important;
+  }
+  #sidebar.kula-mobile-open .kula-group-title {
+    color: #334155 !important;
+    font-weight: 800 !important;
+  }
+  .dark-theme #sidebar.kula-mobile-open .kula-group-title {
+    color: #94a3b8 !important;
+  }
+  #sidebar.kula-mobile-open .kula-tree-submenu a {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+  }
+  .dark-theme #sidebar.kula-mobile-open .kula-tree-submenu a {
+    color: #cbd5e1 !important;
   }
   #sidebar.kula-mobile-open .kula-brand-wrapper,
   #sidebar.kula-mobile-open .kula-brand-info,
