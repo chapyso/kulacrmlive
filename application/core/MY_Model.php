@@ -90,10 +90,13 @@ class MY_Model extends CI_Model {
 
         // Apply tenant scoping for TENANT context
         if (!empty($tenant_id)) {
-            if ($table && $this->db->field_exists('tenant_id', $table)) {
-                $this->db->where($table . '.tenant_id', $tenant_id);
-            } else {
-                $this->db->where('tenant_id', $tenant_id);
+            $col = ($table && strpos($table, '.') === false) ? $table . '.tenant_id' : 'tenant_id';
+            if ($this->db->field_exists('tenant_id', $table ? $table : '')) {
+                $this->db->group_start();
+                $this->db->where($col, $tenant_id);
+                $this->db->or_where($col, 0);
+                $this->db->or_where($col . ' IS NULL', null, false);
+                $this->db->group_end();
             }
         }
         return $this;
