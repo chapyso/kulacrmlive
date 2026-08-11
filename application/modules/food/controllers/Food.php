@@ -563,34 +563,53 @@ class Food extends MY_Controller
         $fdd_fd_id = $this->input->post('fdd_fd_id');
         $date = $this->input->post('fdd_date');
         $fdd_date = date("Y-m-d", strtotime($date));
-        $summaryData = array(
-            'fdds_fd_id' => $fdd_fd_id,
-            'fdds_date' => $fdd_date,
-            'fdds_status' => 1,
-            'fdds_created_at' => get_current_time(),
-            'fdds_created_by' => $this->ion_auth->user()->row()->user_id
-        );
-        $distributedSummaryId = $this->food_model->insertData('food_distributed_summary', $summaryData);
-        // Value
+
         $fddv_shed_id = $this->input->post('fdd_shed_id');
         $fddv_batch_id = $this->input->post('fdd_batch_id');
         $fdd_need_quantity = $this->input->post('fdd_need_quantity');
         $fdd_distributed_quantity = $this->input->post('fdd_distributed_quantity');
         $fdd_description = $this->input->post('fdd_description');
+
+        if (!is_array($fddv_batch_id) || empty($fddv_batch_id)) {
+            $this->session->set_flashdata('error', 'Please select at least one batch with distributed quantity.');
+            redirect("food/listFoodStock");
+            return;
+        }
+
+        $user = $this->ion_auth->user()->row();
+        $user_id = !empty($user) ? (isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : 1)) : 1;
+
+        $total_distributed = 0;
+        if (is_array($fdd_distributed_quantity)) {
+            foreach ($fdd_distributed_quantity as $dq) {
+                $total_distributed += (float) $dq;
+            }
+        }
+
+        $summaryData = array(
+            'fdds_fd_id' => $fdd_fd_id,
+            'fdds_date' => $fdd_date,
+            'fdds_total' => $total_distributed,
+            'fdds_status' => 1,
+            'fdds_created_at' => get_current_time(),
+            'fdds_created_by' => $user_id
+        );
+        $distributedSummaryId = $this->food_model->insertData('food_distributed_summary', $summaryData);
+
         if (!is_array($fdd_description)) {
             $fdd_description = array();
         }
         for ($i = 0; $i < count($fddv_batch_id); $i++) {
             $ValueData = array(
                 'fddv_fdds_id' => $distributedSummaryId,
-                'fddv_shed_id' => $fddv_shed_id[$i],
+                'fddv_shed_id' => isset($fddv_shed_id[$i]) ? $fddv_shed_id[$i] : 0,
                 'fddv_batch_id' => $fddv_batch_id[$i],
-                'fddv_need_quantity' => $fdd_need_quantity[$i],
-                'fddv_distributed_quantity' => $fdd_distributed_quantity[$i],
+                'fddv_need_quantity' => isset($fdd_need_quantity[$i]) ? $fdd_need_quantity[$i] : 0,
+                'fddv_distributed_quantity' => isset($fdd_distributed_quantity[$i]) ? $fdd_distributed_quantity[$i] : 0,
                 'fddv_description' => isset($fdd_description[$i]) ? $fdd_description[$i] : '',
                 'fddv_status' => 1,
                 'fddv_created_at' => get_current_time(),
-                'fddv_created_by' => $this->ion_auth->user()->row()->user_id
+                'fddv_created_by' => $user_id
             );
             $this->food_model->insertData('food_distributed_value', $ValueData);
         }
@@ -615,14 +634,28 @@ class Food extends MY_Controller
         $fdd_need_quantity = $this->input->post('fddv_need_quantity');
         $fddv_distributed_quantity = $this->input->post('fddv_distributed_quantity');
         $fddv_description = $this->input->post('fddv_description');
-        if (!is_array($fddv_description)) {
-            $fddv_description = array();
+
+        if (!is_array($fddv_batch_id) || empty($fddv_batch_id)) {
+            $this->session->set_flashdata('error', 'No batch selected for food distribution.');
+            redirect("food/addFoodWiseDistributedReport?fds_id=$fds_id");
+            return;
+        }
+
+        $user = $this->ion_auth->user()->row();
+        $user_id = !empty($user) ? (isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : 1)) : 1;
+
+        $total_distributed = 0;
+        if (is_array($fddv_distributed_quantity)) {
+            foreach ($fddv_distributed_quantity as $dq) {
+                $total_distributed += (float) $dq;
+            }
         }
 
         $summaryDataUpdate = array(
             'fdds_date' => $fdd_date,
+            'fdds_total' => $total_distributed,
             'fdds_updated_at' => get_current_time(),
-            'fdds_updated_by' => $this->ion_auth->user()->row()->user_id
+            'fdds_updated_by' => $user_id
         );
         $this->food_model->updateData('food_distributed_summary', 'fdds_id', $fdds_id, $summaryDataUpdate);
 
@@ -630,22 +663,25 @@ class Food extends MY_Controller
         $ValueDataUpdate = array(
             'fddv_status' => 0,
             'fddv_updated_at' => get_current_time(),
-            'fddv_updated_by' => $this->ion_auth->user()->row()->user_id
+            'fddv_updated_by' => $user_id
         );
         $this->food_model->updateData('food_distributed_value', 'fddv_fdds_id', $fdds_id, $ValueDataUpdate);
-        // Value
+
+        if (!is_array($fddv_description)) {
+            $fddv_description = array();
+        }
 
         for ($i = 0; $i < count($fddv_batch_id); $i++) {
             $ValueData = array(
                 'fddv_fdds_id' => $fdds_id,
-                'fddv_shed_id' => $fddv_shed_id[$i],
+                'fddv_shed_id' => isset($fddv_shed_id[$i]) ? $fddv_shed_id[$i] : 0,
                 'fddv_batch_id' => $fddv_batch_id[$i],
-                'fddv_need_quantity' => $fdd_need_quantity[$i],
-                'fddv_distributed_quantity' => $fddv_distributed_quantity[$i],
+                'fddv_need_quantity' => isset($fdd_need_quantity[$i]) ? $fdd_need_quantity[$i] : 0,
+                'fddv_distributed_quantity' => isset($fddv_distributed_quantity[$i]) ? $fddv_distributed_quantity[$i] : 0,
                 'fddv_description' => isset($fddv_description[$i]) ? $fddv_description[$i] : '',
                 'fddv_status' => 1,
                 'fddv_created_at' => get_current_time(),
-                'fddv_created_by' => $this->ion_auth->user()->row()->user_id
+                'fddv_created_by' => $user_id
             );
             $this->food_model->insertData('food_distributed_value', $ValueData);
         }
@@ -663,17 +699,20 @@ class Food extends MY_Controller
         // Summary
         $fdds_id = $this->input->post('fdds_id');
         $fds_id = $this->input->post('fds_id');
+        $user = $this->ion_auth->user()->row();
+        $user_id = !empty($user) ? (isset($user->id) ? $user->id : (isset($user->user_id) ? $user->user_id : 1)) : 1;
+
         $summaryDataUpdate = array(
             'fdds_status' => 0,
             'fdds_updated_at' => get_current_time(),
-            'fdds_updated_by' => $this->ion_auth->user()->row()->user_id
+            'fdds_updated_by' => $user_id
         );
         $this->food_model->updateData('food_distributed_summary', 'fdds_id', $fdds_id, $summaryDataUpdate);
         // Value
         $ValueDataUpdate = array(
             'fddv_status' => 0,
             'fddv_updated_at' => get_current_time(),
-            'fddv_updated_by' => $this->ion_auth->user()->row()->user_id
+            'fddv_updated_by' => $user_id
         );
         $this->food_model->updateData('food_distributed_value', 'fddv_fdds_id', $fdds_id, $ValueDataUpdate);
         $this->db->trans_complete();
