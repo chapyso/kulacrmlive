@@ -2,130 +2,190 @@
 <!--main content start-->
 <section id="main-content">
     <section class="wrapper site-min-height">
-        <!-- Product Assigned Section -->
-        <div class="col-md-7">
-            <section class="panel">
+        <style>
+            .product-page-card {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+                margin-bottom: 30px;
+                overflow: hidden;
+                transition: all 0.25s ease;
+            }
+            .product-page-card:hover {
+                box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+            }
+            .product-page-card .panel-heading {
+                background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+                padding: 18px 24px !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+                font-weight: 700 !important;
+                font-size: 17px !important;
+                color: #0f172a !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 10px !important;
+                margin-bottom: 0 !important;
+            }
+            .product-page-card .panel-heading i {
+                color: #10b981;
+                font-size: 19px;
+            }
+            .product-page-card .panel-body {
+                padding: 24px !important;
+            }
+            .product-btn-group-inline {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-items: center;
+            }
+            .product-btn-group-inline .button, .product-btn-group-inline button {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                padding: 7px 14px !important;
+                font-size: 13px !important;
+                font-weight: 600 !important;
+                border-radius: 8px !important;
+                line-height: 1.4 !important;
+                white-space: nowrap !important;
+            }
+            .adv-table table {
+                width: 100% !important;
+            }
+            .table-responsive-custom {
+                width: 100%;
+                overflow-x: auto;
+                border-radius: 12px;
+                border: 1px solid #e2e8f0;
+            }
+        </style>
+
+        <!-- Section 1: Assigned Product Lists (Full Width 100% Line 1) -->
+        <div class="col-md-12 col-xs-12">
+            <section class="panel product-page-card">
                 <header class="panel-heading">
                     <i class="fas fa-stream"></i> <?= lang('assigned_product_list'); ?>
                 </header>
                 <div class="panel-body">
-                    <div class="adv-table editable-table ">
-                        <div class="clearfix">
-                            <a href="<?php echo base_url('product/listProductCategory'); ?>">
+                    <div class="adv-table editable-table">
+                        <div class="clearfix" style="margin-bottom: 20px;">
+                            <a href="<?php echo base_url('product/listProductCategory'); ?>" style="text-decoration:none; margin-right: 6px;">
                                 <div class="btn-group">
                                     <button class="button button-info">
                                         <i class="fa-solid fa-circle-arrow-up"></i> <?= lang('product'); ?> <?= lang('category'); ?> <?= lang('list'); ?>
                                     </button>
                                 </div>
                             </a>
-                            <a href="<?php echo base_url('sale/listProductSale'); ?>">
+                            <a href="<?php echo base_url('sale/listProductSale'); ?>" style="text-decoration:none; margin-right: 6px;">
                                 <div class="btn-group">
                                     <button class="button button-success">
                                         <i class="fa-solid fa-circle-arrow-up"></i> <?= lang('product_sale'); ?> <?= lang('list'); ?>
                                     </button>
                                 </div>
                             </a>
-                            <button class="export" onclick="javascript:window.print();"><i class="fa-solid fa-print"></i> <?php echo lang('print'); ?></button>
-
-                            <a data-toggle="modal" href="#informationPopup" class="button button-purple export"><i class="fa-solid fa-circle-question"></i> <?= lang('information'); ?></a>
+                            <button class="export" onclick="javascript:window.print();" style="margin-right: 6px;"><i class="fa-solid fa-print"></i> <?php echo lang('print'); ?></button>
+                            <a data-toggle="modal" href="#informationPopup" class="button button-purple export" style="text-decoration:none;"><i class="fa-solid fa-circle-question"></i> <?= lang('information'); ?></a>
                         </div>
-                        <div class="space15"></div>
-                        <table class="table table-striped table-hover table-bordered" id="editable-sample">
-                            <thead>
-                                <tr>
-                                    <th><?= lang('serialNo'); ?></th>
-                                    <th><?= lang('product_name'); ?></th>
-                                    <th><?= lang('shed'); ?></th>
-                                    <th><?= lang('batch'); ?></th>
-                                    <th><?= lang('in_stock'); ?></th>
-                                    <th><?= lang('options'); ?></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $serial = 0;
-                                foreach ($assignedProducts as $value) {
-                                    $serial++;
-                                ?>
+                        <div class="table-responsive-custom">
+                            <table class="table table-striped table-hover table-bordered" id="editable-sample">
+                                <thead>
                                     <tr>
-                                        <td><?= $serial ?></td>
-                                        <td><?= $this->product_model->getProductById($value->pra_pr_id)->pr_name; ?></td>
-                                        <td><?= $this->shed_model->getShedById($value->pra_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($value->pra_shed_id)->sh_title ?> </td>
-                                        <td><?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_title ?> </td>
-                                        <td>
-                                            <?php $totalProduction = $this->product_model->getTotalProductionQuantityByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id);
-                                            $totalWaste = $this->product_model->getTotalProductWastedQuantityByProductAssignId($value->pra_id);
-                                            $totalSold = $this->sale_model->getProductAssignedWiseProductSaleValue($value->pra_id, 'prsv_quantity');
-                                            $inStockProduction = $totalProduction - $totalWaste - $totalSold;
-                                            if ($inStockProduction) {
-                                                echo $inStockProduction;
-                                            }
-                                            ?>
-                                            <?php
-                                            if ($inStockProduction) {
-                                                $productInfo = $this->product_model->getProductById($value->pra_pr_id);
-                                                $unit = $this->settings_model->getUnitById($productInfo->pr_unit_id);
-                                                if ($unit) {
-                                                    echo  $unit->un_name;
-                                                }
-                                            }
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <?php
-                                            // Complete/Incomplete Status 
-                                            $batchActiveInactiveStatusInfo = $this->settings_model->getSingleData('live_assigned_shed_summary', ['lshs_sh_id' => $value->pra_shed_id, 'lshs_batch_id' =>  $value->pra_batch_id, 'lshs_status' => 1])->lshs_active_status; ?>
-
-                                            <button <?php echo ($batchActiveInactiveStatusInfo == 1) ? "disabled" : ""; ?> type="button" class="button button-primary addProductToStock" data-toggle="modal" data-id="<?= $value->pra_id; ?>" data-product-id="<?= $value->pra_pr_id; ?>" data-product-name="<?= $this->product_model->getProductById($value->pra_pr_id)->pr_name; ?>" data-category-name=" <?= $this->product_model->getProductCategoryById($this->product_model->getProductById($value->pra_pr_id)->pr_prc_id)->prc_name; ?>" data-unit="<?php echo $this->settings_model->getUnitById($this->product_model->getProductById($value->pra_pr_id)->pr_unit_id)->un_name; ?>" data-shed-value="<?= $this->shed_model->getShedById($value->pra_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($value->pra_shed_id)->sh_title ?>" data-batch-value="<?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_title ?>" data-shed-id="<?= $value->pra_shed_id ?>" data-batch-id="<?= $value->pra_batch_id ?>"><i class="fas fa-plus-circle"></i> <?= lang('add_stock'); ?></button>
-
-                                            <!-- conditional delete -->
-                                            <?php
-                                            $countDataIfAvailableInSaleModule = $this->settings_model->getCountRow('product_sale_value', 'prsv_id', ['prsv_pra_id' =>  $value->pra_id, 'prsv_status' => 1]);
-                                            if ($countDataIfAvailableInSaleModule  == 0) { ?>
-                                                <form action="<?php echo base_url('product/deleteProductAssign'); ?>" method="post" style="display:inline" onsubmit="return confirm('<?= lang('all_product_delete_warning'); ?>');">
-                                                    <input type="hidden" name="pra_id" value="<?= $value->pra_id; ?>">
-                                                    <input type="hidden" name="action_token" value="<?php echo action_token(); ?>">
-                                                    <button type="submit" class="button button-danger"><i class="fas fa-trash"></i> <?php echo lang('delete'); ?></button>
-                                                </form>
-                                            <?php } else { ?>
-                                                <button type="button" class="button button-danger" title="<?= lang('this_item_used_another_places'); ?>" disabled><i class="fas fa-trash"></i> <?php echo lang('delete'); ?></button>
-                                            <?php } ?>
-                                            <!-- /.conditional delete -->
-
-                                            <a href="<?php echo base_url('') ?>product/viewAssignedShedAndBatchWiseProduction?pra_id=<?= $value->pra_id; ?>"><button type="button" class="button button-info"><i class="fas fa-eye"></i> <?= lang('view_stock'); ?></button></i></a>
-                                            <?php if ($inStockProduction) { ?>
-                                                <button <?php echo ($batchActiveInactiveStatusInfo == 1) ? "disabled" : ""; ?> type="button" class="button button-warning addWastedProduct" data-toggle="modal" data-stock-quantity="<?= $inStockProduction; ?>" data-id="<?= $value->pra_id; ?>" data-product-id="<?= $value->pra_pr_id; ?>" data-product-name="<?= $this->product_model->getProductById($value->pra_pr_id)->pr_name; ?>" data-category-name=" <?= $this->product_model->getProductCategoryById($this->product_model->getProductById($value->pra_pr_id)->pr_prc_id)->prc_name; ?>" data-unit="<?php echo $this->settings_model->getUnitById($this->product_model->getProductById($value->pra_pr_id)->pr_unit_id)->un_name; ?>" data-shed-value="<?= $this->shed_model->getShedById($value->pra_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($value->pra_shed_id)->sh_title ?>" data-batch-value="<?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_title ?>" data-shed-id="<?= $value->pra_shed_id ?>" data-batch-id="<?= $value->pra_batch_id ?>"><i class="fa fa-plus-circle"></i> <?= lang('waste'); ?></button>
-                                            <?php } else { ?>
-                                                <button type="button" class="button button-warning" title="There is no production in stock." disabled><i class="fas fa-plus-circle"></i> <?= lang('waste'); ?></button>
-                                            <?php } ?>
-                                            <a href="<?php echo base_url('') ?>product/viewWastedShedAndBatchWiseProduction?pra_id=<?= $value->pra_id; ?>"><button type="button" class="button button-info"><i class="fas fa-eye"></i> <?= lang('view_waste'); ?></button></i></a>
-                                        </td>
+                                        <th><?= lang('serialNo'); ?></th>
+                                        <th><?= lang('product_name'); ?></th>
+                                        <th><?= lang('shed'); ?></th>
+                                        <th><?= lang('batch'); ?></th>
+                                        <th><?= lang('in_stock'); ?></th>
+                                        <th style="min-width: 280px;"><?= lang('options'); ?></th>
                                     </tr>
-                                <?php } ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $serial = 0;
+                                    foreach ($assignedProducts as $value) {
+                                        $serial++;
+                                    ?>
+                                        <tr>
+                                            <td><?= $serial ?></td>
+                                            <td><strong><?= $this->product_model->getProductById($value->pra_pr_id)->pr_name; ?></strong></td>
+                                            <td><?= $this->shed_model->getShedById($value->pra_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($value->pra_shed_id)->sh_title ?> </td>
+                                            <td><?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_title ?> </td>
+                                            <td>
+                                                <?php $totalProduction = $this->product_model->getTotalProductionQuantityByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id);
+                                                $totalWaste = $this->product_model->getTotalProductWastedQuantityByProductAssignId($value->pra_id);
+                                                $totalSold = $this->sale_model->getProductAssignedWiseProductSaleValue($value->pra_id, 'prsv_quantity');
+                                                $inStockProduction = $totalProduction - $totalWaste - $totalSold;
+                                                if ($inStockProduction) {
+                                                    echo '<span class="label label-success" style="font-size:12px; padding: 4px 8px;">' . $inStockProduction . ' ';
+                                                    $productInfo = $this->product_model->getProductById($value->pra_pr_id);
+                                                    $unit = $this->settings_model->getUnitById($productInfo->pr_unit_id);
+                                                    if ($unit) {
+                                                        echo $unit->un_name;
+                                                    }
+                                                    echo '</span>';
+                                                } else {
+                                                    echo '<span class="label label-default" style="font-size:12px; padding: 4px 8px;">0</span>';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <div class="product-btn-group-inline">
+                                                    <?php
+                                                    // Complete/Incomplete Status 
+                                                    $batchActiveInactiveStatusInfo = $this->settings_model->getSingleData('live_assigned_shed_summary', ['lshs_sh_id' => $value->pra_shed_id, 'lshs_batch_id' =>  $value->pra_batch_id, 'lshs_status' => 1])->lshs_active_status; ?>
+
+                                                    <button <?php echo ($batchActiveInactiveStatusInfo == 1) ? "disabled" : ""; ?> type="button" class="button button-primary addProductToStock" data-toggle="modal" data-id="<?= $value->pra_id; ?>" data-product-id="<?= $value->pra_pr_id; ?>" data-product-name="<?= $this->product_model->getProductById($value->pra_pr_id)->pr_name; ?>" data-category-name=" <?= $this->product_model->getProductCategoryById($this->product_model->getProductById($value->pra_pr_id)->pr_prc_id)->prc_name; ?>" data-unit="<?php echo $this->settings_model->getUnitById($this->product_model->getProductById($value->pra_pr_id)->pr_unit_id)->un_name; ?>" data-shed-value="<?= $this->shed_model->getShedById($value->pra_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($value->pra_shed_id)->sh_title ?>" data-batch-value="<?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_title ?>" data-shed-id="<?= $value->pra_shed_id ?>" data-batch-id="<?= $value->pra_batch_id ?>"><i class="fas fa-plus-circle"></i> <?= lang('add_stock'); ?></button>
+
+                                                    <!-- conditional delete -->
+                                                    <?php
+                                                    $countDataIfAvailableInSaleModule = $this->settings_model->getCountRow('product_sale_value', 'prsv_id', ['prsv_pra_id' =>  $value->pra_id, 'prsv_status' => 1]);
+                                                    if ($countDataIfAvailableInSaleModule  == 0) { ?>
+                                                        <form action="<?php echo base_url('product/deleteProductAssign'); ?>" method="post" style="display:inline" onsubmit="return confirm('<?= lang('all_product_delete_warning'); ?>');">
+                                                            <input type="hidden" name="pra_id" value="<?= $value->pra_id; ?>">
+                                                            <input type="hidden" name="action_token" value="<?php echo action_token(); ?>">
+                                                            <button type="submit" class="button button-danger"><i class="fas fa-trash"></i> <?php echo lang('delete'); ?></button>
+                                                        </form>
+                                                    <?php } else { ?>
+                                                        <button type="button" class="button button-danger" title="<?= lang('this_item_used_another_places'); ?>" disabled><i class="fas fa-trash"></i> <?php echo lang('delete'); ?></button>
+                                                    <?php } ?>
+
+                                                    <a href="<?php echo base_url('') ?>product/viewAssignedShedAndBatchWiseProduction?pra_id=<?= $value->pra_id; ?>"><button type="button" class="button button-info"><i class="fas fa-eye"></i> <?= lang('view_stock'); ?></button></a>
+                                                    <?php if ($inStockProduction) { ?>
+                                                        <button <?php echo ($batchActiveInactiveStatusInfo == 1) ? "disabled" : ""; ?> type="button" class="button button-warning addWastedProduct" data-toggle="modal" data-stock-quantity="<?= $inStockProduction; ?>" data-id="<?= $value->pra_id; ?>" data-product-id="<?= $value->pra_pr_id; ?>" data-product-name="<?= $this->product_model->getProductById($value->pra_pr_id)->pr_name; ?>" data-category-name=" <?= $this->product_model->getProductCategoryById($this->product_model->getProductById($value->pra_pr_id)->pr_prc_id)->prc_name; ?>" data-unit="<?php echo $this->settings_model->getUnitById($this->product_model->getProductById($value->pra_pr_id)->pr_unit_id)->un_name; ?>" data-shed-value="<?= $this->shed_model->getShedById($value->pra_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($value->pra_shed_id)->sh_title ?>" data-batch-value="<?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($value->pra_shed_id, $value->pra_batch_id)->lshs_batch_title ?>" data-shed-id="<?= $value->pra_shed_id ?>" data-batch-id="<?= $value->pra_batch_id ?>"><i class="fa fa-plus-circle"></i> <?= lang('waste'); ?></button>
+                                                    <?php } else { ?>
+                                                        <button type="button" class="button button-warning" title="There is no production in stock." disabled><i class="fas fa-plus-circle"></i> <?= lang('waste'); ?></button>
+                                                    <?php } ?>
+                                                    <a href="<?php echo base_url('') ?>product/viewWastedShedAndBatchWiseProduction?pra_id=<?= $value->pra_id; ?>"><button type="button" class="button button-info"><i class="fas fa-eye"></i> <?= lang('view_waste'); ?></button></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
         </div>
 
-        <!-- Product List Section -->
-        <div class="col-md-5">
-            <section class="panel">
+        <!-- Section 2: Product List (Full Width 100% Line 2 Below Section 1) -->
+        <div class="col-md-12 col-xs-12">
+            <section class="panel product-page-card">
                 <header class="panel-heading">
-                    <i class="fas fa-stream"></i> <?= lang('product_lists'); ?>
+                    <i class="fas fa-cubes"></i> <?= lang('product_lists'); ?>
                 </header>
                 <div class="panel-body">
-                    <div class="adv-table editable-table ">
-                        <div class="clearfix button__margin">
-                            <a data-toggle="modal" href="#myModal">
+                    <div class="adv-table editable-table">
+                        <div class="clearfix button__margin" style="margin-bottom: 20px;">
+                            <a data-toggle="modal" href="#myModal" style="text-decoration:none; margin-right: 6px;">
                                 <div class="btn-group">
                                     <button class="button button-primary">
                                         <i class="fas fa-plus-circle"></i> <?php echo lang('add_new_product'); ?>
                                     </button>
                                 </div>
                             </a>
-                            <a data-toggle="modal" href="<?php echo base_url('sale/addNewProductSale') ?>">
+                            <a data-toggle="modal" href="<?php echo base_url('sale/addNewProductSale') ?>" style="text-decoration:none; margin-right: 6px;">
                                 <div class="btn-group">
                                     <button class="button button-success">
                                         <i class="fas fa-plus-circle"></i> <?= lang('product_sale'); ?>
@@ -134,55 +194,56 @@
                             </a>
                             <button class="export" onclick="javascript:window.print();"><i class="fa-solid fa-print"></i> <?php echo lang('print'); ?></button>
                         </div>
-                        <div class="space15"></div>
-                        <table class="table table-striped table-hover table-bordered">
-                            <thead>
-                                <tr>
-                                    <th><?= lang('serialNo'); ?>.</th>
-                                    <th><?= lang('product_name'); ?></th>
-                                    <th><?= lang('category'); ?></th>
-                                    <th><?= lang('product_unit'); ?></th>
-                                    <th><?php echo lang('options'); ?></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $serial = 0;
-                                foreach ($products->result() as $product) {
-                                    $serial++;
-                                ?>
-                                    <tr class="">
-                                        <td><?= $serial ?></td>
-                                        <td> <?= $product->pr_name; ?></td>
-                                        <td> <?= $this->product_model->getProductCategoryById($product->pr_prc_id)->prc_name; ?></td>
-                                        <td>
-                                            <?php echo $this->settings_model->getUnitById($product->pr_unit_id)->un_name; ?>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="button button-warning editButton" data-toggle="modal" data-id="<?= $product->pr_id; ?>"><i class="fas fa-edit"></i> <?php echo lang('edit'); ?></button>
-
-                                            <!-- conditional delete -->
-                                            <?php
-                                            $countDataIfAvailableProductAssign = $this->settings_model->getCountRow('product_assign', 'pra_id', ['pra_pr_id' => $product->pr_id, 'pra_status' => 1]);
-                                            if ($countDataIfAvailableProductAssign  == 0) { ?>
-                                                <form action="<?php echo base_url('product/deleteProduct'); ?>" method="post" style="display:inline" onsubmit="return confirm('<?= lang('are_you_sure_want_to_delete_this_item'); ?>');">
-                                                    <input type="hidden" name="pr_id" value="<?= $product->pr_id; ?>">
-                                                    <input type="hidden" name="action_token" value="<?php echo action_token(); ?>">
-                                                    <button type="submit" class="button button-danger"><i class="fas fa-trash"></i> <?php echo lang('delete'); ?></button>
-                                                </form>
-                                            <?php } else { ?>
-                                                <button type="button" class="button button-danger" title="<?= lang('this_item_used_another_places'); ?>" disabled><i class="fas fa-trash"></i> <?php echo lang('delete'); ?></button>
-                                            <?php } ?>
-                                            <!-- /.conditional delete -->
-
-
-                                            <button type="button" class="button button-primary addProductAssign" data-toggle="modal" data-id="<?= $product->pr_id; ?>" data-product-name="<?= $product->pr_name; ?>" data-category-name=" <?= $this->product_model->getProductCategoryById($product->pr_prc_id)->prc_name; ?>" data-unit="<?php echo $this->settings_model->getUnitById($product->pr_unit_id)->un_name; ?>"><i class="fa fa-plus-circle"></i> <?= lang('assign_product'); ?></button>
-                                            <a href="<?php echo base_url('') ?>product/viewProductWiseProduction?pr_id=<?= $product->pr_id; ?>"><button type="button" class="button button-info"><i class="fa fa-eye"></i> <?= lang('details'); ?></button></i></a>
-                                        </td>
+                        <div class="table-responsive-custom">
+                            <table class="table table-striped table-hover table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th><?= lang('serialNo'); ?>.</th>
+                                        <th><?= lang('product_name'); ?></th>
+                                        <th><?= lang('category'); ?></th>
+                                        <th><?= lang('product_unit'); ?></th>
+                                        <th style="min-width: 320px;"><?php echo lang('options'); ?></th>
                                     </tr>
-                                <?php } ?>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $serial = 0;
+                                    foreach ($products->result() as $product) {
+                                        $serial++;
+                                    ?>
+                                        <tr class="">
+                                            <td><?= $serial ?></td>
+                                            <td><strong><?= $product->pr_name; ?></strong></td>
+                                            <td><span class="label label-info" style="font-size:12px; padding: 4px 8px;"><?= $this->product_model->getProductCategoryById($product->pr_prc_id)->prc_name; ?></span></td>
+                                            <td>
+                                                <?php echo $this->settings_model->getUnitById($product->pr_unit_id)->un_name; ?>
+                                            </td>
+                                            <td>
+                                                <div class="product-btn-group-inline">
+                                                    <button type="button" class="button button-warning editButton" data-toggle="modal" data-id="<?= $product->pr_id; ?>"><i class="fas fa-edit"></i> <?php echo lang('edit'); ?></button>
+
+                                                    <!-- conditional delete -->
+                                                    <?php
+                                                    $countDataIfAvailableProductAssign = $this->settings_model->getCountRow('product_assign', 'pra_id', ['pra_pr_id' => $product->pr_id, 'pra_status' => 1]);
+                                                    if ($countDataIfAvailableProductAssign  == 0) { ?>
+                                                        <form action="<?php echo base_url('product/deleteProduct'); ?>" method="post" style="display:inline" onsubmit="return confirm('<?= lang('are_you_sure_want_to_delete_this_item'); ?>');">
+                                                            <input type="hidden" name="pr_id" value="<?= $product->pr_id; ?>">
+                                                            <input type="hidden" name="action_token" value="<?php echo action_token(); ?>">
+                                                            <button type="submit" class="button button-danger"><i class="fas fa-trash"></i> <?php echo lang('delete'); ?></button>
+                                                        </form>
+                                                    <?php } else { ?>
+                                                        <button type="button" class="button button-danger" title="<?= lang('this_item_used_another_places'); ?>" disabled><i class="fas fa-trash"></i> <?php echo lang('delete'); ?></button>
+                                                    <?php } ?>
+
+                                                    <button type="button" class="button button-primary addProductAssign" data-toggle="modal" data-id="<?= $product->pr_id; ?>" data-product-name="<?= $product->pr_name; ?>" data-category-name=" <?= $this->product_model->getProductCategoryById($product->pr_prc_id)->prc_name; ?>" data-unit="<?php echo $this->settings_model->getUnitById($product->pr_unit_id)->un_name; ?>"><i class="fa fa-plus-circle"></i> <?= lang('assign_product'); ?></button>
+                                                    <a href="<?php echo base_url('') ?>product/viewProductWiseProduction?pr_id=<?= $product->pr_id; ?>"><button type="button" class="button button-info"><i class="fa fa-eye"></i> <?= lang('details'); ?></button></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
