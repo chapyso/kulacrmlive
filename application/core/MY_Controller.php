@@ -154,6 +154,32 @@ class MY_Controller extends MX_Controller {
     protected function resolve_context() {
         $this->is_impersonating = (bool)$this->session->userdata('is_impersonating');
         $is_superadmin = false;
+
+        $segment1 = strtolower($this->uri->segment(1));
+        $system_segments = array('superadmin', 'auth', 'api', 'common', 'uploads', 'settings', 'assets', 'cron', 'home', 'livestock', 'shed', 'vaccine', 'food', 'purchase', 'sale', 'client', 'supplier', 'expense', 'staff', 'report', 'product', 'users', 'kula_ai');
+
+        // Path-based tenant resolution check (e.g. /kulafarms/dashboard)
+        if (!empty($segment1) && !in_array($segment1, $system_segments)) {
+            $this->db->group_start();
+            if ($this->db->field_exists('slug', 'tenants')) {
+                $this->db->where('slug', $segment1);
+            }
+            if ($this->db->field_exists('name', 'tenants')) {
+                $this->db->or_where('name', $segment1);
+            }
+            $this->db->group_end();
+            $tenant = $this->db->get('tenants')->row();
+
+            if ($tenant) {
+                $this->context = 'TENANT';
+                $this->tenant_id = (int)$tenant->id;
+                $this->tenant_slug = !empty($tenant->slug) ? $tenant->slug : $segment1;
+                $this->tenant_data = $tenant;
+                $this->session->set_userdata('tenant_id', $this->tenant_id);
+                $this->session->set_userdata('tenant_slug', $this->tenant_slug);
+                return;
+            }
+        }
         
         if ($this->ion_auth->logged_in()) {
             $user = $this->ion_auth->user()->row();
@@ -170,13 +196,10 @@ class MY_Controller extends MX_Controller {
                     }
                     return;
                 } else {
-                    // Super Admin in Platform Context (tenant_id = NULL)
-                    $this->context = 'PLATFORM';
-                    $this->tenant_id = null;
-                    $this->tenant_slug = null;
-                    $this->tenant_data = null;
-                    $this->session->unset_userdata('tenant_id');
-                    $this->session->unset_userdata('tenant_slug');
+                    // Super Admin operating on tenant page defaults to active tenant
+                    $this->context = 'TENANT';
+                    $this->tenant_id = $this->session->userdata('tenant_id') ? (int)$this->session->userdata('tenant_id') : 1;
+                    $this->tenant_slug = $this->session->userdata('tenant_slug') ?: 'default';
                     return;
                 }
             } else {
@@ -186,36 +209,13 @@ class MY_Controller extends MX_Controller {
                     $tenant = $this->db->get_where('tenants', array('id' => (int)$user->tenant_id))->row();
                     if ($tenant) {
                         $this->tenant_id = (int)$tenant->id;
-                        $this->tenant_slug = !empty($tenant->slug_name) ? $tenant->slug_name : $tenant->slug;
+                        $this->tenant_slug = !empty($tenant->slug) ? $tenant->slug : 'default';
                         $this->tenant_data = $tenant;
                         $this->session->set_userdata('tenant_id', $this->tenant_id);
                         $this->session->set_userdata('tenant_slug', $this->tenant_slug);
                         return;
                     }
                 }
-            }
-        }
-
-        // Unauthenticated or Path-based tenant resolution
-        $segment1 = strtolower($this->uri->segment(1));
-        $system_segments = array('superadmin', 'auth', 'api', 'common', 'uploads', 'settings', 'assets', 'cron', 'home', 'livestock', 'shed', 'vaccine', 'food', 'purchase', 'sale', 'client', 'supplier', 'expense', 'staff', 'report', 'product', 'users');
-
-        if (!empty($segment1) && !in_array($segment1, $system_segments)) {
-            $tenant = $this->db->group_start()
-                               ->where('slug', $segment1)
-                               ->or_where('slug_name', $segment1)
-                               ->group_end()
-                               ->where('status', 'active')
-                               ->get('tenants')
-                               ->row();
-            if ($tenant) {
-                $this->context = 'TENANT';
-                $this->tenant_id = (int)$tenant->id;
-                $this->tenant_slug = !empty($tenant->slug_name) ? $tenant->slug_name : $tenant->slug;
-                $this->tenant_data = $tenant;
-                $this->session->set_userdata('tenant_id', $this->tenant_id);
-                $this->session->set_userdata('tenant_slug', $this->tenant_slug);
-                return;
             }
         }
 
