@@ -31,7 +31,7 @@ class Home extends MY_Controller
         $this->load->model('notification_model');
         $this->load->model('home_model');
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
     }
 

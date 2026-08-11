@@ -268,13 +268,13 @@ class MY_Controller extends MX_Controller {
         if ($is_superadmin && !$is_superadmin_route && !$this->is_impersonating) {
             $exempt_segments = array('auth', 'api', 'common', 'uploads', 'assets', 'kula_ai');
             if (!in_array($segment1, $exempt_segments)) {
-                redirect('superadmin', 'refresh');
+                redirect('superadmin');
             }
         }
 
         // 2. Tenant user trying to access /superadmin
         if (!$is_superadmin && $is_superadmin_route) {
-            redirect(tenant_url('dashboard'), 'refresh');
+            redirect(tenant_url('dashboard'));
         }
     }
 
