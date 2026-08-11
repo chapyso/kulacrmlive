@@ -143,31 +143,38 @@ class Home_model extends MY_Model
         $rows = array();
         foreach ($sources as $s) {
             list($table, $idCol, $labelCol, $atCol, $byCol, $statusCol, $urlBase, $kind_prefix) = $s;
-            $cols = array($idCol, $atCol, $byCol);
-            if ($labelCol !== null) { $cols[] = $labelCol; }
-            $this->db->select(implode(', ', $cols))
-                ->from($table)
-                ->where($statusCol, 1)
-                ->where('tenant_id', $tenant_id)
-                ->where($atCol . ' IS NOT NULL', null, false)
-                ->order_by($atCol, 'desc')
-                ->limit($limit);
-            foreach ($this->db->get()->result() as $r) {
-                $idVal    = $r->$idCol;
-                $atVal    = $r->$atCol;
-                $byVal    = $r->$byCol;
-                $labelVal = ($labelCol !== null && !empty($r->$labelCol)) ? $r->$labelCol : ('#' . $idVal);
-                $url      = (strpos($urlBase, '?') !== false || strpos($urlBase, '=') !== false)
-                          ? $urlBase . $idVal
-                          : $urlBase;
-                $rows[] = (object) array(
-                    'kind'  => trim($kind_prefix),
-                    'rid'   => $idVal,
-                    'label' => $kind_prefix . $labelVal,
-                    'at'    => $atVal,
-                    'uid'   => $byVal,
-                    'url'   => $url,
-                );
+            if (!$this->db->table_exists($table)) {
+                continue;
+            }
+            try {
+                $cols = array($idCol, $atCol, $byCol);
+                if ($labelCol !== null) { $cols[] = $labelCol; }
+                $this->db->select(implode(', ', $cols))
+                    ->from($table)
+                    ->where($statusCol, 1)
+                    ->where('tenant_id', $tenant_id)
+                    ->where($atCol . ' IS NOT NULL', null, false)
+                    ->order_by($atCol, 'desc')
+                    ->limit($limit);
+                foreach ($this->db->get()->result() as $r) {
+                    $idVal    = $r->$idCol;
+                    $atVal    = $r->$atCol;
+                    $byVal    = $r->$byCol;
+                    $labelVal = ($labelCol !== null && !empty($r->$labelCol)) ? $r->$labelCol : ('#' . $idVal);
+                    $url      = (strpos($urlBase, '?') !== false || strpos($urlBase, '=') !== false)
+                              ? $urlBase . $idVal
+                              : $urlBase;
+                    $rows[] = (object) array(
+                        'kind'  => trim($kind_prefix),
+                        'rid'   => $idVal,
+                        'label' => $kind_prefix . $labelVal,
+                        'at'    => $atVal,
+                        'uid'   => $byVal,
+                        'url'   => $url,
+                    );
+                }
+            } catch (Throwable $e) {
+                log_message('error', "getRecentActivity error for table $table: " . $e->getMessage());
             }
         }
 
