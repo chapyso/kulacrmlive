@@ -240,12 +240,14 @@ class MY_Controller extends MX_Controller {
         }
 
         // Fallback for non-superadmin tenant requests only
-        if (!$is_superadmin && ($this->context === 'TENANT' || empty($this->uri->segment(1)) || $this->uri->segment(1) === 'home')) {
+        if (!$is_superadmin && (empty($this->uri->segment(1)) || $this->uri->segment(1) === 'home')) {
+            $sess_tid = $this->session->userdata('tenant_id');
+            $sess_slug = $this->session->userdata('tenant_slug');
             $this->context = 'TENANT';
-            $this->tenant_id = 1;
-            $this->tenant_slug = 'kulafarms';
-            $this->session->set_userdata('tenant_id', 1);
-            $this->session->set_userdata('tenant_slug', 'kulafarms');
+            $this->tenant_id = !empty($sess_tid) ? (int)$sess_tid : 1;
+            $this->tenant_slug = !empty($sess_slug) ? $sess_slug : 'kulafarms';
+            $this->session->set_userdata('tenant_id', $this->tenant_id);
+            $this->session->set_userdata('tenant_slug', $this->tenant_slug);
         }
     }
 
