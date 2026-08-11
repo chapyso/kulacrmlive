@@ -12,7 +12,7 @@ class Ai_provider {
     protected $config;
 
     public function __construct() {
-        $this->CI =& get_instance();
+        $this->CI = get_instance();
         $this->CI->config->load('kula_ai', TRUE, TRUE);
         $this->config = $this->CI->config->item('kula_ai') ?: array();
     }
@@ -23,9 +23,11 @@ class Ai_provider {
      * @param string $system_prompt  Domain & instructions
      * @param string $user_prompt    User question / request
      * @param array  $context_data   Structured JSON payload from safe tools
+     * @param array  $chat_history   Recent conversation message history
+     * @param array  $intent_info    Intent classification payload
      * @return array                 ['status' => bool, 'response' => string, 'provider' => string]
      */
-    public function generate($system_prompt, $user_prompt, $context_data = array()) {
+    public function generate($system_prompt, $user_prompt, $context_data = array(), $chat_history = array(), $intent_info = array()) {
         $default_provider = $this->config['kula_ai_default_provider'] ?? 'gemini';
         $providers = $this->config['kula_ai_providers'] ?? array();
         
@@ -67,23 +69,23 @@ class Ai_provider {
             return array(
                 'status'   => true,
                 'provider' => 'KulaAI Rule Engine (Offline)',
-                'response' => $this->generate_offline_response($user_prompt, $context_data)
+                'response' => $this->generate_offline_response($user_prompt, $context_data, $intent_info)
             );
         }
 
         switch ($default_provider) {
             case 'gemini':
-                return $this->call_gemini($api_key, $provider_cfg, $system_prompt, $user_prompt, $context_data);
+                return $this->call_gemini($api_key, $provider_cfg, $system_prompt, $user_prompt, $context_data, $chat_history);
             case 'openai':
             case 'groq':
-                return $this->call_openai_compatible($api_key, $provider_cfg, $system_prompt, $user_prompt, $context_data, $default_provider);
+                return $this->call_openai_compatible($api_key, $provider_cfg, $system_prompt, $user_prompt, $context_data, $default_provider, $chat_history);
             case 'ollama':
-                return $this->call_ollama($provider_cfg, $system_prompt, $user_prompt, $context_data);
+                return $this->call_ollama($provider_cfg, $system_prompt, $user_prompt, $context_data, $chat_history);
             default:
                 return array(
                     'status'   => true,
                     'provider' => 'KulaAI Rule Engine',
-                    'response' => $this->generate_offline_response($user_prompt, $context_data)
+                    'response' => $this->generate_offline_response($user_prompt, $context_data, $intent_info)
                 );
         }
     }
@@ -198,23 +200,50 @@ class Ai_provider {
     /**
      * Call Google Gemini API
      */
-    protected function call_gemini($api_key, $config, $system_prompt, $user_prompt, $context_data) {
+    protected function call_gemini($api_key, $config, $system_prompt, $user_prompt, $context_data, $chat_history = array()) {
         $model = $config['model'] ?? 'gemini-1.5-flash';
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . urlencode($api_key);
 
+        $contents = array();
+        
+        // Append previous chat history turns if provided
+        if (!empty($chat_history) && is_array($chat_history)) {
+            foreach (array_slice($chat_history, -8) as $msg) {
+                $role = (isset($msg['role']) && $msg['role'] === 'user') ? 'user' : 'model';
+                $text = is_array($msg) ? ($msg['content'] ?? ($msg['prompt'] ?? '')) : (string)$msg;
+                if (!empty($text)) {
+                    $contents[] = array(
+                        'role'  => $role,
+                        'parts' => array(array('text' => $text))
+                    );
+                }
+            }
+        }
+
         $context_str = !empty($context_data) ? "\n\nLIVE KULACRM DATA CONTEXT:\n" . json_encode($context_data, JSON_PRETTY_PRINT) : "";
-        $combined_prompt = $system_prompt . "\n\n" . $user_prompt . $context_str;
+        $current_text = $user_prompt . $context_str;
+
+        // If no history, include system prompt in the first turn
+        if (empty($contents)) {
+            $contents[] = array(
+                'role'  => 'user',
+                'parts' => array(array('text' => $system_prompt . "\n\n" . $current_text))
+            );
+        } else {
+            // Append current user turn
+            $contents[] = array(
+                'role'  => 'user',
+                'parts' => array(array('text' => $current_text))
+            );
+        }
 
         $payload = array(
-            'contents' => array(
-                array(
-                    'parts' => array(
-                        array('text' => $combined_prompt)
-                    )
-                )
+            'contents' => $contents,
+            'systemInstruction' => array(
+                'parts' => array(array('text' => $system_prompt))
             ),
             'generationConfig' => array(
-                'temperature'     => (float)($this->config['kula_ai_temperature'] ?? 0.2),
+                'temperature'     => (float)($this->config['kula_ai_temperature'] ?? 0.3),
                 'maxOutputTokens' => (int)($this->config['kula_ai_max_tokens'] ?? 2000)
             )
         );
@@ -245,7 +274,6 @@ class Ai_provider {
             );
         }
 
-        // Handle error message from Gemini API
         $error_msg = $res_json['error']['message'] ?? 'Unable to process request with Gemini API.';
         return array('status' => false, 'response' => "AI Provider Notice: " . $error_msg, 'provider' => 'gemini');
     }
@@ -253,21 +281,32 @@ class Ai_provider {
     /**
      * Call OpenAI / Groq Compatible Chat API
      */
-    protected function call_openai_compatible($api_key, $config, $system_prompt, $user_prompt, $context_data, $provider_name) {
+    protected function call_openai_compatible($api_key, $config, $system_prompt, $user_prompt, $context_data, $provider_name, $chat_history = array()) {
         $endpoint = $config['endpoint'] ?? 'https://api.openai.com/v1/chat/completions';
         $model = $config['model'] ?? ($provider_name === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini');
 
         $context_str = !empty($context_data) ? "\n\nLIVE KULACRM DATA CONTEXT:\n" . json_encode($context_data, JSON_PRETTY_PRINT) : "";
 
         $messages = array(
-            array('role' => 'system', 'content' => $system_prompt),
-            array('role' => 'user', 'content' => $user_prompt . $context_str)
+            array('role' => 'system', 'content' => $system_prompt)
         );
+
+        if (!empty($chat_history) && is_array($chat_history)) {
+            foreach (array_slice($chat_history, -8) as $msg) {
+                $role = (isset($msg['role']) && $msg['role'] === 'user') ? 'user' : 'assistant';
+                $text = is_array($msg) ? ($msg['content'] ?? ($msg['prompt'] ?? '')) : (string)$msg;
+                if (!empty($text)) {
+                    $messages[] = array('role' => $role, 'content' => $text);
+                }
+            }
+        }
+
+        $messages[] = array('role' => 'user', 'content' => $user_prompt . $context_str);
 
         $payload = array(
             'model'       => $model,
             'messages'    => $messages,
-            'temperature' => (float)($this->config['kula_ai_temperature'] ?? 0.2),
+            'temperature' => (float)($this->config['kula_ai_temperature'] ?? 0.3),
             'max_tokens'  => (int)($this->config['kula_ai_max_tokens'] ?? 2000)
         );
 
@@ -307,7 +346,7 @@ class Ai_provider {
     /**
      * Call Local Ollama instance
      */
-    protected function call_ollama($config, $system_prompt, $user_prompt, $context_data) {
+    protected function call_ollama($config, $system_prompt, $user_prompt, $context_data, $chat_history = array()) {
         $endpoint = $config['base_url'] ?? 'http://localhost:11434/api/generate';
         $model = $config['model'] ?? 'llama3';
 
@@ -348,111 +387,144 @@ class Ai_provider {
     }
 
     /**
-     * Rule-based natural language generator (Graceful fallback when API key is offline)
+     * Intent-Aware Rule-Based Natural Language Generator (Graceful offline mode)
      */
-    public function generate_offline_response($user_prompt, $context_data) {
-        $output = "";
+    public function generate_offline_response($user_prompt, $context_data = array(), $intent_info = array()) {
+        $intent = $intent_info['intent'] ?? 'UNKNOWN';
+        $p = strtolower(trim($user_prompt));
 
-        // 1. If context data is available from tools, render live database metrics
+        // 1. Greetings
+        if ($intent === 'GREETING') {
+            $greetings = array(
+                "Hey! 👋 How can I help you with your farm today?",
+                "Hello! 👋 What would you like to check in KulaCRM?",
+                "Good day! How can I assist you with your livestock or farm operations today?",
+                "Hi! I'm ready to help. What would you like to review?"
+            );
+            return $greetings[array_rand($greetings)];
+        }
+
+        // 2. Casual Chat & Polite Remarks
+        if ($intent === 'CASUAL_CONVERSATION') {
+            if (preg_match('/(how are you|how do you do)/i', $p)) {
+                return "I'm doing well, thanks! How can I help you with your farm today?";
+            }
+            if (preg_match('/(thank|thanks)/i', $p)) {
+                return "You're welcome! Let me know if you need anything else for your farm.";
+            }
+            if (preg_match('/(bye|goodbye|see you)/i', $p)) {
+                return "Goodbye! Have a great and productive day on the farm. 👋";
+            }
+            if (preg_match('/(who are you|your name)/i', $p)) {
+                return "I am **KulaAI**, your conversational farm intelligence assistant built into KulaCRM!";
+            }
+            return "Got it! Let me know what you'd like to check next in KulaCRM.";
+        }
+
+        // 3. System Help & Guidance
+        if ($intent === 'SYSTEM_HELP') {
+            return "I can help you inspect and manage your farm operations in KulaCRM! Here are a few things you can ask me:\n\n"
+                . "- 🐄 **Livestock & Inventory:** *'How many goats do I have?'* or *'Which animals are sick?'*\n"
+                . "- 💉 **Health & Vaccines:** *'Which vaccinations are due this week?'* or *'Tell me about Newcastle disease'*\n"
+                . "- 🌾 **Feed & Supplies:** *'Which food stock will run out first?'*\n"
+                . "- 💰 **Finances & Debtors:** *'How much did we spend this month?'* or *'Which clients owe us money?'*\n"
+                . "- 📊 **Analysis & Strategy:** *'Why did mortality increase?'* or *'Give me recommendations to reduce feed costs'*\n\n"
+                . "What would you like to start with?";
+        }
+
+        // 4. Educational & General Knowledge Questions
+        if ($intent === 'GENERAL_QUESTION') {
+            if (strpos($p, 'newcastle') !== false) {
+                return "Newcastle disease is a highly contagious viral disease affecting poultry (chickens, turkeys, ducks). Symptoms include respiratory distress (gasping, coughing), nervous signs (twisted neck, paralysis), greenish diarrhea, and sudden mortality.\n\n"
+                    . "💡 **Prevention:** Regular vaccination (LaSota / ND-HB1 strain) and strict farm biosecurity are the most effective controls.\n\n"
+                    . "*If you suspect an outbreak on your farm, I can also check your recent vaccination and mortality records in KulaCRM.*";
+            }
+            if (strpos($p, 'profit') !== false || strpos($p, 'revenue') !== false) {
+                return "**Revenue** is the total money collected from farm sales (e.g. egg sales, livestock sales).\n\n"
+                    . "**Profit** is what remains after subtracting all operational expenses (feed, labor, medication, utilities) from your revenue.\n\n"
+                    . "Formula: `Net Profit = Total Revenue - Total Expenses`\n\n"
+                    . "*If you'd like, I can calculate your current net profit directly from your KulaCRM financial records.*";
+            }
+            if (strpos($p, 'inflation') !== false) {
+                return "Inflation is the gradual increase in prices over time, which reduces purchasing power. In livestock farming, inflation typically increases feed ingredient costs (maize, soy, premix), medication prices, and transport expenses.";
+            }
+        }
+
+        // 5. Farm Data Queries (Livestock, Feed, Vaccines, Mortality, Finance)
         if (!empty($context_data)) {
-            $output .= "### 📊 Live KulaCRM Database Metrics Summary\n\n";
+            $output = "";
 
             if (isset($context_data['farm_summary'])) {
                 $fs = $context_data['farm_summary'];
-                $output .= "#### 🚜 Farm Overview\n";
-                $output .= "- **Total Active Livestock:** " . number_format($fs['total_livestock'] ?? 0) . " head / birds\n";
-                $output .= "- **Active Housing Sheds:** " . ($fs['total_sheds'] ?? 0) . " active sheds\n";
-                $output .= "- **Active Batches:** " . ($fs['total_batches'] ?? 0) . " production batches\n";
-                if (isset($fs['total_sales'])) {
-                    $output .= "- **Cumulative Sales Value:** UGX " . number_format($fs['total_sales']) . "\n";
+                $total_ls = number_format($fs['total_livestock'] ?? 0);
+                $sheds = $fs['total_sheds'] ?? 0;
+                $batches = $fs['total_batches'] ?? 0;
+
+                if ($intent === 'FARM_DATA_QUERY' || $intent === 'LIVESTOCK_QUERY') {
+                    $output .= "According to your active KulaCRM records, your farm currently has **{$total_ls} active animals** across **{$sheds} sheds** and **{$batches} batches**.\n";
+                    if (isset($fs['total_sales']) && $fs['total_sales'] > 0) {
+                        $output .= "Cumulative sales recorded to date total **UGX " . number_format($fs['total_sales']) . "**.";
+                    }
+                    return $output;
                 }
-                $output .= "\n";
             }
 
-            if (isset($context_data['batch_summary'])) {
+            if (isset($context_data['batch_summary']) && ($intent === 'MORTALITY_QUERY' || $intent === 'FARM_DATA_QUERY')) {
                 $bs = $context_data['batch_summary'];
-                $output .= "#### 📦 Batch & Mortality Breakdown\n";
-                if (is_array($bs)) {
+                if (is_array($bs) && !empty($bs)) {
+                    $output .= "Here is the current mortality breakdown across your active farm batches:\n\n";
                     foreach ($bs as $b) {
-                        $b_name = $b['shed_name'] ?? $b['batch_id'] ?? 'Batch';
-                        $total = $b['total_quantity'] ?? $b['quantity'] ?? 0;
+                        $name = $b['shed_name'] ?? $b['batch_id'] ?? 'Batch';
+                        $init = $b['initial_quantity'] ?? $b['quantity'] ?? 0;
                         $deaths = $b['death_quantity'] ?? 0;
-                        $rate = ($total > 0) ? round(($deaths / $total) * 100, 2) : 0;
-                        $output .= "- **{$b_name}**: Initial: {$total} | Current: " . ($total - $deaths) . " | Mortality: {$deaths} ({$rate}%)\n";
+                        $curr = $init - $deaths;
+                        $rate = ($init > 0) ? round(($deaths / $init) * 100, 1) : 0;
+                        $output .= "- **{$name}**: {$deaths} deaths recorded ({$rate}% mortality rate). Current stock: {$curr} animals.\n";
                     }
+                    return $output;
                 }
-                $output .= "\n";
             }
 
-            if (isset($context_data['financial_summary'])) {
+            if (isset($context_data['financial_summary']) && ($intent === 'FINANCIAL_QUERY' || $intent === 'EXPENSE_QUERY' || $intent === 'SALES_QUERY')) {
                 $fin = $context_data['financial_summary'];
-                $output .= "#### 💰 Financial & Expense Breakdown\n";
-                $output .= "- **Total Revenue:** UGX " . number_format($fin['total_income'] ?? $fin['revenue'] ?? 0) . "\n";
-                $output .= "- **Total Expenses:** UGX " . number_format($fin['total_expenses'] ?? $fin['expenses'] ?? 0) . "\n";
-                $output .= "- **Net Balance:** UGX " . number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0)) . "\n";
-                $output .= "\n";
+                $income = number_format($fin['total_income'] ?? $fin['revenue'] ?? 0);
+                $expenses = number_format($fin['total_expenses'] ?? $fin['expenses'] ?? 0);
+                $net = number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0));
+
+                return "According to your recorded financial transactions in KulaCRM:\n\n"
+                    . "- **Total Sales Revenue:** UGX {$income}\n"
+                    . "- **Total Operating Expenses:** UGX {$expenses}\n"
+                    . "- **Net Operational Balance:** UGX {$net}";
             }
 
-            if (isset($context_data['receivables'])) {
-                $rec = $context_data['receivables'];
-                $output .= "#### 🧾 Outstanding Debts & Receivables\n";
-                if (is_array($rec)) {
-                    foreach ($rec as $c) {
-                        $name = $c['client_name'] ?? $c['name'] ?? 'Client';
-                        $due = $c['due_amount'] ?? $c['balance'] ?? 0;
-                        $output .= "- **{$name}**: UGX " . number_format($due) . " balance due\n";
+            if (isset($context_data['upcoming_vaccinations']) && $intent === 'VACCINATION_QUERY') {
+                $vacs = $context_data['upcoming_vaccinations'];
+                if (is_array($vacs) && !empty($vacs)) {
+                    $output .= "Here are your upcoming and recorded vaccination routines:\n\n";
+                    foreach ($vacs as $v) {
+                        $vac_name = $v['vac_name'] ?? 'Vaccination';
+                        $shed = $v['shed_name'] ?? 'Shed';
+                        $date = $v['vds_given_date'] ?? 'Scheduled';
+                        $output .= "- **{$vac_name}** ({$shed}): Scheduled for {$date}\n";
                     }
+                    return $output;
+                } else {
+                    return "No upcoming vaccinations recorded for this period in KulaCRM.";
                 }
-                $output .= "\n";
             }
         }
 
-        // 2. Intelligent domain query response generator (Business Plans, Summaries, Guidelines)
-        $p = strtolower($user_prompt);
-
-        if (strpos($p, 'business plan') !== false || strpos($p, 'plan') !== false || strpos($p, 'projections') !== false) {
-            $output .= "### 📋 Agribusiness Business Plan & ROI Blueprint\n\n";
-            $output .= "#### 1. Executive Summary & Production Target\n";
-            $output .= "- **Capacity Target:** 1,000 Layer Poultry Farm (High-performing Lohmann Brown / Isa Brown breed).\n";
-            $output .= "- **Target Egg Production:** ~850 to 900 eggs/day peak laying rate (85-90% production efficiency).\n\n";
-
-            $output .= "#### 2. Initial Capital Expenditure (CAPEX)\n";
-            $output .= "| Item Description | Est. Cost (UGX) | Est. Cost (USD) |\n";
-            $output .= "| :--- | :--- | :--- |\n";
-            $output .= "| **Housing Construction (Deep Litter/Cage)** | 12,500,000 | $3,330 |\n";
-            $output .= "| **1,000 Day-Old Chicks (DOC) / Pullets** | 4,500,000 | $1,200 |\n";
-            $output .= "| **Feeders, Drinkers & Equipment** | 2,000,000 | $530 |\n";
-            $output .= "| **Vaccinations & Medication (Point of Lay)** | 1,200,000 | $320 |\n";
-            $output .= "| **Total Initial Investment** | **20,200,000** | **$5,380** |\n\n";
-
-            $output .= "#### 3. Monthly Operational Expenditure (OPEX)\n";
-            $output .= "- **Layer Mash Feed (Approx. 110g/bird/day):** ~3.3 Tons/month (~UGX 5,500,000 / $1,460).\n";
-            $output .= "- **Labor & Utilities:** UGX 800,000 / month ($215).\n";
-            $output .= "- **Total Monthly Expenses:** ~UGX 6,300,000 / month ($1,675).\n\n";
-
-            $output .= "#### 4. Monthly Revenue & Profitability Projections\n";
-            $output .= "- **Egg Sales:** 28 Trays/day x UGX 10,000/tray = UGX 280,000/day = **UGX 8,400,000 / month** ($2,240).\n";
-            $output .= "- **Spent Hen & Manure Sales:** UGX 600,000 / month ($160).\n";
-            $output .= "- **Net Monthly Profit:** **~UGX 2,700,000 / month** ($725).\n";
-            $output .= "- **Est. Payback Period / ROI:** **12 to 14 Months**.\n";
-
-        } elseif (strpos($p, 'summary') !== false || strpos($p, 'management') !== false || strpos($p, 'overview') !== false) {
-            if (empty($context_data)) {
-                $output .= "### 🚜 KulaCRM Executive Management Summary\n\n";
-                $output .= "#### Key Operations & Health Directives\n";
-                $output .= "1. **Production Monitoring:** Track daily egg collection, feed conversion ratios (FCR), and mortality rates across active sheds.\n";
-                $output .= "2. **Biosecurity & Sanitation:** Enforce footbaths, disinfection protocols, and strict visitor access logs.\n";
-                $output .= "3. **Financial Control:** Reconcile daily customer sales against outstanding credit balances to maintain strong cash flow.\n";
-            }
-        } elseif (empty($output)) {
-            $output .= "### 💡 KulaAI Executive Recommendation\n\n";
-            $output .= "I have analyzed your request regarding **" . htmlspecialchars($user_prompt) . "**.\n\n";
-            $output .= "- **Action Step 1:** Audit batch records, daily mortality logs, and feed consumption in your KulaCRM dashboard.\n";
-            $output .= "- **Action Step 2:** Ensure vaccination routines (Newcastle, Gumboro, Fowl Pox) are up to date.\n";
-            $output .= "- **Action Step 3:** Monitor financial records under Sales and Expense tracking for optimal farm profitability.\n";
+        // 6. Recommendations & Action Plans (ONLY when requested!)
+        if ($intent === 'FARM_RECOMMENDATION' || $intent === 'FARM_ANALYSIS') {
+            $output = "### 💡 KulaAI Executive Recommendation\n\n";
+            $output .= "Based on your request regarding **" . htmlspecialchars($user_prompt) . "**, here is an actionable strategy:\n\n";
+            $output .= "1. **Audit Production Records:** Review daily mortality logs and feed conversion rates under the Batch module.\n";
+            $output .= "2. **Review Biosecurity Protocols:** Ensure footbaths, water treatment, and vaccination routines (Newcastle, Gumboro) are strictly maintained.\n";
+            $output .= "3. **Optimize Expenses:** Track daily feed distribution to identify wastage patterns and reduce feed costs.\n";
+            return $output;
         }
 
-        $output .= "\n\n*Powered by KulaAI Farm Intelligence Layer*";
-        return $output;
+        // 7. Fallback Natural Response
+        return "I understand your query regarding *" . htmlspecialchars($user_prompt) . "*. How would you like me to help you analyze or manage this in KulaCRM?";
     }
 }

@@ -45,6 +45,10 @@ class Kula_ai extends MY_Controller {
             require_once APPPATH . 'modules/kula_ai/services/Ai_tool_service.php';
             $this->ai_tool_service = new Ai_tool_service();
         }
+        if (!isset($this->ai_intent_service)) {
+            require_once APPPATH . 'modules/kula_ai/services/Ai_intent_service.php';
+            $this->ai_intent_service = new Ai_intent_service();
+        }
         if (!isset($this->ai_analytics_service)) {
             require_once APPPATH . 'modules/kula_ai/services/Ai_analytics_service.php';
             $this->ai_analytics_service = new Ai_analytics_service();
@@ -122,6 +126,17 @@ class Kula_ai extends MY_Controller {
             return;
         }
 
+        // Parse optional chat history for context memory
+        $chat_history_raw = $this->input->post('history');
+        $chat_history = array();
+        if (!empty($chat_history_raw)) {
+            if (is_string($chat_history_raw)) {
+                $chat_history = json_decode($chat_history_raw, true) ?? array();
+            } elseif (is_array($chat_history_raw)) {
+                $chat_history = $chat_history_raw;
+            }
+        }
+
         try {
             $gate = $this->check_plan_ai_access();
             if (!$gate['has_access']) {
@@ -133,11 +148,13 @@ class Kula_ai extends MY_Controller {
                 return;
             }
 
-            // Determine required tools based on keywords
-            $tools_used = array();
-            $context_data = array();
-            if (method_exists($this, 'determine_required_tools')) {
-                $tools_used = $this->determine_required_tools($prompt);
+            // 1. Classify User Intent & Required KulaCRM Tools
+            $intent_info = $this->ai_intent_service->classify_intent($prompt, $chat_history);
+            $tools_used  = $intent_info['tools'] ?? array();
+            $context_data= array();
+
+            // 2. Retrieve Authorized Live Tenant Data if required by intent
+            if (!empty($intent_info['requires_data']) && !empty($tools_used)) {
                 foreach ($tools_used as $tool) {
                     if (isset($this->ai_tool_service)) {
                         $context_data[$tool] = $this->ai_tool_service->execute_tool($tool);
@@ -145,47 +162,54 @@ class Kula_ai extends MY_Controller {
                 }
             }
 
+            // 3. Dynamic System Prompt tailored to Intent
             $system_prompt = "You are KulaAI, a highly intelligent, versatile AI Assistant and Livestock Agribusiness Expert built into KulaCRM.\n\n"
-                . "CORE CAPABILITIES & INSTRUCTIONS:\n"
-                . "1. OPEN-ENDED CHATGPT INTELLIGENCE: You act as a full-featured, open-ended AI assistant (like ChatGPT). You can answer any random questions, general knowledge, livestock management, business strategy, technical advice, drafting documents/emails, solving math/formulas, or brainstorming.\n"
-                . "2. LIVESTOCK & VETERINARY EXPERTISE: You possess deep expert knowledge on all aspects of livestock farming (poultry, cattle, goats, pigs, sheep, aquaculture), animal health, disease diagnosis, biosecurity, feed formulation, housing design, breeding, and production optimization.\n"
-                . "3. BUSINESS PLANS & FINANCIAL PROJECTIONS: You excel at creating comprehensive agribusiness business plans, cost-benefit analyses, cash flow forecasts, ROI projections, marketing plans, and operational SOPs for farm enterprises.\n"
-                . "4. LIVE KULACRM DATABASE INTEGRATION: When the user asks about specific farm metrics, batches, deaths, inventory, or debts, use the provided live KulaCRM database context to give exact, real-time answers. If live context is present, reference it naturally alongside your expert guidance.\n"
-                . "5. MARKDOWN FORMATTING: Present structured output in clean, professional GitHub Markdown. Use headings (###), bold highlights, bullet points, and valid Markdown tables (| Header | Header |) whenever presenting datasets, metrics, or financial breakdowns. Do NOT add empty trailing columns or trailing pipe glitches.\n\n"
-                . "Always be comprehensive, insightful, encouraging, and actionable.";
+                . "DYNAMIC RESPONSE GUIDELINES:\n"
+                . "1. NATURAL & CONVERSATIONAL FIRST: Be conversational first, analytical second. Match your response style directly to the user's intent (" . ($intent_info['intent'] ?? 'GENERAL') . ").\n"
+                . "2. GREETINGS & CASUAL TALK: Respond warmly, naturally, and concisely. Do NOT generate action steps, executive recommendations, or rigid templates for simple greetings like 'Hey', 'Hello', 'Good morning', or 'How are you?'.\n"
+                . "3. GENERAL KNOWLEDGE: Answer general educational or agribusiness questions directly and clearly. Only reference KulaCRM if relevant.\n"
+                . "4. REAL KULACRM DATA: When answering farm metric or stock queries, rely strictly on the provided live KulaCRM database context. Report exact numbers accurately. Do NOT invent farm data or statistics.\n"
+                . "5. STRUCTURED RECOMMENDATIONS & REPORTS: Only output structured 'Executive Recommendations' or step-by-step action plans when the user explicitly requests recommendations, performance analysis, or reports.\n"
+                . "6. CLEAN FORMATTING: Use clean GitHub Markdown. Never include internal signature lines such as 'Powered by KulaAI Farm Intelligence Layer'.";
 
-            $result = $this->ai_provider->generate($system_prompt, $prompt, $context_data);
+            // 4. Generate Response via Active Provider (or Intent-Aware Offline Engine)
+            $result = $this->ai_provider->generate($system_prompt, $prompt, $context_data, $chat_history, $intent_info);
 
             if (empty($result['response'])) {
-                $result['response'] = $this->ai_provider->generate_offline_response($prompt, $context_data);
+                $result['response'] = $this->ai_provider->generate_offline_response($prompt, $context_data, $intent_info);
                 $result['status'] = true;
-                $result['provider'] = 'KulaAI Rule Engine (Offline)';
+                $result['provider'] = 'KulaAI Intent Engine (Offline)';
             }
 
-            // Audit Log Interaction
+            // 5. Audit Log Interaction
             if (isset($this->kula_ai_model)) {
                 $this->kula_ai_model->log_interaction(
                     $prompt,
                     $tools_used,
-                    'chat_query',
+                    strtolower($intent_info['intent'] ?? 'chat_query'),
                     !empty($result['status']) ? 'success' : 'error'
                 );
             }
 
             echo json_encode(array(
-                'status'     => true,
-                'response'   => $result['response'],
-                'provider'   => $result['provider'] ?? 'KulaAI Engine',
-                'tools'      => $tools_used,
-                'created_at' => date('H:i:s')
+                'status'        => true,
+                'response'      => $result['response'],
+                'intent'        => $intent_info['intent'],
+                'response_type' => $intent_info['response_type'] ?? 'conversational',
+                'provider'      => $result['provider'] ?? 'KulaAI Engine',
+                'tools'         => $tools_used,
+                'created_at'    => date('H:i:s')
             ));
         } catch (\Throwable $e) {
-            $fallback_response = $this->ai_provider->generate_offline_response($prompt, array());
+            $fallback_intent = array('intent' => 'UNKNOWN', 'response_type' => 'conversational');
+            $fallback_response = $this->ai_provider->generate_offline_response($prompt, array(), $fallback_intent);
             echo json_encode(array(
-                'status'     => true,
-                'response'   => $fallback_response,
-                'provider'   => 'KulaAI Resilient Fallback',
-                'created_at' => date('H:i:s')
+                'status'        => true,
+                'response'      => $fallback_response,
+                'intent'        => 'UNKNOWN',
+                'response_type' => 'conversational',
+                'provider'      => 'KulaAI Resilient Fallback',
+                'created_at'    => date('H:i:s')
             ));
         }
     }

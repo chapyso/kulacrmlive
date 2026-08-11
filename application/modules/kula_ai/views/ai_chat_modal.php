@@ -412,6 +412,7 @@
         isOpen: false,
         baseUrl: '<?= base_url() ?>',
         _ingestionData: null,
+        chatMemory: [],
 
         onDocumentSelected(input) {
             const file = input.files[0];
@@ -621,11 +622,11 @@
         },
 
         newChat() {
+            this.chatMemory = [];
             const stream = document.getElementById('kula-chat-stream');
             stream.innerHTML = `
                 <div class="kula-msg kula-msg-ai">
-                    👋 Hello! I am your <b>KulaAI Assistant</b>. I am connected directly to your live KulaCRM database.
-                    How can I assist you today?
+                    👋 Hello! I am your <b>KulaAI Assistant</b>. How can I assist you with your farm today?
                 </div>
                 <div class="kula-quick-prompts">
                     <button type="button" class="kula-chip" onclick="KulaAIChat.sendQuick('How many animals do we currently have?')">🐄 Animals Count</button>
@@ -729,6 +730,7 @@
             if (!prompt) return;
 
             this.appendUserMessage(prompt);
+            this.chatMemory.push({ role: 'user', content: prompt });
             input.value = '';
 
             const stream = document.getElementById('kula-chat-stream');
@@ -736,7 +738,7 @@
             const loadingMsg = document.createElement('div');
             loadingMsg.className = 'kula-msg kula-msg-ai';
             loadingMsg.id = loadingId;
-            loadingMsg.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color: #10b981;"></i> <i>KulaAI is checking live farm data...</i>';
+            loadingMsg.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color: #10b981;"></i> <i>KulaAI is processing...</i>';
             stream.appendChild(loadingMsg);
             stream.scrollTop = stream.scrollHeight;
 
@@ -748,23 +750,32 @@
                     url: targetUrl,
                     type: 'POST',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                    data: { prompt: prompt },
+                    data: {
+                        prompt: prompt,
+                        history: JSON.stringify(KulaAIChat.chatMemory.slice(-8))
+                    },
                     dataType: 'json',
                     success: function(data) {
                         const elem = document.getElementById(loadingId);
                         if (data && data.status) {
+                            KulaAIChat.chatMemory.push({ role: 'assistant', content: data.response });
                             const parsedHtml = KulaAIChat.formatMarkdown(data.response);
-                            elem.innerHTML = parsedHtml + `
-                                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
-                                    <form action="${KulaAIChat.baseUrl}kula_ai/export_pdf" method="POST" target="_blank" style="margin:0;">
-                                        <input type="hidden" name="content" value="${KulaAIChat.escapeAttr(parsedHtml)}">
-                                        <input type="hidden" name="title" value="KulaAI Executive Report">
-                                        <button type="submit" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
-                                            <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Export PDF
-                                        </button>
-                                    </form>
-                                </div>
-                            `;
+                            const isReport = (data.response_type === 'recommendation' || data.response_type === 'analysis' || data.response_type === 'report');
+                            
+                            let exportBtnHtml = '';
+                            if (isReport) {
+                                exportBtnHtml = `
+                                    <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
+                                        <form action="${KulaAIChat.baseUrl}kula_ai/export_pdf" method="POST" target="_blank" style="margin:0;">
+                                            <input type="hidden" name="content" value="${KulaAIChat.escapeAttr(parsedHtml)}">
+                                            <input type="hidden" name="title" value="KulaAI Executive Report">
+                                            <button type="submit" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                                                <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Export PDF
+                                            </button>
+                                        </form>
+                                    </div>`;
+                            }
+                            elem.innerHTML = parsedHtml + exportBtnHtml;
                         } else if (data && data.response) {
                             elem.innerHTML = KulaAIChat.formatMarkdown(data.response);
                         } else if (data && data.error) {
