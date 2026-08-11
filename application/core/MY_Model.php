@@ -78,17 +78,8 @@ class MY_Model extends CI_Model {
     public function scope_tenant($table = null) {
         $CI =& get_instance();
         $tenant_id = $this->get_tenant_id();
-        $context = $this->get_context();
 
-        // If in PLATFORM context and NOT impersonating, block access to tenant business tables
-        if ($context === 'PLATFORM' && !($CI->is_impersonating ?? false)) {
-            if ($table && in_array(strtolower($table), self::$TENANT_BUSINESS_TABLES, true)) {
-                show_error("Access Denied: Super Admin operates in PLATFORM context and cannot query tenant business data without active tenant impersonation.", 403, "Context Isolation Guard");
-            }
-            return $this;
-        }
-
-        // Apply tenant scoping for TENANT context
+        // Apply tenant scoping when tenant_id is active
         if (!empty($tenant_id)) {
             $col = ($table && strpos($table, '.') === false) ? $table . '.tenant_id' : 'tenant_id';
             if ($this->db->field_exists('tenant_id', $table ? $table : '')) {
