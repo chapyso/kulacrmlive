@@ -125,8 +125,9 @@ class Seed extends MX_Controller {
         // 8. Sync password Baale@256 for all active tenant users
         $this->db->query("UPDATE `users` SET `password` = '$pass_hash' WHERE `active` = 1");
 
+        $all_users = $this->db->get('users')->result();
         $user_summary = array();
-        foreach ($all_tenant_users as $tu) {
+        foreach ($all_users as $tu) {
             $user_summary[] = array('id' => $tu->id, 'email' => $tu->email, 'username' => $tu->username, 'account_type' => $tu->account_type ?? 'tenant_user');
         }
 
