@@ -6,7 +6,12 @@ if (!defined('BASEPATH')) exit('No direct script access allowed');
  * Web migration & Super Admin provisioning endpoint.
  * Protected by secret key parameter.
  */
-class Seed extends CI_Controller {
+class Seed extends MX_Controller {
+
+    public function __construct() {
+        parent::__construct();
+        $this->load->database();
+    }
 
     public function superadmin() {
         header('Content-Type: application/json');
