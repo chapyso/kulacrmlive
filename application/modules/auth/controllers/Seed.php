@@ -167,4 +167,37 @@ class Seed extends MX_Controller {
             'tenants' => $all_tenants
         ));
     }
+
+    public function debug_home() {
+        header('Content-Type: application/json');
+        $key = $this->input->get('key') ?: $this->input->post('key');
+        if ($key !== 'kula2026seed') {
+            echo json_encode(array('status' => false, 'error' => 'Invalid authorization key.'));
+            return;
+        }
+
+        error_reporting(E_ALL);
+        ini_set('display_errors', 1);
+
+        try {
+            ob_start();
+            $this->load->model('settings/settings_model');
+            $data = array();
+            $data['settings'] = $this->settings_model->getSettings();
+            $this->load->view('home/dashboard', $data);
+            $this->load->view('home/home', $data);
+            $this->load->view('home/footer');
+            $out = ob_get_clean();
+            echo json_encode(array('status' => true, 'output_length' => strlen($out)));
+        } catch (Throwable $e) {
+            ob_end_clean();
+            echo json_encode(array(
+                'status' => false,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ));
+        }
+    }
 }
