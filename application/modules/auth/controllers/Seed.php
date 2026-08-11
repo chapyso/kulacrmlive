@@ -1,0 +1,111 @@
+<?php
+if (!defined('BASEPATH')) exit('No direct script access allowed');
+
+/**
+ * Seed Controller
+ * Web migration & Super Admin provisioning endpoint.
+ * Protected by secret key parameter.
+ */
+class Seed extends CI_Controller {
+
+    public function superadmin() {
+        header('Content-Type: application/json');
+        
+        $key = $this->input->get('key') ?: $this->input->post('key');
+        if ($key !== 'kula2026seed') {
+            echo json_encode(array('status' => false, 'error' => 'Invalid authorization key.'));
+            return;
+        }
+
+        $this->load->database();
+
+        // 1. Modify users.tenant_id to allow NULL
+        $this->db->query("ALTER TABLE `users` MODIFY COLUMN `tenant_id` INT(11) NULL DEFAULT NULL");
+
+        // 2. Add account_type column if missing
+        $check_col = $this->db->query("SHOW COLUMNS FROM `users` LIKE 'account_type'");
+        if ($check_col && $check_col->num_rows() == 0) {
+            $this->db->query("ALTER TABLE `users` ADD COLUMN `account_type` ENUM('platform_admin', 'tenant_user') NOT NULL DEFAULT 'tenant_user' AFTER `phone`");
+        }
+
+        // 3. Clear login attempts / lockouts
+        if ($this->db->table_exists('login_attempts')) {
+            $this->db->empty_table('login_attempts');
+        }
+
+        // 4. Seed/Update Superadmin Account ronaldi2040@gmail.com
+        $pass_hash = password_hash('Baale@256', PASSWORD_BCRYPT);
+        $time = time();
+
+        $existing = $this->db->get_where('users', array('email' => 'ronaldi2040@gmail.com'))->row();
+        if ($existing) {
+            $this->db->where('id', $existing->id)->update('users', array(
+                'username'     => 'ronaldi2040',
+                'first_name'   => 'Platform',
+                'last_name'    => 'SuperAdmin',
+                'password'     => $pass_hash,
+                'account_type' => 'platform_admin',
+                'tenant_id'    => NULL,
+                'active'       => 1
+            ));
+        } else {
+            $this->db->insert('users', array(
+                'ip_address'   => '127.0.0.1',
+                'username'     => 'ronaldi2040',
+                'email'        => 'ronaldi2040@gmail.com',
+                'password'     => $pass_hash,
+                'created_on'   => $time,
+                'active'       => 1,
+                'first_name'   => 'Platform',
+                'last_name'    => 'SuperAdmin',
+                'phone'        => '0',
+                'account_type' => 'platform_admin',
+                'tenant_id'    => NULL
+            ));
+        }
+
+        // 5. Seed/Update admin@kulacrm.com
+        $existing_admin = $this->db->get_where('users', array('email' => 'admin@kulacrm.com'))->row();
+        if ($existing_admin) {
+            $this->db->where('id', $existing_admin->id)->update('users', array(
+                'password'     => $pass_hash,
+                'account_type' => 'platform_admin',
+                'tenant_id'    => NULL,
+                'active'       => 1
+            ));
+        } else {
+            $this->db->insert('users', array(
+                'ip_address'   => '127.0.0.1',
+                'username'     => 'kulafarms',
+                'email'        => 'admin@kulacrm.com',
+                'password'     => $pass_hash,
+                'created_on'   => $time,
+                'active'       => 1,
+                'first_name'   => 'kulafarms',
+                'last_name'    => 'SUPER ADMIN',
+                'phone'        => '0',
+                'account_type' => 'platform_admin',
+                'tenant_id'    => NULL
+            ));
+        }
+
+        // 6. Ensure superadmin group assignment
+        $grp = $this->db->get_where('groups', array('name' => 'superadmin'))->row();
+        $group_id = $grp ? $grp->id : null;
+        if (!$group_id) {
+            $this->db->insert('groups', array('name' => 'superadmin', 'description' => 'SaaS Platform Super Admin'));
+            $group_id = $this->db->insert_id();
+        }
+
+        $all_sa = $this->db->get_where('users', array('account_type' => 'platform_admin'))->result();
+        foreach ($all_sa as $sa_user) {
+            $this->db->where('user_id', $sa_user->id)->delete('users_groups');
+            $this->db->insert('users_groups', array('user_id' => $sa_user->id, 'group_id' => $group_id));
+        }
+
+        echo json_encode(array(
+            'status'  => true,
+            'message' => 'Super Admin accounts (ronaldi2040@gmail.com & admin@kulacrm.com) seeded and verified successfully with password Baale@256!'
+        ));
+    }
+}
