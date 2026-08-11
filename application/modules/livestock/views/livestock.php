@@ -22,6 +22,10 @@
                     <i class="fa-solid fa-plus-circle"></i> <?php echo lang('add_new_livestock'); ?>
                 </a>
 
+                <a href="<?php echo base_url('product/listLivestockReproduction'); ?>" class="hero-export-btn" style="background: #0284c7; text-decoration: none;">
+                    <i class="fa-solid fa-baby"></i> <?php echo lang('reproduction'); ?> <?php echo lang('list'); ?>
+                </a>
+
                 <a href="<?php echo base_url('livestock/exportCSV'); ?>" class="hero-date-pill" style="text-decoration: none; padding: 10px 18px;">
                     <i class="fa-solid fa-file-csv" style="color: #0284c7;"></i>
                     <span>Export CSV</span>
@@ -244,6 +248,10 @@
                         <label for="exampleInputEmail1"><?php echo lang('description'); ?></label>
                         <textarea name="ls_description" class="form-control" id="" rows="3" placeholder="Enter description" style="height: auto !important;"></textarea>
                     </div>
+                    <div class="form-group">
+                        <label for="ls_notes">Breed Notes <span class="badge" style="background: #e0f2fe; color: #0369a1; font-size: 10px;">Private</span></label>
+                        <textarea name="ls_notes" class="form-control" id="ls_notes" rows="3" placeholder="Enter breed notes, milk yield, slaughter preferences..." style="height: auto !important;"></textarea>
+                    </div>
                     <section class="">
                         <button type="submit" name="submit" class="button button-info submit_button"><?php echo lang('submit'); ?></button>
                     </section>
@@ -271,6 +279,10 @@
                     <div class="form-group">
                         <label for="exampleInputEmail1"><?php echo lang('description'); ?></label>
                         <textarea name="ls_description" class="form-control" id="" rows="3" placeholder="Enter Description" style="height: auto !important;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="ls_notes_edit">Breed Notes <span class="badge" style="background: #e0f2fe; color: #0369a1; font-size: 10px;">Private</span></label>
+                        <textarea name="ls_notes" class="form-control" id="ls_notes_edit" rows="3" placeholder="Enter breed notes, milk yield, slaughter preferences..." style="height: auto !important;"></textarea>
                     </div>
 
                     <input type="hidden" name="id" value=''>
@@ -387,6 +399,7 @@
                 $('#livestockEditForm').find('[name="ls_id"]').val(response.livestock.ls_id).end()
                 $('#livestockEditForm').find('[name="ls_name"]').val(response.livestock.ls_name).end()
                 $('#livestockEditForm').find('[name="ls_description"]').val(response.livestock.ls_description).end()
+                $('#livestockEditForm').find('[name="ls_notes"]').val(response.livestock.ls_notes || '').end()
                 $('#myModal2').modal('show');
             });
         });

@@ -261,10 +261,18 @@
                      </a>
 
                      <?php if (has_permission('livestock.view')) { ?>
-                     <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-menu-item" data-tooltip="<?php echo lang('livestock'); ?>">
-                         <div class="kula-menu-icon"><i class="fa-solid fa-cow"></i></div>
-                         <span class="kula-menu-text"><?php echo lang('livestock'); ?></span>
-                     </a>
+                     <div class="kula-menu-tree">
+                         <div class="kula-menu-item kula-tree-toggle" data-tooltip="<?php echo lang('livestock'); ?>">
+                             <div class="kula-menu-icon"><i class="fa-solid fa-cow"></i></div>
+                             <span class="kula-menu-text"><?php echo lang('livestock'); ?></span>
+                             <i class="fa-solid fa-chevron-right tree-arrow"></i>
+                         </div>
+                         <div class="kula-tree-submenu">
+                             <a href="<?php echo base_url('livestock/addLivestock'); ?>"><?php echo lang('livestock'); ?> <?php echo lang('list'); ?></a>
+                             <a href="<?php echo base_url('livestock/addLivestockType'); ?>"><?php echo lang('livestock_variant'); ?> <?php echo lang('list'); ?></a>
+                             <a href="<?php echo base_url('product/listLivestockReproduction'); ?>"><?php echo lang('reproduction'); ?> <?php echo lang('list'); ?></a>
+                         </div>
+                     </div>
                      <?php } ?>
 
                      <?php if (has_permission('shed.view')) { ?>

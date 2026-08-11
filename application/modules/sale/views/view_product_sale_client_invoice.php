@@ -122,7 +122,7 @@
                     <div class="col-xs-7">
                         <div class="invoice-btn print-button-position ">
                             <a class="button button-info btn-lg invoice_button" onclick="javascript:window.print();"><i class="fa fa-print"></i> <?php echo lang('print'); ?> </a>
-                            <button id="exportButton" class="button button-primary"><i class="fa-solid fa-file-pdf"></i> <?php echo lang('pdf'); ?></button>
+                            <a class="button button-primary btn-lg invoice_button" href="<?php echo base_url('sale/downloadProductSalePdf?prss_id=' . $productSaleById->prss_id); ?>"><i class="fa-solid fa-file-pdf"></i> <?php echo lang('pdf'); ?></a>
                         </div>
                     </div>
                     <div class="col-xs-5">

@@ -10,6 +10,23 @@ class Livestock_model extends MY_Model
     {
         parent::__construct();
         $this->load->database();
+        $this->ensure_ls_notes_column();
+    }
+
+    private function ensure_ls_notes_column()
+    {
+        if ($this->db->table_exists('livestock')) {
+            if (!$this->db->field_exists('ls_notes', 'livestock')) {
+                $this->load->dbforge();
+                $fields = array(
+                    'ls_notes' => array(
+                        'type' => 'TEXT',
+                        'null' => TRUE
+                    )
+                );
+                $this->dbforge->add_column('livestock', $fields);
+            }
+        }
     }
 
     function insertLivestock($data)

@@ -49,9 +49,11 @@ class Livestock extends MY_Controller
         }
         $ls_name = $this->input->post('ls_name');
         $ls_description = $this->input->post('ls_description');
+        $ls_notes = $this->input->post('ls_notes');
         $data = array(
             'ls_name' => $ls_name,
             'ls_description' => $ls_description,
+            'ls_notes' => $ls_notes,
             'ls_status' => 1,
             'ls_created_at' => get_current_time(),
             'ls_created_by' => $this->ion_auth->user()->row()->user_id
@@ -66,9 +68,11 @@ class Livestock extends MY_Controller
         $ls_id = $this->input->post('ls_id');
         $ls_name = $this->input->post('ls_name');
         $ls_description = $this->input->post('ls_description');
+        $ls_notes = $this->input->post('ls_notes');
         $data = array(
             'ls_name' => $ls_name,
             'ls_description' => $ls_description,
+            'ls_notes' => $ls_notes,
             'ls_updated_at' => get_current_time(),
             'ls_updated_by' => $this->ion_auth->user()->row()->user_id
         );
