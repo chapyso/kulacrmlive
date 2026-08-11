@@ -93,6 +93,7 @@
 			'localhost',
 			'127.0.0.1',
 			'[::1]',
+			'kulacrm.com',
 		);
 		if (in_array($_ci_host, $_ci_dev_hosts, TRUE) || substr($_ci_host, -5) === '.test') {
 			$_ci_env_override = 'development';
