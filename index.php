@@ -3,17 +3,6 @@
 @ini_set('post_max_size', '100M');
 @ini_set('memory_limit', '512M');
 @ini_set('max_execution_time', '300');
-@ini_set('display_errors', 1);
-@ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-register_shutdown_function(function() {
-    $err = error_get_last();
-    if ($err && in_array($err['type'], array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR))) {
-        http_response_code(200);
-        echo "<h1>FATAL PHP SHUTDOWN ERROR</h1><pre>" . var_export($err, true) . "</pre>";
-    }
-});
 
 /**
  * CodeIgniter
@@ -104,7 +93,6 @@ register_shutdown_function(function() {
 			'localhost',
 			'127.0.0.1',
 			'[::1]',
-			'kulacrm.com',
 		);
 		if (in_array($_ci_host, $_ci_dev_hosts, TRUE) || substr($_ci_host, -5) === '.test') {
 			$_ci_env_override = 'development';
