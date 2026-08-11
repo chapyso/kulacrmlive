@@ -14,22 +14,21 @@ class Home extends MY_Controller
         $this->load->library('form_validation');
         $this->load->model('ion_auth_model');
         $this->load->library('upload');
-        $this->load->model('client/client_model');
-        $this->load->model('supplier/supplier_model');
-        $this->load->model('purchase/purchase_model');
-        $this->load->model('settings/settings_model');
+        $this->load->model('client/client_model', 'client_model');
+        $this->load->model('supplier/supplier_model', 'supplier_model');
+        $this->load->model('purchase/purchase_model', 'purchase_model');
+        $this->load->model('settings/settings_model', 'settings_model');
         $language = $this->get_language();
         $load_lang = (strtolower($language) === 'luganda' && is_dir(APPPATH . 'language/Luganda')) ? 'Luganda' : $language;
         $this->lang->load('system_syntax', $load_lang);
-        $this->load->model('shed/shed_model');
-        $this->load->model('sale/sale_model');
-        $this->load->model('expense/expense_model');
-        $this->load->model('livestock/livestock_model');
-        $this->load->model('food/food_model');
-        $this->load->model('report/report_model');
-        $this->load->model('settings/settings_model');
-        $this->load->model('notification_model');
-        $this->load->model('home_model');
+        $this->load->model('shed/shed_model', 'shed_model');
+        $this->load->model('sale/sale_model', 'sale_model');
+        $this->load->model('expense/expense_model', 'expense_model');
+        $this->load->model('livestock/livestock_model', 'livestock_model');
+        $this->load->model('food/food_model', 'food_model');
+        $this->load->model('report/report_model', 'report_model');
+        $this->load->model('notification_model', 'notification_model');
+        $this->load->model('home_model', 'home_model');
         if (!$this->ion_auth->logged_in()) {
             redirect('auth/login');
         }
@@ -38,12 +37,27 @@ class Home extends MY_Controller
     public function index()
     {
         $data = array();
+        
+        // Ensure HMVC models are properly bound to controller properties
+        if (!isset($this->food_model) || !is_object($this->food_model)) {
+            $this->load->model('food/food_model', 'food_model');
+        }
+        if (!isset($this->shed_model) || !is_object($this->shed_model)) {
+            $this->load->model('shed/shed_model', 'shed_model');
+        }
+        if (!isset($this->client_model) || !is_object($this->client_model)) {
+            $this->load->model('client/client_model', 'client_model');
+        }
+        if (!isset($this->supplier_model) || !is_object($this->supplier_model)) {
+            $this->load->model('supplier/supplier_model', 'supplier_model');
+        }
+
         try {
             $data['total_livestock_purchased_amount'] = (isset($this->purchase_model) && method_exists($this->purchase_model, 'getTotalLivestockPurchasedAmount')) ? $this->purchase_model->getTotalLivestockPurchasedAmount() : 0;
         } catch (Throwable $e) { $data['total_livestock_purchased_amount'] = 0; }
         
         try {
-            $data['foods'] = (isset($this->food_model) && method_exists($this->food_model, 'getFood')) ? $this->food_model->getFood() : array();
+            $data['foods'] = $this->food_model->getFood();
         } catch (Throwable $e) { $data['foods'] = array(); }
         
         try {
@@ -51,11 +65,11 @@ class Home extends MY_Controller
         } catch (Throwable $e) { $data['settings'] = null; }
         
         try {
-            $data['clients'] = (isset($this->client_model) && method_exists($this->client_model, 'getClient')) ? $this->client_model->getClient() : array();
+            $data['clients'] = $this->client_model->getClient();
         } catch (Throwable $e) { $data['clients'] = array(); }
         
         try {
-            $data['sheds'] = (isset($this->shed_model) && method_exists($this->shed_model, 'getShed')) ? $this->shed_model->getShed() : array();
+            $data['sheds'] = $this->shed_model->getShed();
         } catch (Throwable $e) { $data['sheds'] = array(); }
         
         try {

@@ -756,23 +756,30 @@
  
          <div class="row">
              <!-- Shed And Batch Report with collapse -->
-             <div class="col-lg-6">
-                 <div class="faq_container">
-                     <div class="">
-                         <div class="widget__heading"><i class="fa-solid fa-network-wired"></i> <?php echo lang('shed_batch_wise_stock_quantity'); ?></div>
-                         <div id="showall" class="faq_qtn showall"><?php echo lang('show_all'); ?></div>
-                         <div id="hideall" class="faq_qtn hideall"><?php echo lang('hide_all'); ?></div>
-                     </div>
-                     <ul class="faq">
-                         <?php
-                         if ($sheds) {
-                             foreach ($sheds as $shed) {
-                                 $assignedBatchesByShedId = $this->shed_model->getAssignedBatchesByShedId($shed->sh_id);
-                         ?>
-                                 <li>
-                                     <h4 class="faq_qtn"><?= $shed->sh_no; ?>: <?= $shed->sh_title; ?></h4>
-                                     <div class="response" style="overflow-x:auto;">
-                                         <p class="para">
+              <div class="col-lg-6">
+                  <div class="faq_container">
+                      <div class="">
+                          <div class="widget__heading"><i class="fa-solid fa-network-wired"></i> <?php echo lang('shed_batch_wise_stock_quantity'); ?></div>
+                          <div id="showall" class="faq_qtn showall"><?php echo lang('show_all'); ?></div>
+                          <div id="hideall" class="faq_qtn hideall"><?php echo lang('hide_all'); ?></div>
+                      </div>
+                      <ul class="faq">
+                          <?php
+                          if (empty($sheds)) {
+                              $CI =& get_instance();
+                              if (!isset($CI->shed_model)) {
+                                  $CI->load->model('shed/shed_model', 'shed_model');
+                              }
+                              $sheds = $CI->shed_model->getShed();
+                          }
+                          if (!empty($sheds)) {
+                              foreach ($sheds as $shed) {
+                                  $assignedBatchesByShedId = $this->shed_model->getAssignedBatchesByShedId($shed->sh_id);
+                          ?>
+                                  <li>
+                                      <h4 class="faq_qtn"><?= $shed->sh_no; ?>: <?= $shed->sh_title; ?></h4>
+                                      <div class="response" style="overflow-x:auto;">
+                                          <p class="para">
                                              <?php if ($assignedBatchesByShedId) { ?>
                                          <table class="table table-striped table-hover table-bordered ">
                                              <thead>
@@ -870,9 +877,17 @@
                                          <th><?php echo lang('in_stock'); ?></th>
                                      </tr>
                                  </thead>
-                                 <tbody>
-                                      <?php $serial = 0;
-                                      if (!empty($foods) && is_array($foods)) {
+                                  <tbody>
+                                       <?php
+                                       if (empty($foods)) {
+                                           $CI =& get_instance();
+                                           if (!isset($CI->food_model)) {
+                                               $CI->load->model('food/food_model', 'food_model');
+                                           }
+                                           $foods = $CI->food_model->getFood();
+                                       }
+                                       $serial = 0;
+                                       if (!empty($foods) && is_array($foods)) {
                                           foreach ($foods as $food) {
                                               $serial++;
                                               $unit = !empty($food->fds_unit_id) ? $this->settings_model->getUnitById($food->fds_unit_id) : null;
