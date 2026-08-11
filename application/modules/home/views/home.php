@@ -14,7 +14,7 @@
             $greeting = 'Good evening';
             $emoji = '🌙';
         }
-        $username = htmlspecialchars($this->ion_auth->user()->row()->username ?? 'Admin', ENT_QUOTES);
+        $username = htmlspecialchars($this->ion_auth->user()->row()?->username ?? 'Admin', ENT_QUOTES);
         ?>
         <div class="kula-hero-card" style="display: flex; flex-direction: column; width: 100%; gap: 12px;">
             <div class="hero-content-left" style="width: 100%;">

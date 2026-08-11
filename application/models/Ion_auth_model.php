@@ -1233,6 +1233,12 @@ class Ion_auth_model extends MY_Model
             ));
         }
 
+        // Exclude platform admin accounts from tenant user queries if in TENANT context
+        $CI =& get_instance();
+        if (isset($CI->context) && $CI->context === 'TENANT') {
+            $this->db->where($this->tables['users'] . '.account_type !=', 'platform_admin');
+        }
+
         //filter by group id(s) if passed
         if (isset($groups)) {
             //build an array if only one group was passed

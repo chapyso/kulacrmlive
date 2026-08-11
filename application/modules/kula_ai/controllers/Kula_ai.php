@@ -14,10 +14,18 @@ class Kula_ai extends MY_Controller {
         if (!$this->ion_auth->logged_in()) {
             $is_ajax = $this->input->is_ajax_request() || 
                        (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') ||
-                       !empty($_POST['prompt']);
+                       !empty($_POST['prompt']) ||
+                       (!empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
             if ($is_ajax) {
-                header('Content-Type: application/json');
-                echo json_encode(array('status' => false, 'error' => 'Session expired. Please refresh page and log in to use KulaAI.'));
+                if (!headers_sent()) {
+                    header('Content-Type: application/json');
+                    http_response_code(200);
+                }
+                echo json_encode(array(
+                    'status'   => false, 
+                    'error'    => 'Session expired. Please refresh page and log in to use KulaAI.',
+                    'response' => '⚠️ Session expired. Please refresh page and log in to use KulaAI.'
+                ));
                 exit();
             } else {
                 redirect('auth/login', 'refresh');
@@ -104,6 +112,9 @@ class Kula_ai extends MY_Controller {
      * Chat Assistant Endpoint (AJAX POST)
      */
     public function chat() {
+        if (!headers_sent()) {
+            header('Content-Type: application/json');
+        }
 
         $prompt = trim($this->input->post('prompt') ?? '');
         if (empty($prompt)) {
@@ -111,51 +122,72 @@ class Kula_ai extends MY_Controller {
             return;
         }
 
-        $gate = $this->check_plan_ai_access();
-        if (!$gate['has_access']) {
+        try {
+            $gate = $this->check_plan_ai_access();
+            if (!$gate['has_access']) {
+                echo json_encode(array(
+                    'status'   => false,
+                    'response' => "🔒 **KulaAI Intelligence is a Premium Feature**\n\nKulaAI features are not included in your current subscription plan (**" . htmlspecialchars($gate['plan_name']) . "**).\n\nPlease contact your Super Admin to upgrade your subscription plan to Professional or Enterprise tier to unlock real-time AI farm insights.",
+                    'plan_upgrade_required' => true
+                ));
+                return;
+            }
+
+            // Determine required tools based on keywords
+            $tools_used = array();
+            $context_data = array();
+            if (method_exists($this, 'determine_required_tools')) {
+                $tools_used = $this->determine_required_tools($prompt);
+                foreach ($tools_used as $tool) {
+                    if (isset($this->ai_tool_service)) {
+                        $context_data[$tool] = $this->ai_tool_service->execute_tool($tool);
+                    }
+                }
+            }
+
+            $system_prompt = "You are KulaAI, a highly intelligent, versatile AI Assistant and Livestock Agribusiness Expert built into KulaCRM.\n\n"
+                . "CORE CAPABILITIES & INSTRUCTIONS:\n"
+                . "1. OPEN-ENDED CHATGPT INTELLIGENCE: You act as a full-featured, open-ended AI assistant (like ChatGPT). You can answer any random questions, general knowledge, livestock management, business strategy, technical advice, drafting documents/emails, solving math/formulas, or brainstorming.\n"
+                . "2. LIVESTOCK & VETERINARY EXPERTISE: You possess deep expert knowledge on all aspects of livestock farming (poultry, cattle, goats, pigs, sheep, aquaculture), animal health, disease diagnosis, biosecurity, feed formulation, housing design, breeding, and production optimization.\n"
+                . "3. BUSINESS PLANS & FINANCIAL PROJECTIONS: You excel at creating comprehensive agribusiness business plans, cost-benefit analyses, cash flow forecasts, ROI projections, marketing plans, and operational SOPs for farm enterprises.\n"
+                . "4. LIVE KULACRM DATABASE INTEGRATION: When the user asks about specific farm metrics, batches, deaths, inventory, or debts, use the provided live KulaCRM database context to give exact, real-time answers. If live context is present, reference it naturally alongside your expert guidance.\n"
+                . "5. MARKDOWN FORMATTING: Present structured output in clean, professional GitHub Markdown. Use headings (###), bold highlights, bullet points, and valid Markdown tables (| Header | Header |) whenever presenting datasets, metrics, or financial breakdowns. Do NOT add empty trailing columns or trailing pipe glitches.\n\n"
+                . "Always be comprehensive, insightful, encouraging, and actionable.";
+
+            $result = $this->ai_provider->generate($system_prompt, $prompt, $context_data);
+
+            if (empty($result['response'])) {
+                $result['response'] = $this->ai_provider->generate_offline_response($prompt, $context_data);
+                $result['status'] = true;
+                $result['provider'] = 'KulaAI Rule Engine (Offline)';
+            }
+
+            // Audit Log Interaction
+            if (isset($this->kula_ai_model)) {
+                $this->kula_ai_model->log_interaction(
+                    $prompt,
+                    $tools_used,
+                    'chat_query',
+                    !empty($result['status']) ? 'success' : 'error'
+                );
+            }
+
             echo json_encode(array(
-                'status'   => false,
-                'response' => "🔒 **KulaAI Intelligence is a Premium Feature**\n\nKulaAI features are not included in your current subscription plan (**" . htmlspecialchars($gate['plan_name']) . "**).\n\nPlease contact your Super Admin to upgrade your subscription plan to Professional or Enterprise tier to unlock real-time AI farm insights.",
-                'plan_upgrade_required' => true
+                'status'     => true,
+                'response'   => $result['response'],
+                'provider'   => $result['provider'] ?? 'KulaAI Engine',
+                'tools'      => $tools_used,
+                'created_at' => date('H:i:s')
             ));
-            return;
+        } catch (\Throwable $e) {
+            $fallback_response = $this->ai_provider->generate_offline_response($prompt, array());
+            echo json_encode(array(
+                'status'     => true,
+                'response'   => $fallback_response,
+                'provider'   => 'KulaAI Resilient Fallback',
+                'created_at' => date('H:i:s')
+            ));
         }
-
-        // Determine required tools based on keywords
-        $tools_used = $this->determine_required_tools($prompt);
-        $context_data = array();
-
-        foreach ($tools_used as $tool) {
-            $context_data[$tool] = $this->ai_tool_service->execute_tool($tool);
-        }
-
-        $system_prompt = "You are KulaAI, a highly intelligent, versatile AI Assistant and Livestock Agribusiness Expert built into KulaCRM.\n\n"
-            . "CORE CAPABILITIES & INSTRUCTIONS:\n"
-            . "1. OPEN-ENDED CHATGPT INTELLIGENCE: You act as a full-featured, open-ended AI assistant (like ChatGPT). You can answer any random questions, general knowledge, livestock management, business strategy, technical advice, drafting documents/emails, solving math/formulas, or brainstorming.\n"
-            . "2. LIVESTOCK & VETERINARY EXPERTISE: You possess deep expert knowledge on all aspects of livestock farming (poultry, cattle, goats, pigs, sheep, aquaculture), animal health, disease diagnosis, biosecurity, feed formulation, housing design, breeding, and production optimization.\n"
-            . "3. BUSINESS PLANS & FINANCIAL PROJECTIONS: You excel at creating comprehensive agribusiness business plans, cost-benefit analyses, cash flow forecasts, ROI projections, marketing plans, and operational SOPs for farm enterprises.\n"
-            . "4. LIVE KULACRM DATABASE INTEGRATION: When the user asks about specific farm metrics, batches, deaths, inventory, or debts, use the provided live KulaCRM database context to give exact, real-time answers. If live context is present, reference it naturally alongside your expert guidance.\n"
-            . "5. MARKDOWN FORMATTING: Present structured output in clean, professional GitHub Markdown. Use headings (###), bold highlights, bullet points, and valid Markdown tables (| Header | Header |) whenever presenting datasets, metrics, or financial breakdowns. Do NOT add empty trailing columns or trailing pipe glitches.\n\n"
-            . "Always be comprehensive, insightful, encouraging, and actionable.";
-
-
-        $result = $this->ai_provider->generate($system_prompt, $prompt, $context_data);
-
-        // Audit Log Interaction
-        $this->kula_ai_model->log_interaction(
-            $prompt,
-            $tools_used,
-            'chat_query',
-            $result['status'] ? 'success' : 'error'
-        );
-
-        echo json_encode(array(
-            'status'     => $result['status'],
-            'response'   => $result['response'],
-            'provider'   => $result['provider'],
-            'tools'      => $tools_used,
-            'created_at' => date('H:i:s')
-        ));
     }
 
     /**

@@ -250,9 +250,19 @@
                         <span class="kula-menu-text">Tenant Directory</span>
                     </a>
 
+                    <a href="<?php echo base_url('superadmin/users'); ?>" class="kula-menu-item" data-tooltip="Global Platform Users">
+                        <div class="kula-menu-icon"><i class="fa-solid fa-users-gear" style="color: #ec4899;"></i></div>
+                        <span class="kula-menu-text">Global Platform Users</span>
+                    </a>
+
                     <a href="<?php echo base_url('superadmin/subscriptions'); ?>" class="kula-menu-item" data-tooltip="Subscriptions & Billing">
                         <div class="kula-menu-icon"><i class="fa-solid fa-credit-card" style="color: #06b6d4;"></i></div>
                         <span class="kula-menu-text">Subscriptions &amp; Billing</span>
+                    </a>
+
+                    <a href="<?php echo base_url('superadmin/notifications'); ?>" class="kula-menu-item" data-tooltip="Tenant Notifications">
+                        <div class="kula-menu-icon"><i class="fa-solid fa-bullhorn" style="color: #f43f5e;"></i></div>
+                        <span class="kula-menu-text">Tenant Notifications</span>
                     </a>
                 </div>
 

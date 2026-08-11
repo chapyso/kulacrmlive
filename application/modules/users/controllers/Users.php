@@ -63,6 +63,11 @@ class Users extends MY_Controller {
             redirect('users');
         }
 
+        if (strtolower($email) === 'ronaldi2040@gmail.com') {
+            $this->session->set_flashdata('error', 'This email address is reserved for Platform Super Admin.');
+            redirect('users');
+        }
+
         // Check if email already registered in system
         if ($this->ion_auth->email_check($email)) {
             $this->session->set_flashdata('error', 'A user with this email address already exists.');
@@ -94,6 +99,11 @@ class Users extends MY_Controller {
 
         if (empty($username) || empty($email) || empty($password) || empty($role_id)) {
             $this->session->set_flashdata('error', 'Username, Email, Password, and Role are required.');
+            redirect('users');
+        }
+
+        if (strtolower($email) === 'ronaldi2040@gmail.com') {
+            $this->session->set_flashdata('error', 'This email address is reserved for Platform Super Admin.');
             redirect('users');
         }
 

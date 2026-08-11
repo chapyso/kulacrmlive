@@ -70,14 +70,39 @@ $route['api/login'] = 'api/login';
 $route['api/dashboard'] = 'api/dashboard';
 $route['api/livestock'] = 'api/livestock';
 $route['api/sheds'] = 'api/sheds';
-$route['api/sales'] = 'api/sales';
+// KulaAI Intelligence Layer Routes
+$route['kula_ai']                      = 'kula_ai/kula_ai/index';
+$route['kula_ai/chat']                 = 'kula_ai/kula_ai/chat';
+$route['kula_ai/history']              = 'kula_ai/kula_ai/history';
+$route['kula_ai/intelligence']         = 'kula_ai/kula_ai/intelligence';
+$route['kula_ai/explain_report']       = 'kula_ai/kula_ai/explain_report';
+$route['kula_ai/export_pdf']           = 'kula_ai/kula_ai/export_pdf';
+$route['kula_ai/upload_document']      = 'kula_ai/kula_ai/upload_document';
+$route['kula_ai/confirm_import']       = 'kula_ai/kula_ai/confirm_import';
+
+$route['(:any)/kula_ai/chat']            = 'kula_ai/kula_ai/chat';
+$route['(:any)/kula_ai/history']         = 'kula_ai/kula_ai/history';
+$route['(:any)/kula_ai/intelligence']    = 'kula_ai/kula_ai/intelligence';
+$route['(:any)/kula_ai/explain_report']  = 'kula_ai/kula_ai/explain_report';
+$route['(:any)/kula_ai/export_pdf']      = 'kula_ai/kula_ai/export_pdf';
+$route['(:any)/kula_ai/upload_document'] = 'kula_ai/kula_ai/upload_document';
+$route['(:any)/kula_ai/confirm_import']  = 'kula_ai/kula_ai/confirm_import';
 
 
 // Super Admin SaaS Platform Routes
 $route['superadmin'] = 'superadmin/superadmin/index';
 $route['superadmin/tenants'] = 'superadmin/superadmin/tenants';
+$route['superadmin/users'] = 'superadmin/superadmin/users';
+$route['superadmin/delete_user/(:num)'] = 'superadmin/superadmin/delete_user/$1';
 $route['superadmin/plans'] = 'superadmin/superadmin/plans';
 $route['superadmin/subscriptions'] = 'superadmin/superadmin/subscriptions';
+$route['superadmin/ai_settings'] = 'superadmin/superadmin/ai_settings';
+$route['superadmin/currency'] = 'superadmin/superadmin/currency';
+$route['superadmin/save_currency'] = 'superadmin/superadmin/save_currency';
+$route['superadmin/delete_currency/(:num)'] = 'superadmin/superadmin/delete_currency/$1';
+$route['superadmin/notifications'] = 'superadmin/superadmin/notifications';
+$route['superadmin/send_notification'] = 'superadmin/superadmin/send_notification';
+$route['superadmin/delete_notification/(:num)'] = 'superadmin/superadmin/delete_notification/$1';
 $route['superadmin/settings'] = 'superadmin/superadmin/settings';
 $route['superadmin/profile'] = 'superadmin/superadmin/profile';
 $route['superadmin/save_tenant'] = 'superadmin/superadmin/save_tenant';

@@ -85,9 +85,11 @@ class Auth extends MY_Controller {
                 //if the login is successful
                 $this->session->set_flashdata('message', $this->ion_auth->messages());
                 $user = $this->ion_auth->user()->row();
-                if ($user && (strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin') || $user->email === 'ronaldi2040@gmail.com')) {
-                    $this->session->set_userdata('tenant_id', 1);
-                    $this->session->set_userdata('tenant_slug', 'kulafarms');
+                $is_superadmin = ($user && (!empty($user->account_type) && $user->account_type === 'platform_admin' || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+                if ($is_superadmin) {
+                    $this->session->unset_userdata('tenant_id');
+                    $this->session->unset_userdata('tenant_slug');
+                    $this->session->set_userdata('account_type', 'platform_admin');
                     redirect('superadmin', 'refresh');
                 } else {
                     if ($user && !empty($user->tenant_id)) {

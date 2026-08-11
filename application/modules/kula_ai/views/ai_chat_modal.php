@@ -740,54 +740,66 @@
             stream.appendChild(loadingMsg);
             stream.scrollTop = stream.scrollHeight;
 
-            $.ajax({
-                url: this.baseUrl + 'kula_ai/chat',
-                type: 'POST',
-                data: { prompt: prompt },
-                dataType: 'json',
-                success: function(data) {
-                    const elem = document.getElementById(loadingId);
-                    if (data && data.status) {
-                        const parsedHtml = KulaAIChat.formatMarkdown(data.response);
-                        elem.innerHTML = parsedHtml + `
-                            <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
-                                <form action="${KulaAIChat.baseUrl}kula_ai/export_pdf" method="POST" target="_blank" style="margin:0;">
-                                    <input type="hidden" name="content" value="${KulaAIChat.escapeAttr(parsedHtml)}">
-                                    <input type="hidden" name="title" value="KulaAI Executive Report">
-                                    <button type="submit" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
-                                        <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Export PDF
-                                    </button>
-                                </form>
-                            </div>
-                        `;
-                    } else if (data && data.response) {
-                        elem.innerHTML = KulaAIChat.formatMarkdown(data.response);
-                    } else if (data && data.error) {
-                        elem.innerHTML = '⚠️ ' + data.error;
-                    } else {
-                        elem.innerHTML = '⚠️ Unable to retrieve answer. Please refresh and try again.';
-                    }
-                    stream.scrollTop = stream.scrollHeight;
-                },
-                error: function(xhr, status, error) {
-                    const elem = document.getElementById(loadingId);
-                    if (elem) {
-                        let msg = 'Service connection error. Please refresh and log in to use KulaAI.';
-                        if (xhr && xhr.responseJSON) {
-                            if (xhr.responseJSON.error) msg = xhr.responseJSON.error;
-                            else if (xhr.responseJSON.response) msg = xhr.responseJSON.response;
-                        } else if (xhr && xhr.responseText) {
-                            try {
-                                const parsed = JSON.parse(xhr.responseText);
-                                if (parsed && parsed.error) msg = parsed.error;
-                                else if (parsed && parsed.response) msg = parsed.response;
-                            } catch(e) {}
+            const primaryUrl = '<?= site_url("kula_ai/chat") ?>';
+            const fallbackUrl = KulaAIChat.baseUrl + 'kula_ai/chat';
+
+            const executeChatRequest = (targetUrl, isRetry = false) => {
+                $.ajax({
+                    url: targetUrl,
+                    type: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    data: { prompt: prompt },
+                    dataType: 'json',
+                    success: function(data) {
+                        const elem = document.getElementById(loadingId);
+                        if (data && data.status) {
+                            const parsedHtml = KulaAIChat.formatMarkdown(data.response);
+                            elem.innerHTML = parsedHtml + `
+                                <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
+                                    <form action="${KulaAIChat.baseUrl}kula_ai/export_pdf" method="POST" target="_blank" style="margin:0;">
+                                        <input type="hidden" name="content" value="${KulaAIChat.escapeAttr(parsedHtml)}">
+                                        <input type="hidden" name="title" value="KulaAI Executive Report">
+                                        <button type="submit" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                                            <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Export PDF
+                                        </button>
+                                    </form>
+                                </div>
+                            `;
+                        } else if (data && data.response) {
+                            elem.innerHTML = KulaAIChat.formatMarkdown(data.response);
+                        } else if (data && data.error) {
+                            elem.innerHTML = '⚠️ ' + data.error;
+                        } else {
+                            elem.innerHTML = '⚠️ Unable to retrieve answer. Please refresh and try again.';
                         }
-                        elem.innerHTML = '⚠️ ' + msg;
+                        stream.scrollTop = stream.scrollHeight;
+                    },
+                    error: function(xhr, status, error) {
+                        if (!isRetry && targetUrl !== fallbackUrl) {
+                            executeChatRequest(fallbackUrl, true);
+                            return;
+                        }
+                        const elem = document.getElementById(loadingId);
+                        if (elem) {
+                            let msg = 'Service connection error. Please refresh and log in to use KulaAI.';
+                            if (xhr && xhr.responseJSON) {
+                                if (xhr.responseJSON.response) msg = xhr.responseJSON.response;
+                                else if (xhr.responseJSON.error) msg = xhr.responseJSON.error;
+                            } else if (xhr && xhr.responseText) {
+                                try {
+                                    const parsed = JSON.parse(xhr.responseText);
+                                    if (parsed && parsed.response) msg = parsed.response;
+                                    else if (parsed && parsed.error) msg = parsed.error;
+                                } catch(e) {}
+                            }
+                            elem.innerHTML = KulaAIChat.formatMarkdown(msg);
+                        }
+                        stream.scrollTop = stream.scrollHeight;
                     }
-                    stream.scrollTop = stream.scrollHeight;
-                }
-            });
+                });
+            };
+
+            executeChatRequest(primaryUrl);
         },
 
         appendUserMessage(text) {

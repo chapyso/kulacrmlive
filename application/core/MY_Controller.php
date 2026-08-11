@@ -153,10 +153,11 @@ class MY_Controller extends MX_Controller {
      */
     protected function resolve_context() {
         $this->is_impersonating = (bool)$this->session->userdata('is_impersonating');
+        $is_superadmin = false;
         
         if ($this->ion_auth->logged_in()) {
             $user = $this->ion_auth->user()->row();
-            $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+            $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
 
             if ($is_superadmin) {
                 if ($this->is_impersonating && $this->session->userdata('tenant_id')) {
@@ -174,6 +175,8 @@ class MY_Controller extends MX_Controller {
                     $this->tenant_id = null;
                     $this->tenant_slug = null;
                     $this->tenant_data = null;
+                    $this->session->unset_userdata('tenant_id');
+                    $this->session->unset_userdata('tenant_slug');
                     return;
                 }
             } else {
@@ -196,7 +199,6 @@ class MY_Controller extends MX_Controller {
         // Unauthenticated or Path-based tenant resolution
         $segment1 = strtolower($this->uri->segment(1));
         $system_segments = array('superadmin', 'auth', 'api', 'common', 'uploads', 'settings', 'assets', 'cron', 'home', 'livestock', 'shed', 'vaccine', 'food', 'purchase', 'sale', 'client', 'supplier', 'expense', 'staff', 'report', 'product', 'users');
-
 
         if (!empty($segment1) && !in_array($segment1, $system_segments)) {
             $tenant = $this->db->where('slug', $segment1)
@@ -234,8 +236,8 @@ class MY_Controller extends MX_Controller {
             }
         }
 
-        // Default tenant fallback for tenant requests
-        if ($this->context === 'TENANT' || empty($this->uri->segment(1)) || $this->uri->segment(1) === 'home') {
+        // Fallback for non-superadmin tenant requests only
+        if (!$is_superadmin && ($this->context === 'TENANT' || empty($this->uri->segment(1)) || $this->uri->segment(1) === 'home')) {
             $this->context = 'TENANT';
             $this->tenant_id = 1;
             $this->tenant_slug = 'kulafarms';
@@ -253,13 +255,13 @@ class MY_Controller extends MX_Controller {
         }
 
         $user = $this->ion_auth->user()->row();
-        $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+        $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
         $segment1 = strtolower($this->uri->segment(1));
         $is_superadmin_route = ($segment1 === 'superadmin');
 
         // 1. Super Admin in PLATFORM context attempting to visit a tenant business module without impersonation
         if ($is_superadmin && !$is_superadmin_route && !$this->is_impersonating) {
-            $exempt_segments = array('auth', 'api', 'common', 'uploads', 'assets');
+            $exempt_segments = array('auth', 'api', 'common', 'uploads', 'assets', 'kula_ai');
             if (!in_array($segment1, $exempt_segments)) {
                 redirect('superadmin', 'refresh');
             }
@@ -279,7 +281,7 @@ class MY_Controller extends MX_Controller {
             return false;
         }
         $user = $this->ion_auth->user()->row();
-        return ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+        return ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
     }
 
     /**

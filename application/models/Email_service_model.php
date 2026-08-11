@@ -383,4 +383,60 @@ class Email_service_model extends CI_Model
 
         return @$this->email->send();
     }
+
+    /**
+     * 9. Super Admin Broadcast Announcement Email to Tenants
+     */
+    public function send_broadcast_tenant_email($to_email, $tenant_name, $subject, $message_body, $priority = 'info', $action_link = null)
+    {
+        $this->init_smtp();
+        $smtp = $this->db->get('saas_smtp_settings')->row();
+        $from_email = $smtp ? $smtp->from_email : 'info@chapysocial.com';
+        $from_name = $smtp ? $smtp->from_name : 'SaaS Super Admin';
+
+        $priority_bg = '#eff6ff';
+        $priority_border = '#bfdbfe';
+        $priority_title = '#1e40af';
+        $badge = '📢 Platform Announcement';
+
+        if ($priority === 'warning') {
+            $priority_bg = '#fffbeb';
+            $priority_border = '#fde68a';
+            $priority_title = '#92400e';
+            $badge = '⚠️ System Advisory';
+        } elseif ($priority === 'critical') {
+            $priority_bg = '#fef2f2';
+            $priority_border = '#fecaca';
+            $priority_title = '#991b1b';
+            $badge = '🚨 Critical Maintenance Notice';
+        }
+
+        $title = $subject ?: "SaaS Platform Announcement";
+        $body = '
+            <div style="background: ' . $priority_bg . '; border: 1px solid ' . $priority_border . '; padding: 18px; border-radius: 12px; margin-bottom: 20px;">
+                <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: ' . $priority_title . '; letter-spacing: 0.5px;">' . $badge . '</span>
+                <h3 style="color: ' . $priority_title . '; margin: 6px 0 0 0; font-size: 18px;">' . html_escape($title) . '</h3>
+            </div>
+
+            <p style="font-size: 15px; color: #1e293b;">Hello <strong>' . html_escape($tenant_name ?: 'Tenant Admin') . '</strong>,</p>
+            
+            <div style="font-size: 15px; line-height: 1.6; color: #334155; margin: 16px 0;">
+                ' . nl2br(html_escape($message_body)) . '
+            </div>
+
+            ' . ($action_link ? '
+            <div style="text-align: center; margin: 28px 0;">
+                <a href="' . html_escape($action_link) . '" style="background: #047857; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 10px; font-weight: 700; display: inline-block;">Open Requested Page &rarr;</a>
+            </div>' : '') . '
+
+            <p style="font-size: 12px; color: #64748b; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px;">This is an official administrative broadcast sent by the SaaS Platform Super Admin to your tenant account.</p>
+        ';
+
+        $this->email->from($from_email, $from_name);
+        $this->email->to($to_email);
+        $this->email->subject($title);
+        $this->email->message($this->wrap_html_template($title, $body));
+
+        return @$this->email->send();
+    }
 }

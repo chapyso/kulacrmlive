@@ -21,6 +21,7 @@ class Tenant_user_model extends MY_Model {
         $this->db->join('user_roles ur', 'ur.user_id = u.id', 'left');
         $this->db->join('roles r', 'r.id = ur.role_id', 'left');
         $this->db->where('tu.tenant_id', (int)$tenant_id);
+        $this->db->where('u.account_type', 'tenant_user');
 
         if (!empty($filters['department_id'])) {
             $this->db->where('tu.department_id', (int)$filters['department_id']);

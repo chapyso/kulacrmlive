@@ -1,0 +1,17 @@
+{
+    "timestamp": "2026-08-11 14:25:54",
+    "database": "livestock",
+    "counts": {
+        "tenants": 1,
+        "users": 2,
+        "groups": 5,
+        "users_groups": 5,
+        "client": 1,
+        "supplier": 1,
+        "expense": 0,
+        "livestock": 1,
+        "shed": 1,
+        "vaccine": 1,
+        "settings": 2
+    }
+}

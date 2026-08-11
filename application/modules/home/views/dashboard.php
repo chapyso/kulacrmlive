@@ -67,13 +67,13 @@
  <body>
      <section id="container" class="">
          <?php if ($this->session->userdata('is_impersonating')): ?>
-             <div style="background: linear-gradient(90deg, #f59e0b, #d97706); color: #ffffff; padding: 8px 20px; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                 <span><i class="fa-solid fa-user-secret" style="margin-right: 8px;"></i> IMPERSONATING TENANT WORKSPACE: <strong><?php echo htmlspecialchars($this->session->userdata('tenant_name')); ?></strong></span>
-                 <a href="<?php echo base_url('superadmin/stop_impersonating'); ?>" class="btn btn-xs btn-default" style="background: #ffffff; color: #d97706; font-weight: 800; border-radius: 6px; border: none; padding: 3px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                     Exit Impersonation &times;
-                 </a>
-             </div>
-         <?php endif; ?>
+            <div style="background: linear-gradient(90deg, #d97706, #b45309); color: #ffffff; padding: 4px 16px; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10000; box-shadow: 0 1px 4px rgba(0,0,0,0.12); line-height: 1.3;">
+                <span><i class="fa-solid fa-user-shield" style="margin-right: 6px; font-size: 11px;"></i> IMPERSONATING TENANT WORKSPACE: <strong style="letter-spacing: 0.3px;"><?php echo htmlspecialchars($this->session->userdata('tenant_name')); ?></strong></span>
+                <a href="<?php echo base_url('superadmin/stop_impersonating'); ?>" class="btn btn-xs" style="background: #ffffff; color: #b45309; font-weight: 800; border-radius: 4px; border: none; padding: 2px 8px; font-size: 10px; line-height: 1.2; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.15s ease;">
+                    Exit Impersonation &times;
+                </a>
+            </div>
+        <?php endif; ?>
          <header class="header white-bg">
             <div class="kula-top-header-left" style="display: flex; align-items: center; gap: 16px;">
                 <!-- Mobile Hamburger Sidebar Toggle Button -->
@@ -477,16 +477,16 @@
              <div class="kula-sidebar-footer">
                  <div class="kula-user-card" id="kula-user-card-trigger">
                      <div class="kula-user-avatar">
-                         <?php if ($settings->img_url) { ?>
-                             <img src="<?php echo $settings->img_url; ?>" alt="Avatar">
-                         <?php } else { ?>
-                             <img src="<?php echo base_url('uploads/avatar/alter-image.png'); ?>" alt="Avatar">
-                         <?php } ?>
+                         <?php if (!empty($settings?->img_url)) { ?>
+                            <img src="<?php echo $settings->img_url; ?>" alt="Avatar">
+                        <?php } else { ?>
+                            <img src="<?php echo base_url('uploads/avatar/alter-image.png'); ?>" alt="Avatar">
+                        <?php } ?>
                          <span class="kula-online-dot"></span>
                      </div>
                      <div class="kula-user-details">
-                         <span class="kula-user-name"><?php echo $this->ion_auth->user()->row()->username; ?></span>
-                         <span class="kula-user-role"><?php echo $this->ion_auth->get_users_groups()->row()->name; ?></span>
+                         <span class="kula-user-name"><?php echo $this->ion_auth->user()->row()?->username ?? 'User'; ?></span>
+                         <span class="kula-user-role"><?php echo $this->ion_auth->get_users_groups()->row()?->name ?? ''; ?></span>
                      </div>
                      <i class="fa-solid fa-ellipsis-vertical kula-user-dots"></i>
                  </div>

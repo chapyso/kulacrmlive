@@ -573,7 +573,7 @@ class Superadmin extends MY_Controller {
 
         if ($is_default) {
             $this->db->update('saas_currencies', array('is_default' => 0));
-            $this->db->where('id', 1)->update('settings', array('currency' => $symbol));
+            $this->db->update('settings', array('currency' => $symbol));
         }
 
         $currency_data = array(
@@ -606,7 +606,7 @@ class Superadmin extends MY_Controller {
         if ($curr) {
             $this->db->update('saas_currencies', array('is_default' => 0));
             $this->db->where('id', $id)->update('saas_currencies', array('is_default' => 1, 'is_active' => 1));
-            $this->db->where('id', 1)->update('settings', array('currency' => $curr->symbol));
+            $this->db->update('settings', array('currency' => $curr->symbol));
             $this->session->set_flashdata('feedback', "Base platform currency set to {$curr->name} ({$curr->code}).");
         } else {
             $this->session->set_flashdata('feedback', 'Error: Currency not found.');
@@ -626,6 +626,42 @@ class Superadmin extends MY_Controller {
         redirect('superadmin/currency');
     }
 
+    public function users() {
+        $data = array();
+        $data['settings'] = $this->settings_model->getSettings();
+        
+        $this->db->select('users.*, tenants.name as tenant_name, tenants.slug as tenant_slug');
+        $this->db->from('users');
+        $this->db->join('tenants', 'tenants.id = users.tenant_id', 'left');
+        $this->db->order_by('users.id', 'DESC');
+        $data['users'] = $this->db->get()->result();
+        $data['tenants'] = $this->db->get('tenants')->result();
+
+        $this->load->view('superadmin/header', $data);
+        $this->load->view('superadmin/users', $data);
+        $this->load->view('home/footer');
+    }
+
+    public function delete_user($id) {
+        $id = (int)$id;
+        $user = $this->db->get_where('users', array('id' => $id))->row();
+        if ($user) {
+            if ($user->email === 'ronaldi2040@gmail.com' || $user->account_type === 'platform_admin') {
+                $this->session->set_flashdata('feedback', 'Error: The SaaS Platform Super Admin account is protected and cannot be deleted.');
+                redirect('superadmin/users');
+                return;
+            }
+            $this->db->where('user_id', $id)->delete('tenant_users');
+            $this->db->where('user_id', $id)->delete('user_roles');
+            $this->db->where('user_id', $id)->delete('users_groups');
+            $this->db->where('id', $id)->delete('users');
+            $this->session->set_flashdata('feedback', "User '{$user->username}' ({$user->email}) deleted successfully.");
+        } else {
+            $this->session->set_flashdata('feedback', 'Error: User not found.');
+        }
+        redirect('superadmin/users');
+    }
+
     public function delete_currency($id) {
         $id = (int)$id;
         $curr = $this->db->get_where('saas_currencies', array('id' => $id))->row();
@@ -638,5 +674,131 @@ class Superadmin extends MY_Controller {
             }
         }
         redirect('superadmin/currency');
+    }
+
+    public function notifications() {
+        $data = array();
+        $data['settings'] = $this->settings_model->getSettings();
+        
+        $this->db->select('notifications.*, tenants.name as tenant_name, tenants.slug as tenant_slug');
+        $this->db->from('notifications');
+        $this->db->join('tenants', 'tenants.id = notifications.tenant_id', 'left');
+        $this->db->order_by('notifications.id', 'DESC');
+        $data['notifications'] = $this->db->get()->result();
+
+        $data['tenants'] = $this->db->order_by('name', 'ASC')->get('tenants')->result();
+        $data['total_sent'] = count($data['notifications']);
+
+        $data['in_app_count'] = 0;
+        $data['email_count'] = 0;
+        foreach ($data['notifications'] as $n) {
+            if (isset($n->channel) && ($n->channel === 'email' || $n->channel === 'both')) {
+                $data['email_count']++;
+            }
+            if (!isset($n->channel) || $n->channel === 'in_app' || $n->channel === 'both') {
+                $data['in_app_count']++;
+            }
+        }
+
+        $this->load->view('superadmin/header', $data);
+        $this->load->view('superadmin/notifications', $data);
+        $this->load->view('home/footer');
+    }
+
+    public function send_notification() {
+        $target_type = $this->input->post('target_type');
+        $specific_tenant_id = (int)$this->input->post('tenant_id');
+        $channel = $this->input->post('channel') ?: 'in_app';
+        $priority = $this->input->post('priority') ?: 'info';
+        $title = trim($this->input->post('title'));
+        $message = trim($this->input->post('message'));
+        $link = trim($this->input->post('link'));
+
+        if (empty($title) || empty($message)) {
+            $this->session->set_flashdata('feedback', 'Error: Notification Title and Message Body are required.');
+            redirect('superadmin/notifications');
+            return;
+        }
+
+        $target_tenants = array();
+        if ($target_type === 'tenant' && $specific_tenant_id > 0) {
+            $t = $this->db->get_where('tenants', array('id' => $specific_tenant_id))->row();
+            if ($t) $target_tenants[] = $t;
+        } elseif ($target_type === 'active') {
+            $target_tenants = $this->db->get_where('tenants', array('status' => 'active'))->result();
+        } else {
+            $target_tenants = $this->db->get('tenants')->result();
+        }
+
+        if (empty($target_tenants)) {
+            $this->session->set_flashdata('feedback', 'Error: No matching target tenants found.');
+            redirect('superadmin/notifications');
+            return;
+        }
+
+        $this->load->model('email_service_model');
+        $this->load->model('notification_model');
+
+        $delivered_count = 0;
+        $emails_sent = 0;
+
+        $icon = 'fa-bell';
+        $icon_bg = '#eff6ff';
+        $icon_color = '#2563eb';
+
+        if ($priority === 'warning') {
+            $icon = 'fa-triangle-exclamation';
+            $icon_bg = '#fffbeb';
+            $icon_color = '#d97706';
+        } elseif ($priority === 'critical') {
+            $icon = 'fa-circle-exclamation';
+            $icon_bg = '#fef2f2';
+            $icon_color = '#ef4444';
+        }
+
+        foreach ($target_tenants as $tenant) {
+            if ($channel === 'in_app' || $channel === 'both') {
+                $this->notification_model->create_notification(array(
+                    'tenant_id' => $tenant->id,
+                    'type' => 'announcement',
+                    'title' => $title,
+                    'message' => $message,
+                    'icon' => $icon,
+                    'icon_bg' => $icon_bg,
+                    'icon_color' => $icon_color,
+                    'link' => $link ?: base_url($tenant->slug),
+                    'channel' => $channel,
+                    'priority' => $priority,
+                    'sent_by' => 'SaaS Super Admin'
+                ));
+                $delivered_count++;
+            }
+
+            if (($channel === 'email' || $channel === 'both') && !empty($tenant->email)) {
+                $sent = $this->email_service_model->send_broadcast_tenant_email(
+                    $tenant->email,
+                    $tenant->name,
+                    $title,
+                    $message,
+                    $priority,
+                    $link
+                );
+                if ($sent) $emails_sent++;
+            }
+        }
+
+        $msg = "Broadcast dispatched successfully to " . count($target_tenants) . " tenant(s).";
+        if ($channel === 'both' || $channel === 'email') {
+            $msg .= " ({$emails_sent} system email(s) sent).";
+        }
+        $this->session->set_flashdata('feedback', $msg);
+        redirect('superadmin/notifications');
+    }
+
+    public function delete_notification($id) {
+        $id = (int)$id;
+        $this->db->where('id', $id)->delete('notifications');
+        $this->session->set_flashdata('feedback', 'Notification record deleted from history.');
+        redirect('superadmin/notifications');
     }
 }

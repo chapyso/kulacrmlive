@@ -300,35 +300,46 @@ class Ai_tool_service {
         // Sales income
         $ls_sales = 0;
         if ($CI->db->table_exists('livestock_sale_summary')) {
-            $CI->db->select('SUM(lsss_grand_total) as total_sales');
-            if ($CI->db->field_exists('tenant_id', 'livestock_sale_summary')) {
-                $CI->db->where('tenant_id', $tenant_id);
+            $col = $CI->db->field_exists('lsss_grand_total', 'livestock_sale_summary') ? 'lsss_grand_total' : ($CI->db->field_exists('lsss_sub_total', 'livestock_sale_summary') ? 'lsss_sub_total' : null);
+            if ($col) {
+                $CI->db->select("SUM({$col}) as total_sales");
+                if ($CI->db->field_exists('tenant_id', 'livestock_sale_summary')) {
+                    $CI->db->where('tenant_id', $tenant_id);
+                }
+                if ($CI->db->field_exists('lsss_status', 'livestock_sale_summary')) {
+                    $CI->db->where('lsss_status', 1);
+                }
+                $ls = $CI->db->get('livestock_sale_summary')->row();
+                $ls_sales = (float)($ls->total_sales ?? 0);
             }
-            $CI->db->where('lsss_status', 1);
-            $ls = $CI->db->get('livestock_sale_summary')->row();
-            $ls_sales = (float)($ls->total_sales ?? 0);
         }
 
         // Product sales
         $prod_sale_val = 0;
         if ($CI->db->table_exists('product_sale_summary')) {
-            $CI->db->select('SUM(pss_grand_total) as product_sales');
-            if ($CI->db->field_exists('tenant_id', 'product_sale_summary')) {
-                $CI->db->where('tenant_id', $tenant_id);
+            $col = $CI->db->field_exists('prss_grand_total', 'product_sale_summary') ? 'prss_grand_total' : ($CI->db->field_exists('pss_grand_total', 'product_sale_summary') ? 'pss_grand_total' : null);
+            if ($col) {
+                $CI->db->select("SUM({$col}) as product_sales");
+                if ($CI->db->field_exists('tenant_id', 'product_sale_summary')) {
+                    $CI->db->where('tenant_id', $tenant_id);
+                }
+                $ps = $CI->db->get('product_sale_summary')->row();
+                $prod_sale_val = (float)($ps->product_sales ?? 0);
             }
-            $ps = $CI->db->get('product_sale_summary')->row();
-            $prod_sale_val = (float)($ps->product_sales ?? 0);
         }
 
         // Expenses
         $expense_val = 0;
         if ($CI->db->table_exists('expense')) {
-            $CI->db->select('SUM(exp_amount) as total_expenses');
-            if ($CI->db->field_exists('tenant_id', 'expense')) {
-                $CI->db->where('tenant_id', $tenant_id);
+            $col = $CI->db->field_exists('ex_amount', 'expense') ? 'ex_amount' : ($CI->db->field_exists('exp_amount', 'expense') ? 'exp_amount' : null);
+            if ($col) {
+                $CI->db->select("SUM({$col}) as total_expenses");
+                if ($CI->db->field_exists('tenant_id', 'expense')) {
+                    $CI->db->where('tenant_id', $tenant_id);
+                }
+                $exp = $CI->db->get('expense')->row();
+                $expense_val = (float)($exp->total_expenses ?? 0);
             }
-            $exp = $CI->db->get('expense')->row();
-            $expense_val = (float)($exp->total_expenses ?? 0);
         }
 
         $total_income = $ls_sales + $prod_sale_val;
