@@ -75,7 +75,7 @@ class Auth extends MY_Controller {
             // Check for brute-force rate-limiting lockout
             if ($this->ion_auth->is_max_login_attempts_exceeded($this->input->post('identity'))) {
                 $this->session->set_flashdata('message', 'Security Alert: Too many failed login attempts. Please wait 1 minute before trying again.');
-                redirect('auth/login', 'refresh');
+                redirect('auth/login');
             }
 
             //check for "remember me"
@@ -90,7 +90,7 @@ class Auth extends MY_Controller {
                     $this->session->unset_userdata('tenant_id');
                     $this->session->unset_userdata('tenant_slug');
                     $this->session->set_userdata('account_type', 'platform_admin');
-                    redirect('superadmin', 'refresh');
+                    redirect('superadmin');
                 } else {
                     if ($user && !empty($user->tenant_id)) {
                         $tenant = $this->db->get_where('tenants', array('id' => (int)$user->tenant_id))->row();
@@ -100,13 +100,13 @@ class Auth extends MY_Controller {
                             $this->session->set_userdata('tenant_slug', $slug);
                         }
                     }
-                    redirect(tenant_url('dashboard'), 'refresh');
+                    redirect(tenant_url('dashboard'));
                 }
             } else {
                 //if the login was un-successful
                 //redirect them back to the login page
                 $this->session->set_flashdata('message', $this->ion_auth->errors());
-                redirect('auth/login', 'refresh');
+                redirect('auth/login');
             }
         } else {
             //the user is not logging in so display the login page
