@@ -79,13 +79,12 @@ class MY_Model extends CI_Model {
         $CI =& get_instance();
         $tenant_id = $this->get_tenant_id();
 
-        // Apply tenant scoping when tenant_id is active
+        // Apply strict tenant scoping when tenant_id is active
         if (!empty($tenant_id)) {
             $col = ($table && strpos($table, '.') === false) ? $table . '.tenant_id' : 'tenant_id';
             if ($this->db->field_exists('tenant_id', $table ? $table : '')) {
                 $this->db->group_start();
                 $this->db->where($col, $tenant_id);
-                $this->db->or_where($col, 1);
                 $this->db->or_where($col, 0);
                 $this->db->or_where($col . ' IS NULL', null, false);
                 $this->db->group_end();
