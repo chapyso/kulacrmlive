@@ -106,9 +106,25 @@ class Seed extends MX_Controller {
             $this->db->insert('users_groups', array('user_id' => $sa_user->id, 'group_id' => $group_id));
         }
 
+        // 7. Ensure `admin` group exists and assign ALL active tenant users to `admin` group in `users_groups`
+        $admin_grp = $this->db->get_where('groups', array('name' => 'admin'))->row();
+        $admin_grp_id = $admin_grp ? $admin_grp->id : null;
+        if (!$admin_grp_id) {
+            $this->db->insert('groups', array('name' => 'admin', 'description' => 'Administrator'));
+            $admin_grp_id = $this->db->insert_id();
+        }
+
+        $all_tenant_users = $this->db->get_where('users', array('active' => 1))->result();
+        foreach ($all_tenant_users as $tu) {
+            $check_ug = $this->db->get_where('users_groups', array('user_id' => $tu->id, 'group_id' => $admin_grp_id))->row();
+            if (!$check_ug) {
+                $this->db->insert('users_groups', array('user_id' => $tu->id, 'group_id' => $admin_grp_id));
+            }
+        }
+
         echo json_encode(array(
             'status'  => true,
-            'message' => 'Super Admin accounts (ronaldi2040@gmail.com & admin@kulacrm.com) seeded and verified successfully with password Baale@256!'
+            'message' => 'Super Admin accounts & tenant group permissions seeded and verified successfully!'
         ));
     }
 }

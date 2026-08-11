@@ -480,6 +480,14 @@ class Ion_auth
 
 		$id || $id = $this->session->userdata('user_id');
 
+		$CI =& get_instance();
+		if (isset($CI->is_superadmin) && $CI->is_superadmin) {
+			return true;
+		}
+		if (method_exists($CI, 'is_super_admin') && $CI->is_super_admin()) {
+			return true;
+		}
+
 		if (!is_array($check_group))
 		{
 			$check_group = array($check_group);
