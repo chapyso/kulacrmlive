@@ -201,14 +201,17 @@ class MY_Controller extends MX_Controller {
         $system_segments = array('superadmin', 'auth', 'api', 'common', 'uploads', 'settings', 'assets', 'cron', 'home', 'livestock', 'shed', 'vaccine', 'food', 'purchase', 'sale', 'client', 'supplier', 'expense', 'staff', 'report', 'product', 'users');
 
         if (!empty($segment1) && !in_array($segment1, $system_segments)) {
-            $tenant = $this->db->where('slug', $segment1)
+            $tenant = $this->db->group_start()
+                               ->where('slug', $segment1)
+                               ->or_where('slug_name', $segment1)
+                               ->group_end()
                                ->where('status', 'active')
                                ->get('tenants')
                                ->row();
             if ($tenant) {
                 $this->context = 'TENANT';
                 $this->tenant_id = (int)$tenant->id;
-                $this->tenant_slug = $tenant->slug;
+                $this->tenant_slug = !empty($tenant->slug_name) ? $tenant->slug_name : $tenant->slug;
                 $this->tenant_data = $tenant;
                 $this->session->set_userdata('tenant_id', $this->tenant_id);
                 $this->session->set_userdata('tenant_slug', $this->tenant_slug);
