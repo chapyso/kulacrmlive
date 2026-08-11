@@ -141,6 +141,7 @@ class Settings_model extends MY_Model
         $tenant_id = $this->get_tenant_id();
         $effective_tenant_id = !empty($tenant_id) ? (int)$tenant_id : 1;
         
+        $settings = null;
         if ($this->db->field_exists('tenant_id', 'settings')) {
             $settings = $this->db->get_where('settings', array('tenant_id' => $effective_tenant_id))->row();
             
@@ -160,11 +161,26 @@ class Settings_model extends MY_Model
                     $settings = $this->db->get('settings')->row();
                 }
             }
-            return $settings;
+        } else {
+            $settings = $this->db->get('settings')->row();
         }
 
-        $query = $this->db->get('settings');
-        return $query->row();
+        if (!$settings) {
+            $settings = (object) array(
+                'id'           => 1,
+                'title'        => 'AgriERP Farm Management',
+                'currency'     => 'UGX ',
+                'unit'         => 'head',
+                'img_url'      => 'uploads/logo.png',
+                'dark_img_url' => 'uploads/dark_logo.png',
+                'favicon_url'  => 'uploads/logo.png',
+                'timezone'     => 'Africa/Kampala'
+            );
+        } else if (empty($settings->currency)) {
+            $settings->currency = 'UGX ';
+        }
+
+        return $settings;
     }
 
     function updateSettings($id, $data)

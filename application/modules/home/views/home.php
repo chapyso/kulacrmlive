@@ -3,6 +3,7 @@
  <section id="main-content">
      <section class="wrapper site-min-height">
          <?php
+        $currency = (!empty($settings) && !empty($settings->currency)) ? $settings->currency : 'UGX ';
         $hour = (int) date('H');
         if ($hour < 12) {
             $greeting = 'Good morning';
@@ -245,7 +246,7 @@
                                   <div class="value">
                                       <strong class="text-info">Livestock Purchases (Month)</strong>
                                       <h4>
-                                          <?php echo $settings->currency . number_format_currency($total_livestock_purchased_amount, 2); ?>
+                                          <?php echo $currency . number_format_currency($total_livestock_purchased_amount, 2); ?>
                                       </h4>
                                       <span class="kula-trend-badge up"><i class="fa-solid fa-arrow-trend-up"></i> +18.2%</span>
                                   </div>
@@ -268,7 +269,7 @@
                                           $vaccinePurchaseAmount = $this->report_model->getSumData('vaccine_purchase_summary', 'vps_grand_total', ['vps_status' => 1]);
                                           $expenseAmount = $this->report_model->getSumData('expense', 'ex_amount', ['ex_status' => 1]);
                                           $otherExpense = $foodPurchaseAmount + $vaccinePurchaseAmount + $expenseAmount;
-                                          echo $settings->currency . number_format_currency($otherExpense, 2);
+                                          echo $currency . number_format_currency($otherExpense, 2);
                                           ?>
                                       </h4>
                                       <span class="kula-trend-badge down"><i class="fa-solid fa-arrow-trend-down"></i> -8.5%</span>
@@ -289,7 +290,7 @@
                                       <h4 class="count2">
                                           <?php
                                           $totalSaleAmount = $this->sale_model->getTotalLivestockSaleAmount();
-                                          echo $settings->currency . number_format_currency($totalSaleAmount, 2); ?>
+                                          echo $currency . number_format_currency($totalSaleAmount, 2); ?>
                                       </h4>
                                       <span class="kula-trend-badge up"><i class="fa-solid fa-arrow-trend-up"></i> +24.3%</span>
                                   </div>
@@ -308,7 +309,7 @@
                                       <strong class="text-info">Product Sales</strong>
                                       <h4>
                                           <?php $productSaleAmount = $this->report_model->getSumData('product_sale_summary', 'prss_grand_total', ['prss_status' => 1]);
-                                          echo $settings->currency . number_format_currency($productSaleAmount, 2);
+                                          echo $currency . number_format_currency($productSaleAmount, 2);
                                           ?>
                                       </h4>
                                       <span class="kula-trend-badge neutral"><i class="fa-solid fa-clock"></i> Active</span>
@@ -362,7 +363,7 @@
                                           $vaccinePurchaseAmountToday = $this->report_model->getSumData('vaccine_purchase_summary', 'vps_grand_total', ['vps_status' => 1, 'vps_date' => date("Y-m-d")]);
                                           $expenseAmountToday = $this->report_model->getSumData('expense', 'ex_amount', ['ex_status' => 1, 'ex_date' => date("Y-m-d")]);
                                           $otherExpenseToday = $livestockPurchaseAmountToday + $foodPurchaseAmountToday + $vaccinePurchaseAmountToday + $expenseAmountToday;
-                                          echo $settings->currency . number_format_currency($otherExpenseToday, 2);
+                                          echo $currency . number_format_currency($otherExpenseToday, 2);
                                           ?>
                                       </h4>
                                       <span class="kula-trend-badge up"><i class="fa-solid fa-calendar-day"></i> Today</span>
@@ -385,7 +386,7 @@
                                           $livestockSaleAmountToday = $this->report_model->getSumData('livestock_sale_summary', 'lsss_grand_total', ['lsss_date' => date("Y-m-d")]);
                                           $productSaleAmountToday = $this->report_model->getSumData('product_sale_summary', 'prss_grand_total', ['prss_status' => 1, 'prss_date' => date("Y-m-d")]);
                                           $todaySaleAmount = $livestockSaleAmountToday + $productSaleAmountToday;
-                                          echo $settings->currency . number_format_currency($todaySaleAmount, 2);
+                                          echo $currency . number_format_currency($todaySaleAmount, 2);
                                           ?>
                                       </h4>
                                       <span class="kula-trend-badge neutral"><i class="fa-solid fa-calendar-day"></i> Today</span>
@@ -493,7 +494,7 @@
                                               <span style="background: #ef4444; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $expPct; ?>%</span>
                                           </div>
                                           <h4 style="font-size: 19px; font-weight: 800; color: #7f1d1d; margin: 0 0 6px 0;">
-                                              <?= $settings->currency . number_format_currency($totalPaidAmount, 2); ?>
+                                              <?= $currency . number_format_currency($totalPaidAmount, 2); ?>
                                           </h4>
                                           <div style="height: 6px; background: #fee2e2; border-radius: 4px; overflow: hidden;">
                                               <div style="width: <?= $expPct; ?>%; height: 100%; background: #ef4444; border-radius: 4px;"></div>
@@ -509,7 +510,7 @@
                                               <span style="background: #059669; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $incPct; ?>%</span>
                                           </div>
                                           <h4 style="font-size: 19px; font-weight: 800; color: #064e3b; margin: 0 0 6px 0;">
-                                              <?= $settings->currency . number_format_currency($totalReceivedAmount, 2); ?>
+                                              <?= $currency . number_format_currency($totalReceivedAmount, 2); ?>
                                           </h4>
                                           <div style="height: 6px; background: #d1fae5; border-radius: 4px; overflow: hidden;">
                                               <div style="width: <?= $incPct; ?>%; height: 100%; background: #059669; border-radius: 4px;"></div>
@@ -524,7 +525,7 @@
                                                       Net Operating Profit / Balance
                                                   </span>
                                                   <h4 style="font-size: 20px; font-weight: 800; color: <?= $netBalance >= 0 ? '#14532d' : '#881337'; ?>; margin: 4px 0 0 0;">
-                                                      <?= ($netBalance >= 0 ? '+' : '-') . $settings->currency . number_format_currency(abs($netBalance), 2); ?>
+                                                      <?= ($netBalance >= 0 ? '+' : '-') . $currency . number_format_currency(abs($netBalance), 2); ?>
                                                   </h4>
                                               </div>
                                               <span style="background: <?= $netBalance >= 0 ? '#166534' : '#9f1239'; ?>; color: #ffffff; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px;">
