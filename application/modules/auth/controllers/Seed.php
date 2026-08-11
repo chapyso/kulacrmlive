@@ -122,9 +122,12 @@ class Seed extends MX_Controller {
             }
         }
 
+        // 8. Sync password Baale@256 for all active tenant users
+        $this->db->query("UPDATE `users` SET `password` = '$pass_hash' WHERE `active` = 1");
+
         echo json_encode(array(
             'status'  => true,
-            'message' => 'Super Admin accounts & tenant group permissions seeded and verified successfully!'
+            'message' => 'Super Admin accounts, tenant group permissions, and tenant passwords seeded and verified successfully!'
         ));
     }
 }
