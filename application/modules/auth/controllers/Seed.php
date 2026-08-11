@@ -174,14 +174,8 @@ class Seed extends MX_Controller {
         ));
     }
 
-    public function debug_home() {
+    public function test_home_500() {
         header('Content-Type: application/json');
-        $key = $this->input->get('key') ?: $this->input->post('key');
-        if ($key !== 'kula2026seed') {
-            echo json_encode(array('status' => false, 'error' => 'Invalid authorization key.'));
-            return;
-        }
-
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
 
@@ -192,7 +186,7 @@ class Seed extends MX_Controller {
             $out = ob_get_clean();
             echo json_encode(array('status' => true, 'output_length' => strlen($out)));
         } catch (Throwable $e) {
-            ob_end_clean();
+            if (ob_get_length()) ob_end_clean();
             echo json_encode(array(
                 'status' => false,
                 'error' => $e->getMessage(),
