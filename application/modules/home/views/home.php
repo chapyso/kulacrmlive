@@ -790,15 +790,29 @@
                                              <tbody>
                                                  <?php
                                                  foreach ($assignedBatchesByShedId as $value) {
+                                                     $assignedValData = $this->purchase_model->getAssignedLivestockValueDataBySummaryId($value->lshs_id);
+                                                     $ls_id = $assignedValData ? $assignedValData->lsh_purv_ls_id : 0;
+                                                     $lst_id = $assignedValData ? $assignedValData->lsh_purv_lst_id : 0;
+
+                                                     $lsObj = $ls_id ? $this->livestock_model->getLivestockById($ls_id) : null;
+                                                     $lsName = $lsObj ? $lsObj->ls_name : '—';
+
+                                                     $lstObj = $lst_id ? $this->livestock_model->getLivestockTypeById($lst_id) : null;
+                                                     $lstTitle = $lstObj ? $lstObj->lst_title : '—';
+
+                                                     $totalAssignedQuantity = $value->lshs_assign_total_quantity;
+                                                     $totalSoldQuantity = ($ls_id && $lst_id) ? $this->sale_model->getShedAndBatchWiseLivestockSaleQuantity($shed->sh_id, $value->lshs_batch_id, $ls_id, $lst_id) : 0;
+                                                     $totalDeathQuantity = $this->shed_model->getDeathLivestockSumByShedAndBatch($shed->sh_id, $value->lshs_batch_id);
+                                                     $inStock = $totalAssignedQuantity - ($totalSoldQuantity + $totalDeathQuantity);
                                                  ?>
                                                      <tr class="over__flow__table">
-                                                         <td><strong><?= $value->lshs_batch_id ?>: <?= $value->lshs_batch_title ?></strong></td>
-                                                         <td><?= $this->livestock_model->getLivestockById($this->purchase_model->getAssignedLivestockValueDataBySummaryId($value->lshs_id)->lsh_purv_ls_id)->ls_name ?></td>
-                                                         <td><?= $this->livestock_model->getLivestockTypeById($this->purchase_model->getAssignedLivestockValueDataBySummaryId($value->lshs_id)->lsh_purv_lst_id)->lst_title ?></td>
-                                                         <td><?php echo $totalAssignedQuantity = $value->lshs_assign_total_quantity ?></td>
-                                                         <td><?php echo $totalSoldQuantity  = $this->sale_model->getShedAndBatchWiseLivestockSaleQuantity($shed->sh_id, $value->lshs_batch_id, $this->purchase_model->getAssignedLivestockValueDataBySummaryId($value->lshs_id)->lsh_purv_ls_id, $this->purchase_model->getAssignedLivestockValueDataBySummaryId($value->lshs_id)->lsh_purv_lst_id); ?></td>
-                                                         <td><?php echo $totalDeathQuantity = $this->shed_model->getDeathLivestockSumByShedAndBatch($shed->sh_id, $value->lshs_batch_id); ?></td>
-                                                         <td><?php echo $inStock = $totalAssignedQuantity - ($totalSoldQuantity + $totalDeathQuantity); ?></td>
+                                                         <td><strong><?= $value->lshs_batch_id ?>: <?= htmlspecialchars($value->lshs_batch_title ?? '') ?></strong></td>
+                                                         <td><?= htmlspecialchars($lsName) ?></td>
+                                                         <td><?= htmlspecialchars($lstTitle) ?></td>
+                                                         <td><?= $totalAssignedQuantity ?></td>
+                                                         <td><?= $totalSoldQuantity ?></td>
+                                                         <td><?= $totalDeathQuantity ?></td>
+                                                         <td><?= $inStock ?></td>
                                                          <td>
                                                              <?php if ($value->lshs_active_status == 0) { ?>
                                                                  <button class="button bg-primary-light"><?php echo lang('running'); ?></button>
@@ -857,47 +871,28 @@
                                      </tr>
                                  </thead>
                                  <tbody>
-                                     <?php $serial = 0;
-                                     foreach ($foods as $food) {
-                                         $serial++;
-                                     ?>
-                                         <tr>
-                                             <td><?= $serial ?></td>
-                                             <td><?= $food->fds_food_title ?></td>
-                                             <td><?php echo $purchaseFood = $this->food_model->getFoodPurchaseWeightByFoodId($food->fds_id, 'fdpv_quantity');
-                                                 if ($purchaseFood) {
-                                                     $unit = $this->settings_model->getUnitById($food->fds_unit_id);
-                                                     if ($unit) {
-                                                         echo ' ' .  $unit->un_name;
-                                                     }
-                                                 }
-                                                 ?>
-                                             </td>
-                                             <td><?php echo $feed = $this->food_model->getFoodDistributedWeightByFoodId($food->fds_id, 'fddv_distributed_quantity');
-                                                 if ($feed) {
-                                                     if ($unit) {
-                                                         echo  ' ' . $unit->un_name;
-                                                     }
-                                                 }
-                                                 ?></td>
-                                             <td><?php echo $wastedFood = $this->food_model->getFoodWastedByFoodId($food->fds_id, 'fdw_quantity');
-                                                 if ($wastedFood) {
-                                                     if ($unit) {
-                                                         echo ' ' . $unit->un_name;
-                                                     }
-                                                 }
-                                                 ?></td>
-                                             <td><?php
-                                                 $stillInStock = $purchaseFood - $feed - $wastedFood;
-                                                 if ($stillInStock) {
-                                                     if ($unit) {
-                                                         echo  $stillInStock . ' ' . $unit->un_name;
-                                                     }
-                                                 }
-                                                 ?></td>
-                                         </tr>
-                                     <?php } ?>
-                                 </tbody>
+                                      <?php $serial = 0;
+                                      if (!empty($foods) && is_array($foods)) {
+                                          foreach ($foods as $food) {
+                                              $serial++;
+                                              $unit = !empty($food->fds_unit_id) ? $this->settings_model->getUnitById($food->fds_unit_id) : null;
+                                              $unitName = $unit ? ' ' . $unit->un_name : '';
+                                              $purchaseFood = $this->food_model->getFoodPurchaseWeightByFoodId($food->fds_id, 'fdpv_quantity');
+                                              $feed = $this->food_model->getFoodDistributedWeightByFoodId($food->fds_id, 'fddv_distributed_quantity');
+                                              $wastedFood = $this->food_model->getFoodWastedByFoodId($food->fds_id, 'fdw_quantity');
+                                              $stillInStock = $purchaseFood - $feed - $wastedFood;
+                                      ?>
+                                          <tr>
+                                              <td><?= $serial ?></td>
+                                              <td><?= htmlspecialchars($food->fds_food_title ?? '') ?></td>
+                                              <td><?= $purchaseFood ? ($purchaseFood . $unitName) : 0 ?></td>
+                                              <td><?= $feed ? ($feed . $unitName) : 0 ?></td>
+                                              <td><?= $wastedFood ? ($wastedFood . $unitName) : 0 ?></td>
+                                              <td><?= $stillInStock > 0 ? ($stillInStock . $unitName) : 0 ?></td>
+                                          </tr>
+                                      <?php }
+                                      } ?>
+                                  </tbody>
                              </table>
                          </div>
  
