@@ -439,4 +439,36 @@ class Email_service_model extends CI_Model
 
         return @$this->email->send();
     }
+
+    /**
+     * 10. Password Reset Request Email
+     */
+    public function send_password_reset_request_email($to_email, $user_name, $reset_url)
+    {
+        $this->init_smtp();
+        $smtp = $this->db->get('saas_smtp_settings')->row();
+        $from_email = $smtp ? $smtp->from_email : 'info@chapysocial.com';
+        $from_name = $smtp ? $smtp->from_name : 'KulaCRM Support';
+
+        $title = "Password Reset Request - KulaCRM";
+        $body = '
+            <h2 style="color: #047857; margin-top: 0;">Password Reset Request 🔑</h2>
+            <p>Hello ' . html_escape($user_name ?: 'User') . ',</p>
+            <p>We received a request to reset your password for your KulaCRM account (<strong>' . html_escape($to_email) . '</strong>).</p>
+
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 18px; border-radius: 12px; margin: 20px 0; text-align: center;">
+                <p style="margin: 0 0 14px 0; color: #065f46; font-weight: 600;">Click the button below to set a new password:</p>
+                <a href="' . $reset_url . '" style="background: #047857; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 10px; font-weight: 700; display: inline-block;">Reset My Password &rarr;</a>
+            </div>
+
+            <p style="font-size: 13px; color: #64748b;">If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+        ';
+
+        $this->email->from($from_email, $from_name);
+        $this->email->to($to_email);
+        $this->email->subject($title);
+        $this->email->message($this->wrap_html_template($title, $body));
+
+        return @$this->email->send();
+    }
 }

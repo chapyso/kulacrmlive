@@ -330,17 +330,16 @@ class Auth extends MY_Controller {
 
     //forgot password
     function forgot_password() {
-        //setting validation rules by checking wheather identity is username or email
+        //setting validation rules by checking whether identity is username or email
         if ($this->config->item('identity', 'ion_auth') == 'username') {
             $this->form_validation->set_rules('email', $this->lang->line('forgot_password_username_identity_label'), 'required');
         } else {
             $this->form_validation->set_rules('email', $this->lang->line('forgot_password_validation_email_label'), 'required|valid_email');
         }
 
-
         if ($this->form_validation->run() == false) {
-            //setup the input
-            $this->data['email'] = array('name' => 'email',
+            $this->data['email'] = array(
+                'name' => 'email',
                 'id' => 'email',
             );
 
@@ -350,35 +349,44 @@ class Auth extends MY_Controller {
                 $this->data['identity_label'] = $this->lang->line('forgot_password_email_identity_label');
             }
 
-            //set any errors and display the form
             $this->data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
+            $this->data['settings'] = $this->settings_model->getSettings();
             $this->_render_page('auth/forgot_password', $this->data);
         } else {
-            // get identity from username or email
-            if ($this->config->item('identity', 'ion_auth') == 'username') {
-                $identity = $this->ion_auth->where('username', strtolower($this->input->post('email')))->users()->row();
-            } else {
-                $identity = $this->ion_auth->where('email', strtolower($this->input->post('email')))->users()->row();
+            $user_email = strtolower(trim($this->input->post('email')));
+
+            // Direct DB lookup to keep Ion_auth query builder state clean
+            $identity = $this->db->get_where('users', array('email' => $user_email))->row();
+            if (!$identity) {
+                $identity = $this->db->get_where('users', array('username' => $user_email))->row();
             }
+
             if (empty($identity)) {
-
-                if ($this->config->item('identity', 'ion_auth') == 'username') {
-                    $this->ion_auth->set_message('forgot_password_username_not_found');
-                } else {
-                    $this->ion_auth->set_message('forgot_password_email_not_found');
-                }
-
-                $this->session->set_flashdata('message', $this->ion_auth->messages());
+                $this->session->set_flashdata('message', 'No account was found with that email address. Please check and try again.');
                 redirect("auth/forgot_password", 'refresh');
             }
 
-            //run the forgotten password method to email an activation code to the user
-            $forgotten = $this->ion_auth->forgotten_password($identity->{$this->config->item('identity', 'ion_auth')});
+            // Run Ion_auth_model forgotten_password to generate token
+            $forgotten = $this->ion_auth_model->forgotten_password($identity->email);
 
             if ($forgotten) {
-                //if there were no errors
-                $this->session->set_flashdata('message', $this->ion_auth->messages());
-                redirect("auth/login", 'refresh'); //we should display a confirmation page here instead of the login page
+                // Send password reset email via Email_service_model
+                $this->load->model('email_service_model');
+                $updated_user = $this->db->get_where('users', array('id' => $identity->id))->row();
+                $reset_code = $updated_user->forgotten_password_code ?? null;
+                
+                $reset_url = base_url('auth/reset_password/' . $reset_code);
+                $name = trim(($identity->first_name ?? '') . ' ' . ($identity->last_name ?? ''));
+                if (empty($name)) $name = $identity->username;
+
+                $this->email_service_model->send_password_reset_request_email(
+                    $identity->email,
+                    $name,
+                    $reset_url
+                );
+
+                $this->session->set_flashdata('message', 'A password reset link has been sent to ' . htmlspecialchars($identity->email) . '. Please check your inbox.');
+                redirect("auth/login", 'refresh');
             } else {
                 $this->session->set_flashdata('message', $this->ion_auth->errors());
                 redirect("auth/forgot_password", 'refresh');

@@ -343,18 +343,17 @@
                 <p><?php echo lang('livestock_management_system'); ?></p>
             </div>
 
-            <div class="info-box <?php echo !empty($message) ? 'alert' : ''; ?>">
-                <i class="fa-solid <?php echo !empty($message) ? 'fa-triangle-exclamation' : 'fa-circle-info'; ?>"></i>
-                <p>
-                    <?php
-                    if (!empty($message)) {
-                        echo lang('please_enter_a_valid_email_address');
-                    } else {
-                        echo lang('enter_your_email_address_below_to_reset_your_password');
-                    }
-                    ?>
-                </p>
-            </div>
+            <?php if (!empty($message)): ?>
+                <div class="info-box alert" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 14px 16px; border-radius: 14px; font-size: 13px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444; font-size: 16px;"></i>
+                    <p style="margin: 0; font-weight: 500;"><?php echo $message; ?></p>
+                </div>
+            <?php else: ?>
+                <div class="info-box" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); color: #a1a1aa; padding: 14px 16px; border-radius: 14px; font-size: 13px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-circle-info" style="color: #a1a1aa; font-size: 16px;"></i>
+                    <p style="margin: 0; font-weight: 500;">Enter your email address below to reset your password.</p>
+                </div>
+            <?php endif; ?>
 
             <form method="post" action="<?php echo base_url('auth/forgot_password'); ?>">
                 <div class="form-group">
