@@ -451,43 +451,71 @@ class Ai_provider {
             }
         }
 
-        // 5. Farm Data Queries (Livestock, Feed, Vaccines, Mortality, Finance)
+        // 5. Farm Data Queries (Livestock, Feed, Vaccines, Mortality, Finance, Debtors)
         if (!empty($context_data)) {
             $output = "";
 
-            if (isset($context_data['farm_summary'])) {
-                $fs = $context_data['farm_summary'];
+            // Extract context blocks by tool name or legacy alias
+            $fs = $context_data['get_farm_summary'] ?? ($context_data['farm_summary'] ?? null);
+            $bs = $context_data['get_batch_summary'] ?? ($context_data['batch_summary'] ?? null);
+            $fin = $context_data['get_financial_summary'] ?? ($context_data['financial_summary'] ?? null);
+            $clients = $context_data['get_client_balances'] ?? ($context_data['client_balances'] ?? null);
+            $vacs = $context_data['get_upcoming_vaccinations'] ?? ($context_data['upcoming_vaccinations'] ?? null);
+            $inv = $context_data['get_inventory_forecast_data'] ?? ($context_data['inventory_forecast_data'] ?? null);
+
+            // A. Client Balances / Debtors Query
+            if (!empty($clients) && (strpos($p, 'owe') !== false || strpos($p, 'debt') !== false || strpos($p, 'client') !== false || strpos($p, 'balance') !== false)) {
+                $output .= "According to your active KulaCRM client records:\n\n";
+                foreach ($clients as $c) {
+                    $name = $c['client_name'] ?? 'Client';
+                    $phone = !empty($c['client_phone']) ? $c['client_phone'] : 'No phone listed';
+                    $output .= "- **{$name}** (Contact: {$phone})\n";
+                }
+                if (!empty($fin)) {
+                    $income = number_format($fin['total_income'] ?? 0);
+                    $output .= "\nTotal cumulative sales recorded: **UGX {$income}**.";
+                }
+                return $output;
+            }
+
+            // B. Mortality & Death Queries
+            if (!empty($bs) && ($intent === 'MORTALITY_QUERY' || strpos($p, 'death') !== false || strpos($p, 'died') !== false || strpos($p, 'mortality') !== false)) {
+                if (is_array($bs) && !empty($bs)) {
+                    // Sort batches by mortality rate descending
+                    usort($bs, function($a, $b) {
+                        return (float)str_replace('%', '', $b['mortality_rate'] ?? 0) <=> (float)str_replace('%', '', $a['mortality_rate'] ?? 0);
+                    });
+
+                    $output .= "Here is the current mortality breakdown across your active farm batches:\n\n";
+                    $total_deaths = 0;
+                    foreach ($bs as $b) {
+                        $name = $b['shed_name'] ?? $b['batch_title'] ?? 'Batch';
+                        $init = $b['initial_quantity'] ?? 0;
+                        $deaths = $b['death_quantity'] ?? 0;
+                        $total_deaths += $deaths;
+                        $curr = $b['current_quantity'] ?? ($init - $deaths);
+                        $rate = $b['mortality_rate'] ?? (($init > 0) ? round(($deaths / $init) * 100, 1) . '%' : '0%');
+                        $output .= "- **{$name}**: {$deaths} deaths recorded ({$rate} mortality rate). Current stock: {$curr} animals.\n";
+                    }
+                    $output .= "\n**Total Deaths Recorded:** {$total_deaths} animals.";
+                    return $output;
+                }
+            }
+
+            // C. Farm Summary / Livestock Counts
+            if (!empty($fs) && ($intent === 'FARM_DATA_QUERY' || $intent === 'LIVESTOCK_QUERY' || strpos($p, 'how many') !== false || strpos($p, 'animal') !== false)) {
                 $total_ls = number_format($fs['total_livestock'] ?? 0);
                 $sheds = $fs['total_sheds'] ?? 0;
                 $batches = $fs['total_batches'] ?? 0;
-
-                if ($intent === 'FARM_DATA_QUERY' || $intent === 'LIVESTOCK_QUERY') {
-                    $output .= "According to your active KulaCRM records, your farm currently has **{$total_ls} active animals** across **{$sheds} sheds** and **{$batches} batches**.\n";
-                    if (isset($fs['total_sales']) && $fs['total_sales'] > 0) {
-                        $output .= "Cumulative sales recorded to date total **UGX " . number_format($fs['total_sales']) . "**.";
-                    }
-                    return $output;
+                $output .= "According to your active KulaCRM records, your farm currently has **{$total_ls} active animals** across **{$sheds} sheds** and **{$batches} batches**.\n";
+                if (isset($fs['total_sales']) && $fs['total_sales'] > 0) {
+                    $output .= "Cumulative sales recorded to date total **UGX " . number_format($fs['total_sales']) . "**.";
                 }
+                return $output;
             }
 
-            if (isset($context_data['batch_summary']) && ($intent === 'MORTALITY_QUERY' || $intent === 'FARM_DATA_QUERY')) {
-                $bs = $context_data['batch_summary'];
-                if (is_array($bs) && !empty($bs)) {
-                    $output .= "Here is the current mortality breakdown across your active farm batches:\n\n";
-                    foreach ($bs as $b) {
-                        $name = $b['shed_name'] ?? $b['batch_id'] ?? 'Batch';
-                        $init = $b['initial_quantity'] ?? $b['quantity'] ?? 0;
-                        $deaths = $b['death_quantity'] ?? 0;
-                        $curr = $init - $deaths;
-                        $rate = ($init > 0) ? round(($deaths / $init) * 100, 1) : 0;
-                        $output .= "- **{$name}**: {$deaths} deaths recorded ({$rate}% mortality rate). Current stock: {$curr} animals.\n";
-                    }
-                    return $output;
-                }
-            }
-
-            if (isset($context_data['financial_summary']) && ($intent === 'FINANCIAL_QUERY' || $intent === 'EXPENSE_QUERY' || $intent === 'SALES_QUERY')) {
-                $fin = $context_data['financial_summary'];
+            // D. Financial Summary
+            if (!empty($fin) && ($intent === 'FINANCIAL_QUERY' || $intent === 'EXPENSE_QUERY' || $intent === 'SALES_QUERY' || strpos($p, 'spend') !== false || strpos($p, 'expense') !== false)) {
                 $income = number_format($fin['total_income'] ?? $fin['revenue'] ?? 0);
                 $expenses = number_format($fin['total_expenses'] ?? $fin['expenses'] ?? 0);
                 $net = number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0));
@@ -498,8 +526,8 @@ class Ai_provider {
                     . "- **Net Operational Balance:** UGX {$net}";
             }
 
-            if (isset($context_data['upcoming_vaccinations']) && $intent === 'VACCINATION_QUERY') {
-                $vacs = $context_data['upcoming_vaccinations'];
+            // E. Vaccination Routines
+            if (!empty($vacs) && ($intent === 'VACCINATION_QUERY' || strpos($p, 'vaccin') !== false)) {
                 if (is_array($vacs) && !empty($vacs)) {
                     $output .= "Here are your upcoming and recorded vaccination routines:\n\n";
                     foreach ($vacs as $v) {
