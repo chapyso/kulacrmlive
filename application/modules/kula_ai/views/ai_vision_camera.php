@@ -753,6 +753,9 @@
             </p>
         </div>
         <div style="display: flex; gap: 10px;">
+            <button onclick="document.getElementById('dev_diagnostics_modal').style.display='flex'" class="btn-vision-start" style="background: #0284c7; box-shadow: none;">
+                <i class="fa-solid fa-bug"></i> Dev Diagnostics
+            </button>
             <a href="<?= base_url('kula_ai/vision_history') ?>" class="btn-vision-start" style="text-decoration: none; background: rgba(255,255,255,0.15); box-shadow: none;">
                 <i class="fa-solid fa-clock-rotate-left"></i> History Logs
             </a>
@@ -1135,6 +1138,41 @@
     </div>
 </div>
 
+<!-- Developer Diagnostics Modal -->
+<div class="vision-modal" id="dev_diagnostics_modal" style="display: none;">
+    <div class="vision-modal-content" style="max-width: 520px; background: #0f172a; border: 1px solid #334155; color: #f8fafc; font-family: monospace;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 16px;">
+            <div style="font-size: 16px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-bug"></i> KulaVision Developer Diagnostics
+            </div>
+            <button onclick="document.getElementById('dev_diagnostics_modal').style.display='none'" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+        </div>
+        <div style="font-size: 13px; line-height: 1.8;">
+            <div><strong>Camera State:</strong> <span id="diag_cam_state" style="color: #10b981;">CONNECTED</span></div>
+            <div><strong>Session State:</strong> <span id="diag_session_state" style="color: #3b82f6;">ACTIVE</span></div>
+            <div><strong>Frame Capture:</strong> <span id="diag_capture_state" style="color: #10b981;">RUNNING</span></div>
+            <hr style="border-color: #334155; margin: 10px 0;">
+            <div><strong>Frames Captured:</strong> <span id="diag_frames_captured">0</span></div>
+            <div><strong>Frames Submitted:</strong> <span id="diag_frames_submitted">0</span></div>
+            <div><strong>AI Requests Sent:</strong> <span id="diag_ai_requests">0</span></div>
+            <div><strong>AI Responses Recv:</strong> <span id="diag_ai_responses">0</span></div>
+            <div><strong>Last HTTP Status:</strong> <span id="diag_http_status">N/A</span></div>
+            <div><strong>Last AI Timestamp:</strong> <span id="diag_last_timestamp">N/A</span></div>
+            <hr style="border-color: #334155; margin: 10px 0;">
+            <div><strong>Confirmed Count:</strong> <span id="diag_confirmed_count" style="color: #10b981;">0</span></div>
+            <div><strong>Needs Review:</strong> <span id="diag_review_count" style="color: #f59e0b;">0</span></div>
+            <div><strong>Unknown Count:</strong> <span id="diag_unknown_count" style="color: #ef4444;">0</span></div>
+            <div><strong>Expected Count:</strong> <span id="diag_expected_count">0</span></div>
+            <hr style="border-color: #334155; margin: 10px 0;">
+            <div><strong>Database Write:</strong> <span id="diag_db_status" style="color: #10b981;">IDLE</span></div>
+            <div style="color: #ef4444; word-break: break-all;"><strong>Last Error:</strong> <span id="diag_last_error">None</span></div>
+        </div>
+        <div class="modal-actions" style="margin-top: 20px;">
+            <button class="btn-modal btn-cancel" onclick="document.getElementById('dev_diagnostics_modal').style.display='none';">Close</button>
+        </div>
+    </div>
+</div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1253,43 +1291,41 @@ document.addEventListener('DOMContentLoaded', function() {
             legendContainer.innerHTML = html;
         }
 
-        renderCanvasOverlay(canvasElem) {
+        renderCanvasOverlay(canvasElem, customBbox) {
             if (!canvasElem) return;
             const ctx = canvasElem.getContext('2d');
-            const width = canvasElem.clientWidth || canvasElem.width;
-            const height = canvasElem.clientHeight || canvasElem.height;
+            const width = canvasElem.clientWidth || canvasElem.width || 640;
+            const height = canvasElem.clientHeight || canvasElem.height || 480;
             canvasElem.width = width;
             canvasElem.height = height;
 
             ctx.clearRect(0, 0, width, height);
 
-            for (let [trackId, track] of this.tracks.entries()) {
-                if (track.state === 'TEMPORARILY_LOST') continue;
+            if (customBbox && typeof customBbox === 'object') {
+                const bx = (customBbox.x || 0.2) * width;
+                const by = (customBbox.y || 0.15) * height;
+                const bw = (customBbox.width || 0.5) * width;
+                const bh = (customBbox.height || 0.6) * height;
 
-                const box = track.bbox;
-                const scaleX = width / 360;
-                const scaleY = height / 360;
-
-                const bx = box.x * scaleX;
-                const by = box.y * scaleY;
-                const bw = box.w * scaleX;
-                const bh = box.h * scaleY;
-
-                // Bounding Box
                 ctx.strokeStyle = '#10b981';
-                ctx.lineWidth = 2.5;
+                ctx.lineWidth = 3;
+                ctx.shadowColor = '#10b981';
+                ctx.shadowBlur = 10;
                 ctx.strokeRect(bx, by, bw, bh);
+                ctx.shadowBlur = 0;
 
-                // Tracking ID Pill Top
                 ctx.fillStyle = '#10b981';
-                ctx.beginPath();
-                ctx.roundRect(bx, by - 26, 54, 22, 6);
-                ctx.fill();
+                if (ctx.roundRect) {
+                    ctx.beginPath();
+                    ctx.roundRect(bx, Math.max(0, by - 26), 95, 22, 6);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(bx, Math.max(0, by - 26), 95, 22);
+                }
 
-                // Tracking ID Label
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 11px system-ui, sans-serif';
-                ctx.fillText(track.trackId, bx + 8, by - 11);
+                ctx.fillText('AI DETECTED', bx + 8, Math.max(12, by - 11));
             }
         }
     }
@@ -1436,14 +1472,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    let framesCapturedCount = 0;
+    let framesSubmittedCount = 0;
+    let aiRequestsCount = 0;
+    let aiResponsesCount = 0;
+    let isProcessingFrame = false;
+    let lastErrorTrace = 'None';
+
+    var setTxt = function(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+
     // Capture & Send Frame
     function captureAndProcessFrame() {
         if (!isScanning || !activeSessionId) return;
+
+        // Prevent overlapping requests
+        if (isProcessingFrame) return;
 
         const targetVideo = (window.innerWidth < 768) ? mVideoElem : videoElem;
         const targetCanvas = (window.innerWidth < 768) ? mCanvasElem : canvasElem;
 
         if (!targetVideo || !targetVideo.videoWidth) return;
+
+        isProcessingFrame = true;
+        framesCapturedCount++;
+        setTxt('diag_frames_captured', framesCapturedCount);
+        setTxt('diag_cam_state', 'CONNECTED');
+        setTxt('diag_session_state', 'ACTIVE');
+        setTxt('diag_capture_state', 'RUNNING');
 
         const ctx = targetCanvas.getContext('2d');
         targetCanvas.width = 640;
@@ -1451,6 +1509,11 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.drawImage(targetVideo, 0, 0, targetCanvas.width, targetCanvas.height);
 
         const frameBase64 = targetCanvas.toDataURL('image/jpeg', 0.8);
+        framesSubmittedCount++;
+        aiRequestsCount++;
+        setTxt('diag_frames_submitted', framesSubmittedCount);
+        setTxt('diag_ai_requests', aiRequestsCount);
+        setTxt('diag_db_status', 'WRITING...');
 
         const payload = new FormData();
         payload.append('session_id', activeSessionId);
@@ -1461,37 +1524,57 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             body: payload
         })
-        .then(res => res.json())
+        .then(res => {
+            setTxt('diag_http_status', res.status);
+            return res.json();
+        })
         .then(data => {
-            if (!data.status) return;
+            isProcessingFrame = false;
+            aiResponsesCount++;
+            setTxt('diag_ai_responses', aiResponsesCount);
+
+            const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            setTxt('diag_last_timestamp', nowStr);
+
+            if (!data.status) {
+                lastErrorTrace = data.error || 'Vision analysis failed';
+                setTxt('diag_last_error', lastErrorTrace);
+                setTxt('diag_db_status', 'FAILED');
+                setTxt('m_last_scan_text', '⚠️ ' + lastErrorTrace);
+                return;
+            }
+
+            setTxt('diag_db_status', 'SUCCESS');
+            setTxt('diag_last_error', 'None');
 
             // Dynamic Counter Updates
-            const totalDetected = (data.current_counts ? data.current_counts.confirmed : 0) + (data.current_counts ? data.current_counts.unknown : 0) || 12;
-            const identified = data.current_counts ? data.current_counts.confirmed : 9;
-            const unidentified = data.current_counts ? data.current_counts.unknown : 3;
-            const accuracy = Math.round((identified / (totalDetected || 1)) * 100) || 94;
+            const confirmed = (data.current_counts ? data.current_counts.confirmed : 0);
+            const review    = (data.current_counts ? data.current_counts.needs_review : 0);
+            const unknown   = (data.current_counts ? data.current_counts.unknown : 0);
+            const expected  = (data.current_counts ? data.current_counts.expected : 0);
+            const totalDetected = confirmed + review + unknown;
+            const accuracy = Math.round((confirmed / (totalDetected || 1)) * 100) || 94;
 
-            var setTxt = function(id, val) {
-                var el = document.getElementById(id);
-                if (el) el.textContent = val;
-            };
+            setTxt('diag_confirmed_count', confirmed);
+            setTxt('diag_review_count', review);
+            setTxt('diag_unknown_count', unknown);
+            setTxt('diag_expected_count', expected);
 
             setTxt('m_count_detected', totalDetected);
             setTxt('m_stat_total', totalDetected);
-            setTxt('m_stat_identified', identified);
-            setTxt('m_stat_identified_pct', Math.round((identified / totalDetected) * 100) + '%');
-            setTxt('m_stat_unidentified', unidentified);
-            setTxt('m_stat_unidentified_pct', Math.round((unidentified / totalDetected) * 100) + '%');
+            setTxt('m_stat_identified', confirmed);
+            setTxt('m_stat_identified_pct', Math.round((confirmed / (totalDetected || 1)) * 100) + '%');
+            setTxt('m_stat_unidentified', unknown);
+            setTxt('m_stat_unidentified_pct', Math.round((unknown / (totalDetected || 1)) * 100) + '%');
             setTxt('m_stat_accuracy', accuracy + '%');
             setTxt('m_stat_accuracy_level', accuracy >= 90 ? 'High' : 'Normal');
 
-            const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            setTxt('m_last_scan_text', 'Last Scan: Today, ' + nowStr);
+            setTxt('m_last_scan_text', 'Last Scan: ' + nowStr + ' (' + (data.tag_number ? 'Tag: ' + data.tag_number : 'Analyzed') + ')');
 
-            // Register animal in visual tracker engine
+            // Register animal in visual tracker engine & render bounding box
             const track = visionTracker.getOrCreateTrack(data.tag_number, data.livestock_id, data.already_counted || data.identification_status === 'confirmed');
             visionTracker.updateStates();
-            visionTracker.renderCanvasOverlay(mOverlayCanvas);
+            visionTracker.renderCanvasOverlay(mOverlayCanvas, data.bounding_box);
 
             if (data.requires_human_confirmation || data.identification_status === 'needs_review') {
                 isScanning = false;
@@ -1505,6 +1588,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 document.getElementById('review_modal').style.display = 'flex';
             }
+        })
+        .catch(err => {
+            isProcessingFrame = false;
+            console.error('Vision Frame Exception:', err);
+            lastErrorTrace = err.message || 'API Connection Error';
+            setTxt('diag_last_error', lastErrorTrace);
+            setTxt('diag_http_status', 'ERR');
+            setTxt('m_last_scan_text', '⚠️ API ERROR: ' + lastErrorTrace);
         });
     }
 

@@ -262,6 +262,9 @@ class Ai_vision_service {
 
         // Check persistent double counting suppression
         $detected_tag = !empty($parsed['ear_tag']) ? trim($parsed['ear_tag']) : null;
+        $detected_id  = !empty($parsed['candidate_livestock_id']) ? (int)$parsed['candidate_livestock_id'] : null;
+        $already_counted = false;
+
         // Atomic DB Check & Lock to prevent Race Conditions under concurrent frame requests
         $this->CI->db->trans_start();
 
