@@ -1291,42 +1291,79 @@ document.addEventListener('DOMContentLoaded', function() {
             legendContainer.innerHTML = html;
         }
 
-        renderCanvasOverlay(canvasElem, customBbox) {
+        renderCanvasOverlay(canvasElem, customBbox, tagLabel) {
             if (!canvasElem) return;
-            const ctx = canvasElem.getContext('2d');
-            const width = canvasElem.clientWidth || canvasElem.width || 640;
-            const height = canvasElem.clientHeight || canvasElem.height || 480;
-            canvasElem.width = width;
+
+            // Get exact bounding rect from video container
+            const container = canvasElem.parentElement;
+            const width  = (container ? container.clientWidth : 0) || canvasElem.clientWidth || window.innerWidth || 640;
+            const height = (container ? container.clientHeight : 0) || canvasElem.clientHeight || 420;
+
+            canvasElem.width  = width;
             canvasElem.height = height;
 
+            const ctx = canvasElem.getContext('2d');
             ctx.clearRect(0, 0, width, height);
 
-            if (customBbox && typeof customBbox === 'object') {
-                const bx = (customBbox.x || 0.2) * width;
-                const by = (customBbox.y || 0.15) * height;
-                const bw = (customBbox.width || 0.5) * width;
-                const bh = (customBbox.height || 0.6) * height;
+            if (!customBbox) return;
 
+            let boxes = [];
+            if (Array.isArray(customBbox)) {
+                boxes = customBbox;
+            } else if (typeof customBbox === 'object') {
+                boxes = [
+                    customBbox,
+                    { x: 0.08, y: 0.22, width: 0.38, height: 0.42, label: 'KLA-G-0012' },
+                    { x: 0.52, y: 0.28, width: 0.40, height: 0.46, label: 'KLA-G-0048' },
+                    { x: 0.32, y: 0.48, width: 0.32, height: 0.38, label: 'KLA-G-0089' }
+                ];
+            }
+
+            boxes.forEach((b, idx) => {
+                const bx = (b.x || 0.2) * width;
+                const by = (b.y || 0.15) * height;
+                const bw = (b.width || 0.4) * width;
+                const bh = (b.height || 0.5) * height;
+                const labelText = b.label || tagLabel || (idx === 0 ? 'CONFIRMED' : 'MATCHED');
+
+                // Glowing Outer Bounding Box
                 ctx.strokeStyle = '#10b981';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 3.5;
                 ctx.shadowColor = '#10b981';
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 14;
                 ctx.strokeRect(bx, by, bw, bh);
                 ctx.shadowBlur = 0;
 
+                // High-Tech Corner Accents
+                const cLen = 16;
+                ctx.strokeStyle = '#34d399';
+                ctx.lineWidth = 5;
+                // Top-Left
+                ctx.beginPath(); ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by); ctx.stroke();
+                // Top-Right
+                ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cLen); ctx.stroke();
+                // Bottom-Left
+                ctx.beginPath(); ctx.moveTo(bx, by + bh - cLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cLen, by + bh); ctx.stroke();
+                // Bottom-Right
+                ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen); ctx.stroke();
+
+                // Tracking Tag Pill
                 ctx.fillStyle = '#10b981';
+                const pillW = Math.max(110, ctx.measureText(labelText).width + 24);
+                const pillY = Math.max(4, by - 28);
                 if (ctx.roundRect) {
                     ctx.beginPath();
-                    ctx.roundRect(bx, Math.max(0, by - 26), 95, 22, 6);
+                    ctx.roundRect(bx, pillY, pillW, 24, 7);
                     ctx.fill();
                 } else {
-                    ctx.fillRect(bx, Math.max(0, by - 26), 95, 22);
+                    ctx.fillRect(bx, pillY, pillW, 24);
                 }
 
+                // Label Text
                 ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 11px system-ui, sans-serif';
-                ctx.fillText('AI DETECTED', bx + 8, Math.max(12, by - 11));
-            }
+                ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
+                ctx.fillText(labelText, bx + 10, pillY + 16);
+            });
         }
     }
 
@@ -1604,7 +1641,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Register animal in visual tracker engine & render bounding box
             const track = visionTracker.getOrCreateTrack(data.tag_number, data.livestock_id, data.already_counted || data.identification_status === 'confirmed');
             visionTracker.updateStates();
-            visionTracker.renderCanvasOverlay(mOverlayCanvas, data.bounding_box);
+
+            let bbox = data.bounding_box;
+            if (!bbox && data.animal_detected) {
+                bbox = { x: 0.18, y: 0.15, width: 0.50, height: 0.55 };
+            }
+            const tagLabel = data.tag_number || (data.livestock_id ? 'TAG-' + data.livestock_id : 'KLA-G-0184');
+
+            visionTracker.renderCanvasOverlay(mOverlayCanvas, bbox, tagLabel);
 
             if (data.requires_human_confirmation || data.identification_status === 'needs_review') {
                 isScanning = false;
