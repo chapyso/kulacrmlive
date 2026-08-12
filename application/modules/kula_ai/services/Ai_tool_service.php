@@ -36,6 +36,8 @@ class Ai_tool_service {
      */
     public function execute_tool($tool_name, $params = array()) {
         switch ($tool_name) {
+            case 'get_tenant_profile':
+                return $this->get_tenant_profile();
             case 'get_farm_summary':
                 return $this->get_farm_summary();
             case 'get_batch_summary':
@@ -90,6 +92,51 @@ class Ai_tool_service {
             return $this->CI->ai_vision_service->reconcile_session($sessions[0]->id);
         }
         return array('message' => 'No active or completed vision counting sessions found.');
+    }
+
+    /**
+     * Get Active Tenant & User Profile Context
+     */
+    public function get_tenant_profile() {
+        $CI =& $this->CI;
+        $tenant_id = $this->get_tenant_id();
+
+        $profile = array(
+            'tenant_id'   => $tenant_id,
+            'farm_name'   => 'KulaCRM Farm',
+            'user_name'   => 'Farm Manager',
+            'user_email'  => 'admin@gmail.com',
+            'plan_name'   => 'Standard Plan',
+            'currency'    => 'UGX'
+        );
+
+        if ($CI->db->table_exists('tenants')) {
+            $CI->db->select('tenants.*, subscription_plans.name as plan_name');
+            $CI->db->from('tenants');
+            $CI->db->join('subscription_plans', 'subscription_plans.id = tenants.plan_id', 'left');
+            $CI->db->where('tenants.id', $tenant_id);
+            $tenant_row = $CI->db->get()->row();
+
+            if ($tenant_row) {
+                $profile['farm_name'] = !empty($tenant_row->name) ? $tenant_row->name : (!empty($tenant_row->company_name) ? $tenant_row->company_name : 'KulaCRM Farm');
+                $profile['plan_name'] = $tenant_row->plan_name ?? 'Standard Plan';
+                $profile['currency']  = $tenant_row->currency ?? 'UGX';
+            }
+        }
+
+        if (isset($CI->session) && $CI->session->userdata('user_id')) {
+            $user_id = $CI->session->userdata('user_id');
+            $user_row = $CI->db->get_where('users', array('id' => $user_id))->row();
+            if ($user_row) {
+                $first = $user_row->first_name ?? '';
+                $last  = $user_row->last_name ?? '';
+                $full  = trim($first . ' ' . $last);
+                $profile['user_name']  = !empty($full) ? $full : ($user_row->username ?? 'Farm Manager');
+                $profile['user_email'] = $user_row->email ?? '';
+            }
+        }
+
+        return $profile;
     }
 
     /**
