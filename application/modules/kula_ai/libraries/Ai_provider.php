@@ -392,37 +392,38 @@ class Ai_provider {
     public function generate_offline_response($user_prompt, $context_data = array(), $intent_info = array()) {
         $intent = $intent_info['intent'] ?? 'UNKNOWN';
         $p = strtolower(trim($user_prompt));
+        $p_clean = trim(preg_replace('/[^a-z\s]/', '', $p));
 
-        // 1. Greetings
-        if ($intent === 'GREETING') {
+        // 1. Greetings (Intent or Pattern match)
+        if ($intent === 'GREETING' || in_array($p_clean, array('hey', 'hello', 'hi', 'hey there', 'hello there', 'hi there', 'good morning', 'good afternoon', 'good evening', 'greetings', 'habari', 'jambo', 'mambo', 'oli otya', 'gyebale', 'ki kati'))) {
             $greetings = array(
-                "Hey! 👋 How can I help you with your farm today?",
-                "Hello! 👋 What would you like to check in KulaCRM?",
-                "Good day! How can I assist you with your livestock or farm operations today?",
-                "Hi! I'm ready to help. What would you like to review?"
+                "Hello! 👋 How can I assist you with your farm operations today?",
+                "Hey there! What would you like to review in KulaCRM today?",
+                "Good day! I'm ready to help with your livestock, feeds, vaccines, or financial records.",
+                "Hi! How can I assist you with your farm today?"
             );
             return $greetings[array_rand($greetings)];
         }
 
-        // 2. Casual Chat & Polite Remarks
-        if ($intent === 'CASUAL_CONVERSATION') {
-            if (preg_match('/(how are you|how do you do)/i', $p)) {
-                return "I'm doing well, thanks! How can I help you with your farm today?";
+        // 2. Casual Chat & Polite Remarks (Intent or Pattern match)
+        if ($intent === 'CASUAL_CONVERSATION' || preg_match('/(how are you|how do you do|whats up|thank|thanks|bye|goodbye|who are you|your name|oli otya|asante|webale)/i', $p)) {
+            if (preg_match('/(how are you|how do you do|whats up)/i', $p)) {
+                return "I'm doing well, thank you! How can I assist you with your farm today?";
             }
-            if (preg_match('/(thank|thanks)/i', $p)) {
-                return "You're welcome! Let me know if you need anything else for your farm.";
+            if (preg_match('/(thank|thanks|webale|asante)/i', $p)) {
+                return "You're very welcome! Let me know if you need any other insights for your farm.";
             }
-            if (preg_match('/(bye|goodbye|see you)/i', $p)) {
+            if (preg_match('/(bye|goodbye|see you|kwaheri)/i', $p)) {
                 return "Goodbye! Have a great and productive day on the farm. 👋";
             }
             if (preg_match('/(who are you|your name)/i', $p)) {
-                return "I am **KulaAI**, your conversational farm intelligence assistant built into KulaCRM!";
+                return "I am **KulaAI**, your natural conversational AI assistant deeply integrated with KulaCRM!";
             }
             return "Got it! Let me know what you'd like to check next in KulaCRM.";
         }
 
         // 3. System Help & Guidance
-        if ($intent === 'SYSTEM_HELP') {
+        if ($intent === 'SYSTEM_HELP' || preg_match('/(help|what can you do|how to use|features)/i', $p)) {
             return "I can help you inspect and manage your farm operations in KulaCRM! Here are a few things you can ask me:\n\n"
                 . "- 🐄 **Livestock & Inventory:** *'How many goats do I have?'* or *'Which animals are sick?'*\n"
                 . "- 💉 **Health & Vaccines:** *'Which vaccinations are due this week?'* or *'Tell me about Newcastle disease'*\n"
@@ -514,7 +515,7 @@ class Ai_provider {
             }
         }
 
-        // 6. Recommendations & Action Plans (ONLY when requested!)
+        // 6. Recommendations & Action Plans (ONLY when explicitly requested!)
         if ($intent === 'FARM_RECOMMENDATION' || $intent === 'FARM_ANALYSIS') {
             $output = "### 💡 KulaAI Executive Recommendation\n\n";
             $output .= "Based on your request regarding **" . htmlspecialchars($user_prompt) . "**, here is an actionable strategy:\n\n";
@@ -524,7 +525,7 @@ class Ai_provider {
             return $output;
         }
 
-        // 7. Fallback Natural Response
-        return "I understand your query regarding *" . htmlspecialchars($user_prompt) . "*. How would you like me to help you analyze or manage this in KulaCRM?";
+        // 7. Natural Fallback Response
+        return "I am here to help you manage your farm in KulaCRM! Feel free to ask about your livestock counts, mortality rates, feed stocks, vaccination schedules, or agribusiness recommendations.";
     }
 }
