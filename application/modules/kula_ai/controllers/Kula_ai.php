@@ -315,6 +315,105 @@ class Kula_ai extends MY_Controller {
     }
 
     /**
+     * Export AI Query Output or Data Table as native CSV file
+     */
+    public function export_csv() {
+        $filename = 'KulaAI_Export_' . date('Ymd_His') . '.csv';
+        $content  = $this->input->post('content') ?? '';
+        $title    = $this->input->post('title') ?? 'KulaAI Data Export';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+
+        // Write UTF-8 BOM for Excel compatibility
+        fputs($output, $bom = chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        fputcsv($output, array('KulaCRM AI Data Export', date('Y-m-d H:i:s')));
+        fputcsv($output, array($title));
+        fputcsv($output, array(''));
+
+        // Strip HTML tags and output structured lines
+        $lines = explode("\n", strip_tags(str_replace(array('<br>', '<br/>', '<br />', '</tr>', '</li>'), "\n", $content)));
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+            if (!empty($trimmed)) {
+                // If contains tab or delimiter, split cleanly
+                $cells = preg_split('/[|\t]/', $trimmed);
+                $cells = array_map('trim', array_filter($cells));
+                if (!empty($cells)) {
+                    fputcsv($output, $cells);
+                } else {
+                    fputcsv($output, array($trimmed));
+                }
+            }
+        }
+
+        fclose($output);
+        exit();
+    }
+
+    /**
+     * Send Proactive Daily Farm Intelligence Summary via CodeIgniter Native Email
+     */
+    public function send_daily_digest() {
+        if (!headers_sent()) {
+            header('Content-Type: application/json');
+        }
+
+        $insights = $this->ai_analytics_service->get_proactive_insights();
+
+        $user_email = $this->session->userdata('email') ?? 'admin@gmail.com';
+        $user_name  = $this->session->userdata('username') ?? 'Farm Manager';
+
+        $this->load->library('email');
+
+        $config = array(
+            'protocol'  => 'smtp',
+            'mailtype'  => 'html',
+            'charset'   => 'utf-8',
+            'wordwrap'  => TRUE
+        );
+
+        $this->email->initialize($config);
+        $this->email->from('noreply@kulacrm.com', 'KulaAI Intelligence');
+        $this->email->to($user_email);
+        $this->email->subject('🌅 KulaAI Daily Farm Intelligence Briefing — ' . date('F j, Y'));
+
+        $body = '<h2>Good morning, ' . htmlspecialchars($user_name) . '! 🚜</h2>';
+        $body .= '<p>Here is your daily KulaAI farm intelligence summary:</p>';
+
+        if (!empty($insights['mortality_alerts'])) {
+            $body .= '<h3 style="color:#ef4444;">🔴 Mortality Alerts (' . count($insights['mortality_alerts']) . ')</h3><ul>';
+            foreach ($insights['mortality_alerts'] as $a) {
+                $body .= '<li><strong>' . htmlspecialchars($a['title']) . '</strong>: ' . htmlspecialchars($a['description']) . '</li>';
+            }
+            $body .= '</ul>';
+        }
+
+        if (!empty($insights['vaccination_alerts'])) {
+            $body .= '<h3 style="color:#f59e0b;">💉 Vaccination Schedule (' . count($insights['vaccination_alerts']) . ')</h3><ul>';
+            foreach ($insights['vaccination_alerts'] as $v) {
+                $body .= '<li><strong>' . htmlspecialchars($v['title']) . '</strong>: ' . htmlspecialchars($v['description']) . '</li>';
+            }
+            $body .= '</ul>';
+        }
+
+        $body .= '<br/><p><a href="' . site_url('kula_ai/intelligence') . '" style="background:#6366f1; color:#fff; padding:10px 18px; text-decoration:none; border-radius:6px; font-weight:bold;">View Full KulaAI Intelligence Dashboard</a></p>';
+
+        $this->email->message($body);
+
+        $sent = @$this->email->send();
+
+        echo json_encode(array(
+            'status'  => true,
+            'sent'    => $sent,
+            'message' => 'Daily farm intelligence summary dispatched to ' . $user_email
+        ));
+    }
+
+    /**
      * Proactive Kula Intelligence Dashboard Feed (AJAX GET)
      */
     public function get_proactive_widget() {

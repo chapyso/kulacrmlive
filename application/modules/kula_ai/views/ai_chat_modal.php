@@ -374,7 +374,10 @@
                     </div>
                     <form id="kula-chat-form" onsubmit="KulaAIChat.handleSubmit(event)">
                         <div class="kula-input-group">
-                            <input type="text" id="kula-chat-input-text" class="kula-chat-input" placeholder="Ask KulaAI anything about your farm..." autocomplete="off" />
+                            <button type="button" id="kula-voice-btn" class="kula-hdr-btn" onclick="KulaAIChat.toggleVoiceRecognition()" title="Hands-Free Voice Recognition" style="background:rgba(16,185,129,0.15); border-color:#10b981; color:#10b981; padding:0 12px; border-radius:10px; flex-shrink:0;">
+                                🎙️ <span id="kula-voice-status" style="font-size:11px;">Voice</span>
+                            </button>
+                            <input type="text" id="kula-chat-input-text" class="kula-chat-input" placeholder="Ask KulaAI or speak hands-free..." autocomplete="off" />
                             <button type="submit" class="kula-send-btn">Send</button>
                         </div>
                     </form>
@@ -413,6 +416,63 @@
         baseUrl: '<?= base_url() ?>',
         _ingestionData: null,
         chatMemory: [],
+        recognition: null,
+        isListening: false,
+
+        initVoice() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) return;
+
+            this.recognition = new SpeechRec();
+            this.recognition.continuous = false;
+            this.recognition.interimResults = true;
+            this.recognition.lang = 'en-US';
+
+            this.recognition.onresult = (e) => {
+                let transcript = '';
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    transcript += e.results[i][0].transcript;
+                }
+                const input = document.getElementById('kula-chat-input-text');
+                if (input) input.value = transcript;
+            };
+
+            this.recognition.onend = () => {
+                this.isListening = false;
+                const status = document.getElementById('kula-voice-status');
+                const btn = document.getElementById('kula-voice-btn');
+                if (status) status.textContent = 'Voice';
+                if (btn) btn.style.background = 'rgba(16,185,129,0.15)';
+                const input = document.getElementById('kula-chat-input-text');
+                if (input && input.value.trim().length > 0) {
+                    this.handleSubmit(new Event('submit'));
+                }
+            };
+        },
+
+        toggleVoiceRecognition() {
+            if (!this.recognition) this.initVoice();
+            if (!this.recognition) {
+                alert('🎙️ Hands-free voice recognition is built directly into modern web browsers (Chrome, Edge, Safari).\n\nPlease open KulaCRM in Google Chrome or Microsoft Edge to use hands-free speech input.');
+                return;
+            }
+
+            if (this.isListening) {
+                this.recognition.stop();
+                this.isListening = false;
+            } else {
+                try {
+                    this.recognition.start();
+                    this.isListening = true;
+                    const status = document.getElementById('kula-voice-status');
+                    const btn = document.getElementById('kula-voice-btn');
+                    if (status) status.textContent = 'Listening...';
+                    if (btn) btn.style.background = 'rgba(239,68,68,0.3)';
+                } catch(err) {
+                    this.isListening = false;
+                }
+            }
+        },
 
         onDocumentSelected(input) {
             const file = input.files[0];
@@ -761,11 +821,19 @@
                             KulaAIChat.chatMemory.push({ role: 'assistant', content: data.response });
                             const parsedHtml = KulaAIChat.formatMarkdown(data.response);
                             const isReport = (data.response_type === 'recommendation' || data.response_type === 'analysis' || data.response_type === 'report');
+                            const hasTable = parsedHtml.includes('<table');
                             
                             let exportBtnHtml = '';
-                            if (isReport) {
+                            if (isReport || hasTable) {
                                 exportBtnHtml = `
-                                    <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end;">
+                                    <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: flex-end; gap: 8px;">
+                                        <form action="${KulaAIChat.baseUrl}kula_ai/export_csv" method="POST" target="_blank" style="margin:0;">
+                                            <input type="hidden" name="content" value="${KulaAIChat.escapeAttr(parsedHtml)}">
+                                            <input type="hidden" name="title" value="KulaAI Data Export">
+                                            <button type="submit" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); padding: 5px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                                                <i class="fa-solid fa-file-csv"></i> Export CSV
+                                            </button>
+                                        </form>
                                         <form action="${KulaAIChat.baseUrl}kula_ai/export_pdf" method="POST" target="_blank" style="margin:0;">
                                             <input type="hidden" name="content" value="${KulaAIChat.escapeAttr(parsedHtml)}">
                                             <input type="hidden" name="title" value="KulaAI Executive Report">

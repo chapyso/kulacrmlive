@@ -258,27 +258,28 @@ class Ai_intent_service {
     }
 
     /**
-     * Check if prompt is a simple greeting
+     * Check if prompt is a simple greeting (English, Luganda, Swahili)
      */
     protected function is_greeting($p) {
         $greetings = array(
             'hey', 'hello', 'hi', 'hey there', 'hello there', 'hi there',
             'good morning', 'good afternoon', 'good evening', 'greetings',
-            'habari', 'jambo', 'oli otya', 'webale', 'slm'
+            'habari', 'jambo', 'mambo', 'habari gani', 'oli otya', 'gyebale',
+            'ki kati', 'kikati', 'webale', 'slm', 'salam'
         );
         $p_strip = trim(preg_replace('/[^a-z\s]/', '', $p));
         return in_array($p_strip, $greetings);
     }
 
     /**
-     * Check if prompt is casual conversation or polite remark
+     * Check if prompt is casual conversation or polite remark (English, Luganda, Swahili)
      */
     protected function is_casual_chat($p) {
         $casual = array(
             'how are you', 'how are you doing', 'how do you do', 'whats up', "what's up",
-            'thank you', 'thanks', 'thanks a lot', 'thank you very much', 'thx',
-            'okay', 'ok', 'cool', 'awesome', 'great', 'perfect', 'got it', 'understood',
-            'who are you', 'what is your name', 'nice to meet you', 'bye', 'goodbye', 'see you'
+            'thank you', 'thanks', 'thanks a lot', 'thank you very much', 'thx', 'webale nnyo', 'asante', 'asante sana',
+            'okay', 'ok', 'cool', 'awesome', 'great', 'perfect', 'got it', 'understood', 'kale', 'sawa',
+            'who are you', 'what is your name', 'nice to meet you', 'bye', 'goodbye', 'see you', 'kwaheri'
         );
         $p_strip = trim(preg_replace('/[^a-z\s\']/ ', '', $p));
         foreach ($casual as $phrase) {
@@ -298,7 +299,8 @@ class Ai_intent_service {
             '/^(how many are|which ones are|how much of that)/i',
             '/^(what about|and what about|how about)/i',
             '/^(how many female|how many male|how many pregnant|how many died)/i',
-            '/^(last month\??|this month\??|yesterday\??|today\??)$/i'
+            '/^(last month\??|this month\??|yesterday\??|today\??)$/i',
+            '/^(ziri mmeka|zimeka|pacha gani)\??$/i'
         );
         foreach ($follow_up_patterns as $pattern) {
             if (preg_match($pattern, $p)) {
@@ -352,31 +354,31 @@ class Ai_intent_service {
     }
 
     /**
-     * Extract key domain entities from input
+     * Extract key domain entities from input (English, Luganda, Swahili)
      */
     public function extract_entities($p) {
         $entities = array();
 
-        // Species / Animal Types
-        if (preg_match('/(goat|goats|caprine)/i', $p)) $entities['species'] = 'Goats';
-        elseif (preg_match('/(chicken|chickens|poultry|hen|hens|broiler|layer|bird|birds)/i', $p)) $entities['species'] = 'Poultry';
-        elseif (preg_match('/(cow|cows|cattle|bovine|bull|heifer|calf|calves)/i', $p)) $entities['species'] = 'Cattle';
-        elseif (preg_match('/(pig|pigs|swine|sow|boar|piglet)/i', $p)) $entities['species'] = 'Pigs';
-        elseif (preg_match('/(sheep|lamb|lambs|ram|ewe)/i', $p)) $entities['species'] = 'Sheep';
+        // Species / Animal Types (English / Luganda / Swahili)
+        if (preg_match('/(goat|goats|caprine|embuzi|mbuzi)/i', $p)) $entities['species'] = 'Goats';
+        elseif (preg_match('/(chicken|chickens|poultry|hen|hens|broiler|layer|bird|birds|enkoko|kuku)/i', $p)) $entities['species'] = 'Poultry';
+        elseif (preg_match('/(cow|cows|cattle|bovine|bull|heifer|calf|calves|ente|ng\'ombe|ngombe)/i', $p)) $entities['species'] = 'Cattle';
+        elseif (preg_match('/(pig|pigs|swine|sow|boar|piglet|embizzi|empizi|nguruwe)/i', $p)) $entities['species'] = 'Pigs';
+        elseif (preg_match('/(sheep|lamb|lambs|ram|ewe|endiga|kondoo)/i', $p)) $entities['species'] = 'Sheep';
 
         // Gender / Reproductive State
-        if (preg_match('/(female|females|doe|nanny|hen|cow|sow|ewe)/i', $p)) $entities['gender'] = 'Female';
-        elseif (preg_match('/(male|males|buck|billy|rooster|cock|bull|boar|ram)/i', $p)) $entities['gender'] = 'Male';
-        if (preg_match('/(pregnant|in-calf|gestating)/i', $p)) $entities['state'] = 'Pregnant';
+        if (preg_match('/(female|females|doe|nanny|hen|cow|sow|ewe|enkazi|jike)/i', $p)) $entities['gender'] = 'Female';
+        elseif (preg_match('/(male|males|buck|billy|rooster|cock|bull|boar|ram|ensekurume|dume)/i', $p)) $entities['gender'] = 'Male';
+        if (preg_match('/(pregnant|in-calf|gestating|eliko olubuto|mimba)/i', $p)) $entities['state'] = 'Pregnant';
 
         // Timeframe
-        if (strpos($p, 'this month') !== false) $entities['timeframe'] = 'this_month';
-        elseif (strpos($p, 'last month') !== false) $entities['timeframe'] = 'last_month';
-        elseif (strpos($p, 'this week') !== false) $entities['timeframe'] = 'this_week';
-        elseif (strpos($p, 'today') !== false) $entities['timeframe'] = 'today';
+        if (strpos($p, 'this month') !== false || strpos($p, 'omwezi guno') !== false || strpos($p, 'mwezi huu') !== false) $entities['timeframe'] = 'this_month';
+        elseif (strpos($p, 'last month') !== false || strpos($p, 'omwezi oguwedde') !== false || strpos($p, 'mwezi uliopita') !== false) $entities['timeframe'] = 'last_month';
+        elseif (strpos($p, 'this week') !== false || strpos($p, 'awiki eno') !== false || strpos($p, 'wiki hii') !== false) $entities['timeframe'] = 'this_week';
+        elseif (strpos($p, 'today') !== false || strpos($p, 'leero') !== false || strpos($p, 'leo') !== false) $entities['timeframe'] = 'today';
 
         // Financial Topic
-        if (preg_match('/(expense|spend|spent|cost|feed cost)/i', $p)) $entities['topic'] = 'finance';
+        if (preg_match('/(expense|spend|spent|cost|feed cost|ssente|ensimbi|pesa|gharama)/i', $p)) $entities['topic'] = 'finance';
 
         return $entities;
     }
