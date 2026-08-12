@@ -420,56 +420,112 @@
         isListening: false,
 
         initVoice() {
-            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRec) return;
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
+            if (!SpeechRec) return false;
 
-            this.recognition = new SpeechRec();
-            this.recognition.continuous = false;
-            this.recognition.interimResults = true;
-            this.recognition.lang = 'en-US';
+            try {
+                this.recognition = new SpeechRec();
+                this.recognition.continuous = false;
+                this.recognition.interimResults = true;
+                this.recognition.lang = 'en-US';
 
-            this.recognition.onresult = (e) => {
-                let transcript = '';
-                for (let i = e.resultIndex; i < e.results.length; i++) {
-                    transcript += e.results[i][0].transcript;
+                this.recognition.onstart = () => {
+                    this.isListening = true;
+                    this.updateVoiceUI(true, 'Listening...');
+                };
+
+                this.recognition.onresult = (e) => {
+                    let transcript = '';
+                    for (let i = 0; i < e.results.length; i++) {
+                        transcript += e.results[i][0].transcript;
+                    }
+                    const input = document.getElementById('kula-chat-input-text');
+                    if (input && transcript.trim()) {
+                        input.value = transcript;
+                    }
+                };
+
+                this.recognition.onerror = (e) => {
+                    console.warn('KulaAI Voice Recognition Notice:', e.error);
+                    this.isListening = false;
+                    this.updateVoiceUI(false, 'Voice');
+
+                    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+                        alert('🎙️ Microphone Permission Required\n\nMicrophone access was denied or blocked. Please click the lock or camera icon in your browser address bar and set Microphone to "Allow".');
+                    } else if (e.error === 'no-speech') {
+                        // Silent reset for no-speech
+                    } else if (e.error === 'network') {
+                        alert('🌐 Speech recognition requires an active internet connection.');
+                    }
+                };
+
+                this.recognition.onend = () => {
+                    this.isListening = false;
+                    this.updateVoiceUI(false, 'Voice');
+                    const input = document.getElementById('kula-chat-input-text');
+                    if (input && input.value.trim().length > 0) {
+                        setTimeout(() => {
+                            KulaAIChat.handleSubmit(new Event('submit'));
+                        }, 400);
+                    }
+                };
+                return true;
+            } catch(err) {
+                console.error('Speech recognition init error:', err);
+                return false;
+            }
+        },
+
+        updateVoiceUI(active, labelText) {
+            const btn = document.getElementById('kula-voice-btn');
+            const status = document.getElementById('kula-voice-status');
+            if (btn) {
+                if (active) {
+                    btn.style.background = 'rgba(239, 68, 68, 0.35)';
+                    btn.style.borderColor = '#ef4444';
+                    btn.style.color = '#fca5a5';
+                } else {
+                    btn.style.background = 'rgba(16, 185, 129, 0.15)';
+                    btn.style.borderColor = '#10b981';
+                    btn.style.color = '#10b981';
                 }
-                const input = document.getElementById('kula-chat-input-text');
-                if (input) input.value = transcript;
-            };
-
-            this.recognition.onend = () => {
-                this.isListening = false;
-                const status = document.getElementById('kula-voice-status');
-                const btn = document.getElementById('kula-voice-btn');
-                if (status) status.textContent = 'Voice';
-                if (btn) btn.style.background = 'rgba(16,185,129,0.15)';
-                const input = document.getElementById('kula-chat-input-text');
-                if (input && input.value.trim().length > 0) {
-                    this.handleSubmit(new Event('submit'));
-                }
-            };
+            }
+            if (status) status.textContent = labelText || (active ? 'Listening...' : 'Voice');
         },
 
         toggleVoiceRecognition() {
-            if (!this.recognition) this.initVoice();
             if (!this.recognition) {
-                alert('🎙️ Hands-free voice recognition is built directly into modern web browsers (Chrome, Edge, Safari).\n\nPlease open KulaCRM in Google Chrome or Microsoft Edge to use hands-free speech input.');
-                return;
+                const initialized = this.initVoice();
+                if (!initialized) {
+                    alert('🎙️ Hands-free speech recognition is supported in Google Chrome, Microsoft Edge, and Safari.\n\nPlease ensure you are accessing KulaCRM over HTTPS or localhost on Google Chrome or Microsoft Edge.');
+                    return;
+                }
             }
 
             if (this.isListening) {
-                this.recognition.stop();
+                try { this.recognition.stop(); } catch(e) {}
                 this.isListening = false;
+                this.updateVoiceUI(false, 'Voice');
             } else {
-                try {
-                    this.recognition.start();
-                    this.isListening = true;
-                    const status = document.getElementById('kula-voice-status');
-                    const btn = document.getElementById('kula-voice-btn');
-                    if (status) status.textContent = 'Listening...';
-                    if (btn) btn.style.background = 'rgba(239,68,68,0.3)';
-                } catch(err) {
-                    this.isListening = false;
+                // Pre-request microphone permission if MediaDevices API is present
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ audio: true }).then(() => {
+                        try {
+                            KulaAIChat.recognition.start();
+                        } catch(err) {
+                            KulaAIChat.isListening = false;
+                            KulaAIChat.updateVoiceUI(false, 'Voice');
+                        }
+                    }).catch((err) => {
+                        alert('🎙️ Microphone Access Blocked\n\nPlease allow microphone access in your browser settings to speak to KulaAI.');
+                    });
+                } else {
+                    try {
+                        this.recognition.start();
+                    } catch(err) {
+                        this.isListening = false;
+                        this.updateVoiceUI(false, 'Voice');
+                    }
                 }
             }
         },
