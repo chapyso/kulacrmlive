@@ -36,6 +36,7 @@ class Ai_intent_service {
     const INTENT_SYSTEM_HELP          = 'SYSTEM_HELP';
     const INTENT_ACTION_REQUEST       = 'ACTION_REQUEST';
     const INTENT_FOLLOW_UP            = 'FOLLOW_UP';
+    const INTENT_BUSINESS_PLAN        = 'BUSINESS_PLAN';
     const INTENT_UNKNOWN              = 'UNKNOWN';
 
     public function __construct() {
@@ -52,6 +53,9 @@ class Ai_intent_service {
     public function classify_intent($prompt, $chat_history = array()) {
         $clean_prompt = trim($prompt);
         $p = strtolower($clean_prompt);
+
+        // Extract entities (livestock types, gender, dates, metrics)
+        $entities = $this->extract_entities($p);
 
         // 1. Check for Greetings
         if ($this->is_greeting($p)) {
@@ -75,7 +79,18 @@ class Ai_intent_service {
             );
         }
 
-        // 3. Check for System Help & Bot Guidance
+        // 3. Business Plan & Comprehensive Strategic Planning Requests
+        if (preg_match('/(business plan|poultry plan|layer plan|broiler plan|farm plan|financial projections|roi projection|cash flow projection|feasibility study|investment plan|write a plan|create a plan)/i', $p)) {
+            return array(
+                'intent'          => self::INTENT_BUSINESS_PLAN,
+                'response_type'   => 'report',
+                'requires_data'   => false,
+                'tools'           => array(),
+                'entities'        => $entities
+            );
+        }
+
+        // 4. Check for System Help & Bot Guidance
         if (preg_match('/^(what can you do|how do you work|help me|what are your features|commands|menu|options)$/i', $p) || strpos($p, 'what can you help') !== false) {
             return array(
                 'intent'          => self::INTENT_SYSTEM_HELP,
@@ -116,19 +131,19 @@ class Ai_intent_service {
         }
 
         // 6. Explicit Farm Performance Analysis Requests
-        if (preg_match('/(analyze|analysis|performance|audit|why did|why are|root cause|investigate|trend)/i', $p)) {
+        if (preg_match('/(analyze|analysis|performance|performing|how is my farm|how is the farm|audit|why did|why are|root cause|investigate|trend)/i', $p)) {
             $tools = $this->determine_tools_from_entities($entities, $p);
             return array(
                 'intent'          => self::INTENT_FARM_ANALYSIS,
                 'response_type'   => 'analysis',
                 'requires_data'   => true,
-                'tools'           => !empty($tools) ? $tools : array('get_farm_summary', 'get_batch_summary'),
+                'tools'           => !empty($tools) ? $tools : array('get_farm_summary', 'get_batch_summary', 'get_financial_summary'),
                 'entities'        => $entities
             );
         }
 
         // 7. Formal Report Generation Requests
-        if (preg_match('/(generate|create|build|download|export) (a |the )?(farm |monthly |weekly |annual |production |financial )?report/i', $p)) {
+        if (preg_match('/(generate|create|build|download|export|give me|show me|run|prepare) (a |the |detailed |full )?(farm |monthly |weekly |annual |production |financial |executive )?report/i', $p) || strpos($p, 'report') !== false) {
             return array(
                 'intent'          => self::INTENT_REPORT_REQUEST,
                 'response_type'   => 'report',

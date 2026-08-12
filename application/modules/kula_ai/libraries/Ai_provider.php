@@ -422,19 +422,70 @@ class Ai_provider {
             return "Got it! Let me know what you'd like to check next in KulaCRM.";
         }
 
-        // 3. System Help & Guidance
+        // 3. Business Plan & Comprehensive Strategic Planning Requests
+        if ($intent === 'BUSINESS_PLAN' || preg_match('/(business plan|layer plan|broiler plan|financial projections|roi projection|write a plan|create a plan)/i', $p)) {
+            return "### 📊 Comprehensive Business Plan & Financial Projections\n"
+                . "**Enterprise:** 1,000 Layer Poultry Farm  \n"
+                . "**Timeframe:** 18-Month Production Cycle  \n"
+                . "**Currency:** UGX (Ugandan Shillings)\n\n"
+                . "---\n\n"
+                . "### 1. Executive Summary\n"
+                . "This business plan outlines the setup, operational strategy, feed budgeting, egg yield forecasts, and financial projections for a commercial **1,000 Point-of-Lay (POL) Layer Poultry Unit**. The enterprise aims to supply fresh table eggs to local wholesale distributors, institutions, hotels, and retail markets.\n\n"
+                . "---\n\n"
+                . "### 2. Capital Expenditure (CAPEX) — Initial Setup Costs\n"
+                . "| Investment Item | Quantity / Specs | Estimated Unit Cost (UGX) | Total Amount (UGX) |\n"
+                . "| :--- | :--- | :--- | :--- |\n"
+                . "| **Poultry Structure / Housing** | Deep Litter / Battery Cage (1,000 Birds) | Lump sum | 12,000,000 |\n"
+                . "| **Point-of-Lay Pullets (18-20 Wks)** | 1,000 Pullets | 28,000 / bird | 28,000,000 |\n"
+                . "| **Feeding & Watering Equipment** | Feeders, Drinkers, Nests | Lump sum | 2,500,000 |\n"
+                . "| **Biosecurity & Water System** | Footbaths, Water Tank, Hose | Lump sum | 1,500,000 |\n"
+                . "| **Contingency Reserve** | 5% Operational Buffer | — | 2,200,000 |\n"
+                . "| **TOTAL INITIAL CAPEX** | — | — | **UGX 46,200,000** |\n\n"
+                . "---\n\n"
+                . "### 3. Operational Expenditure (OPEX) — Monthly Running Costs\n"
+                . "* **Feed Budget:** 1,000 birds × 110g/day = 110 kg/day = 3,300 kg/month (66 bags @ UGX 110,000/50kg bag) $\\rightarrow$ **UGX 7,260,000 / month**.\n"
+                . "* **Veterinary & Medication:** Vaccines, Layer Premix, Vitamins $\\rightarrow$ **UGX 600,000 / month**.\n"
+                . "* **Labor & Utilities:** 1 Farm Attendant + Electricity/Water $\\rightarrow$ **UGX 750,000 / month**.\n"
+                . "* **TOTAL MONTHLY OPEX:** $\\approx$ **UGX 8,610,000 / month**.\n\n"
+                . "---\n\n"
+                . "### 4. Revenue Projections (Egg Yield & Manure Sales)\n"
+                . "* **Average Laying Rate:** 85% Peak Production (850 eggs/day = 28.3 Trays/day).\n"
+                . "* **Monthly Egg Production:** 28.3 Trays/day × 30 days = **850 Trays / month**.\n"
+                . "* **Egg Revenue:** 850 Trays @ UGX 10,500 / Tray = **UGX 8,925,000 / month**.\n"
+                . "* **Poultry Manure Sales:** 60 Bags/month @ UGX 5,000/bag = **UGX 300,000 / month**.\n"
+                . "* **Cull Layer Hen Sales (End of Cycle - Wk 72):** 950 Hens @ UGX 15,000/hen = **UGX 14,250,000**.\n"
+                . "* **TOTAL MONTHLY REVENUE:** $\\approx$ **UGX 9,225,000 / month**.\n\n"
+                . "---\n\n"
+                . "### 5. Financial Projections & Return on Investment (ROI)\n"
+                . "* **Monthly Net Operating Margin:** `Revenue (9,225,000) - OPEX (8,610,000)` = **UGX 615,000 / month**.\n"
+                . "* **Cumulative Laying Cycle Net Profit (14 Months Laying):** `14 × 615,000 + Cull Sales (14,250,000)` = **UGX 22,860,000**.\n"
+                . "* **Break-Even Point:** Reached around Month 14-16 of continuous production.\n"
+                . "* **Estimated ROI:** **49.4% over 18-month cycle**.\n\n"
+                . "---\n\n"
+                . "### 6. Key Operational Risk & Mitigation Protocols\n"
+                . "1. **Feed Quality Risk:** Formulate feed using verified premixes and high-protein soybean meal to maintain >82% lay rate.\n"
+                . "2. **Disease Risk:** Implement mandatory Newcastle (LaSota), Gumboro, and Fowl Pox vaccination schedule recorded inside KulaCRM.\n"
+                . "3. **Biosecurity:** Maintain strict footbaths, restrict farm visitors, and disinfect housing between batches.";
+        }
+
+        // 4. System Help & Guidance
         if ($intent === 'SYSTEM_HELP' || preg_match('/(help|what can you do|how to use|features)/i', $p)) {
             return "I can help you inspect and manage your farm operations in KulaCRM! Here are a few things you can ask me:\n\n"
                 . "- 🐄 **Livestock & Inventory:** *'How many goats do I have?'* or *'Which animals are sick?'*\n"
                 . "- 💉 **Health & Vaccines:** *'Which vaccinations are due this week?'* or *'Tell me about Newcastle disease'*\n"
                 . "- 🌾 **Feed & Supplies:** *'Which food stock will run out first?'*\n"
                 . "- 💰 **Finances & Debtors:** *'How much did we spend this month?'* or *'Which clients owe us money?'*\n"
-                . "- 📊 **Analysis & Strategy:** *'Why did mortality increase?'* or *'Give me recommendations to reduce feed costs'*\n\n"
+                . "- 📊 **Analysis & Strategy:** *'Write a business plan for 1,000 layers'* or *'Why did mortality increase?'*\n\n"
                 . "What would you like to start with?";
         }
 
-        // 4. Educational & General Knowledge Questions
-        if ($intent === 'GENERAL_QUESTION') {
+        // 5. Educational & General Knowledge Questions
+        if ($intent === 'GENERAL_QUESTION' || preg_match('/^(what is|explain|define|how to calculate)/i', $p)) {
+            if (strpos($p, 'roi') !== false || strpos($p, 'return on investment') !== false) {
+                return "**Return on Investment (ROI)** measures the profitability of a business venture relative to its total initial cost.\n\n"
+                    . "Formula: `ROI (%) = (Net Profit / Total Initial CAPEX) × 100`\n\n"
+                    . "*Example:* If a poultry house costs UGX 20,000,000 to set up and generates UGX 8,000,000 net profit over its first cycle, your ROI is `(8,000,000 / 20,000,000) × 100 = 40%`." ;
+            }
             if (strpos($p, 'newcastle') !== false) {
                 return "Newcastle disease is a highly contagious viral disease affecting poultry (chickens, turkeys, ducks). Symptoms include respiratory distress (gasping, coughing), nervous signs (twisted neck, paralysis), greenish diarrhea, and sudden mortality.\n\n"
                     . "💡 **Prevention:** Regular vaccination (LaSota / ND-HB1 strain) and strict farm biosecurity are the most effective controls.\n\n"
@@ -541,6 +592,38 @@ class Ai_provider {
                     return "No upcoming vaccinations recorded for this period in KulaCRM.";
                 }
             }
+        }
+
+        // 6. Report Generation Requests
+        if ($intent === 'REPORT_REQUEST' || strpos($p, 'report') !== false) {
+            $output = "### 📋 KulaAI Executive Farm Performance Report\n"
+                . "**Generated:** " . date('F j, Y \a\t H:i:s') . "  \n"
+                . "**Scope:** Active Livestock, Health, & Financial Summary\n\n"
+                . "---\n\n";
+
+            $fs = $context_data['get_farm_summary'] ?? ($context_data['farm_summary'] ?? null);
+            $fin = $context_data['get_financial_summary'] ?? ($context_data['financial_summary'] ?? null);
+
+            if (!empty($fs)) {
+                $output .= "### 1. Livestock & Production Summary\n"
+                    . "- **Active Animals:** " . number_format($fs['total_livestock'] ?? 0) . "\n"
+                    . "- **Active Sheds:** " . ($fs['total_sheds'] ?? 0) . "\n"
+                    . "- **Active Batches:** " . ($fs['total_batches'] ?? 0) . "\n"
+                    . "- **Overall Mortality Rate:** " . ($fs['mortality_rate'] ?? '0%') . "\n\n";
+            }
+
+            if (!empty($fin)) {
+                $output .= "### 2. Financial Overview\n"
+                    . "- **Total Revenue:** UGX " . number_format($fin['total_income'] ?? 0) . "\n"
+                    . "- **Operating Expenses:** UGX " . number_format($fin['total_expenses'] ?? 0) . "\n"
+                    . "- **Net Operational Margin:** UGX " . number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0)) . "\n\n";
+            }
+
+            $output .= "### 3. Key Operational Takeaways\n"
+                . "1. Maintain strict vaccination schedules across active sheds to minimize mortality risks.\n"
+                . "2. Monitor daily feed consumption rates against inventory stock levels to avoid feed shortages.\n";
+
+            return $output;
         }
 
         // 6. Recommendations & Action Plans (ONLY when explicitly requested!)
