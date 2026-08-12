@@ -224,9 +224,10 @@ class Ai_intent_service {
             );
         }
 
-        // Livestock Count & Inventory Queries
-        if (preg_match('/(how many|count|number of|total|list|show me|do i have|do we have) (animal|goat|chicken|poultry|cow|cattle|pig|sheep|bird|stock|batch|shed)/i', $p) ||
-            preg_match('/^(how many|total) (goats|chickens|cows|pigs|sheep|animals|birds|batches|sheds)\??$/i', $p)) {
+        // Livestock Count & Inventory Queries (English, Luganda, Swahili)
+        if (preg_match('/(how many|count|number of|total|list|show me|do i have|do we have|mmeka|wangapi|ziri mmeka|zimeka) (animal|goat|chicken|poultry|cow|cattle|pig|sheep|bird|stock|batch|shed|embuzi|enkoko|ente|empizzi|endiga|mbuzi|kuku|ng\'ombe|nguruwe|kondoo)/i', $p) ||
+            preg_match('/^(how many|total|mmeka|wangapi) (goats|chickens|cows|pigs|sheep|animals|birds|batches|sheds|embuzi|enkoko|ente|mbuzi|kuku)\??$/i', $p) ||
+            (preg_match('/(mmeka|wangapi|ziri mmeka|zimeka)/i', $p) && !empty($entities['species']))) {
             return array(
                 'intent'          => self::INTENT_FARM_DATA_QUERY,
                 'response_type'   => 'data_answer',
