@@ -278,27 +278,49 @@ class Ai_tool_service {
         $CI =& $this->CI;
         $tenant_id = $this->get_tenant_id();
 
-        $table = null;
+        $vaccines = array();
         if ($CI->db->table_exists('vaccine_dose_assigned_quantity')) {
-            $table = 'vaccine_dose_assigned_quantity';
-        } elseif ($CI->db->table_exists('vaccine_dose_schedule')) {
-            $table = 'vaccine_dose_schedule';
+            $CI->db->select('vdq.*, vcc.vcc_name as vac_name, vr.vccr_name as route_name');
+            $CI->db->from('vaccine_dose_assigned_quantity vdq');
+            $CI->db->join('vaccination vccn', 'vccn.vccn_id = vdq.vdq_vccn_id', 'left');
+            $CI->db->join('vaccine vcc', 'vcc.vcc_id = vccn.vccn_vcc_id', 'left');
+            $CI->db->join('vaccine_route vr', 'vr.vccr_id = vdq.vdq_vaccine_route', 'left');
+            if ($CI->db->field_exists('tenant_id', 'vaccine_dose_assigned_quantity')) {
+                $CI->db->where('vdq.tenant_id', $tenant_id);
+            }
+            $CI->db->limit(10);
+            $res = $CI->db->get()->result_array();
+
+            foreach ($res as $r) {
+                $vaccines[] = array(
+                    'vac_name'         => !empty($r['vac_name']) ? $r['vac_name'] : 'Scheduled Vaccine',
+                    'shed_name'        => 'All Active Sheds',
+                    'dose_serial'      => 'Dose #' . ($r['vdq_dose_serial'] ?? '1'),
+                    'vaccination_date' => !empty($r['vdq_created_at']) ? date('M j, Y', strtotime($r['vdq_created_at'])) : 'This Week',
+                    'route_name'       => !empty($r['route_name']) ? trim($r['route_name']) : 'Oral / Mouth'
+                );
+            }
         }
 
-        if (!$table) {
-            return array();
+        if (empty($vaccines) && $CI->db->table_exists('vaccine')) {
+            $CI->db->select('vcc_name as vac_name, vcc_description');
+            if ($CI->db->field_exists('tenant_id', 'vaccine')) {
+                $CI->db->where('tenant_id', $tenant_id);
+            }
+            $CI->db->limit(5);
+            $res = $CI->db->get('vaccine')->result_array();
+            foreach ($res as $r) {
+                $vaccines[] = array(
+                    'vac_name'         => $r['vac_name'],
+                    'shed_name'        => 'All Sheds',
+                    'dose_serial'      => 'Routine Dose',
+                    'vaccination_date' => 'Active Schedule',
+                    'route_name'       => 'Standard Route'
+                );
+            }
         }
 
-        $CI->db->select('vds.*, v.vcc_name as vac_name, s.sh_title as shed_name');
-        $CI->db->from($table . ' vds');
-        $CI->db->join('vaccine v', 'v.vcc_id = vds.vdq_vcc_id', 'left');
-        $CI->db->join('shed s', 's.sh_id = vds.vdq_vccn_id', 'left');
-        if ($CI->db->field_exists('tenant_id', $table)) {
-            $CI->db->where('vds.tenant_id', $tenant_id);
-        }
-        $CI->db->limit(10);
-        
-        return $CI->db->get()->result_array();
+        return $vaccines;
     }
 
     /**
@@ -411,13 +433,59 @@ class Ai_tool_service {
             return array();
         }
 
-        $CI->db->select('c_id as client_id, c_name as client_name, c_phone as client_phone');
+        $CI->db->select('c.c_id as client_id, c.c_name as client_name, c.c_phone as client_phone');
         if ($CI->db->field_exists('tenant_id', 'client')) {
-            $CI->db->where('tenant_id', $tenant_id);
+            $CI->db->where('c.tenant_id', $tenant_id);
         }
-        $CI->db->where('c_status', 1);
+        $CI->db->where('c.c_status', 1);
         $CI->db->limit(10);
-        return $CI->db->get('client')->result_array();
+        $clients = $CI->db->get('client c')->result_array();
+
+        $result = array();
+        foreach ($clients as $cl) {
+            $cid = $cl['client_id'];
+            $total_sales = 0;
+            if ($CI->db->table_exists('livestock_sale_summary')) {
+                $CI->db->select('SUM(lsss_grand_total) as sales_val');
+                $CI->db->where('lsss_c_id', $cid);
+                $CI->db->where('lsss_status', 1);
+                $s_row = $CI->db->get('livestock_sale_summary')->row();
+                $total_sales += (float)($s_row->sales_val ?? 0);
+            }
+            if ($CI->db->table_exists('product_sale_summary')) {
+                $col = $CI->db->field_exists('prss_grand_total', 'product_sale_summary') ? 'prss_grand_total' : ($CI->db->field_exists('pss_grand_total', 'product_sale_summary') ? 'pss_grand_total' : null);
+                if ($col) {
+                    $CI->db->select("SUM({$col}) as psales_val");
+                    $CI->db->where('prss_c_id', $cid);
+                    $s_row = $CI->db->get('product_sale_summary')->row();
+                    $total_sales += (float)($s_row->psales_val ?? 0);
+                }
+            }
+
+            $total_paid = 0;
+            if ($CI->db->table_exists('client_payment')) {
+                $col = $CI->db->field_exists('cp_amount', 'client_payment') ? 'cp_amount' : ($CI->db->field_exists('cp_total', 'client_payment') ? 'cp_total' : null);
+                if ($col) {
+                    $CI->db->select("SUM({$col}) as paid_val");
+                    $CI->db->where('cp_c_id', $cid);
+                    $p_row = $CI->db->get('client_payment')->row();
+                    $total_paid = (float)($p_row->paid_val ?? 0);
+                }
+            }
+
+            $balance = max(0, $total_sales - $total_paid);
+
+            $result[] = array(
+                'client_id'          => $cid,
+                'client_name'        => $cl['client_name'],
+                'client_phone'       => !empty($cl['client_phone']) ? $cl['client_phone'] : 'N/A',
+                'total_sales'        => $total_sales,
+                'total_paid'         => $total_paid,
+                'outstanding_balance'=> $balance
+            );
+        }
+
+        return $result;
     }
 
     /**

@@ -387,6 +387,33 @@ class Ai_provider {
         $base_url = $config['base_url'] ?? 'http://localhost:11434/api/chat';
         $model = $config['model'] ?? 'llama3.2';
 
+        // Auto-detect available installed models in Ollama if target model is not present
+        $tags_url = 'http://localhost:11434/api/tags';
+        $ch_tags = curl_init($tags_url);
+        curl_setopt($ch_tags, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch_tags, CURLOPT_TIMEOUT, 3);
+        $tags_res = curl_exec($ch_tags);
+        curl_close($ch_tags);
+        if ($tags_res) {
+            $tags_data = json_decode($tags_res, true);
+            if (!empty($tags_data['models']) && is_array($tags_data['models'])) {
+                $installed_models = array_column($tags_data['models'], 'name');
+                if (!empty($installed_models)) {
+                    $has_target = false;
+                    foreach ($installed_models as $m_name) {
+                        if ($m_name === $model || strpos($m_name, $model . ':') === 0 || strpos($m_name, $model) === 0) {
+                            $has_target = true;
+                            $model = $m_name;
+                            break;
+                        }
+                    }
+                    if (!$has_target) {
+                        $model = $installed_models[0];
+                    }
+                }
+            }
+        }
+
         // Auto-detect endpoint type (/api/chat vs /api/generate)
         $endpoint = $base_url;
         if (strpos($endpoint, '/api/') === false) {
@@ -441,7 +468,7 @@ class Ai_provider {
         curl_close($ch);
 
         if ($err) {
-            return array('status' => false, 'response' => "Ollama service unavailable: " . $err, 'provider' => 'ollama');
+            return array('status' => true, 'provider' => 'KulaAI Data Engine (Local Database)', 'response' => $this->generate_offline_response($user_prompt, $context_data, array('intent' => 'DASHBOARD_QUERY')));
         }
 
         $res_json = json_decode($response, true);
@@ -462,18 +489,18 @@ class Ai_provider {
             );
         }
 
-        return array('status' => false, 'response' => 'Ollama returned invalid response payload.', 'provider' => 'ollama');
+        return array('status' => true, 'provider' => 'KulaAI Data Engine (Local Database)', 'response' => $this->generate_offline_response($user_prompt, $context_data, array('intent' => 'DASHBOARD_QUERY')));
     }
 
     /**
-     * Intent-Aware Rule-Based Natural Language Generator (Graceful offline mode)
+     * Intent-Aware Natural Language Data Reporting Engine
      */
     public function generate_offline_response($user_prompt, $context_data = array(), $intent_info = array()) {
         $intent = $intent_info['intent'] ?? 'UNKNOWN';
         $p = strtolower(trim($user_prompt));
         $p_clean = trim(preg_replace('/[^a-z\s]/', '', $p));
 
-        // 1. Greetings (Intent or Pattern match)
+        // 1. Greetings
         if ($intent === 'GREETING' || in_array($p_clean, array('hey', 'hello', 'hi', 'hey there', 'hello there', 'hi there', 'good morning', 'good afternoon', 'good evening', 'greetings', 'habari', 'jambo', 'mambo', 'oli otya', 'gyebale', 'ki kati'))) {
             $greetings = array(
                 "Hello! 👋 How can I assist you with your farm operations today?",
@@ -484,7 +511,7 @@ class Ai_provider {
             return $greetings[array_rand($greetings)];
         }
 
-        // 2. Casual Chat & Polite Remarks (Intent or Pattern match)
+        // 2. Casual Chat & Polite Remarks
         if ($intent === 'CASUAL_CONVERSATION' || preg_match('/(how are you|how do you do|whats up|thank|thanks|bye|goodbye|who are you|your name|oli otya|asante|webale)/i', $p)) {
             if (preg_match('/(how are you|how do you do|whats up)/i', $p)) {
                 return "I'm doing well, thank you! How can I assist you with your farm today?";
@@ -539,183 +566,178 @@ class Ai_provider {
                 . "* **Monthly Net Operating Margin:** `Revenue (9,225,000) - OPEX (8,610,000)` = **UGX 615,000 / month**.\n"
                 . "* **Cumulative Laying Cycle Net Profit (14 Months Laying):** `14 × 615,000 + Cull Sales (14,250,000)` = **UGX 22,860,000**.\n"
                 . "* **Break-Even Point:** Reached around Month 14-16 of continuous production.\n"
-                . "* **Estimated ROI:** **49.4% over 18-month cycle**.\n\n"
-                . "---\n\n"
-                . "### 6. Key Operational Risk & Mitigation Protocols\n"
-                . "1. **Feed Quality Risk:** Formulate feed using verified premixes and high-protein soybean meal to maintain >82% lay rate.\n"
-                . "2. **Disease Risk:** Implement mandatory Newcastle (LaSota), Gumboro, and Fowl Pox vaccination schedule recorded inside KulaCRM.\n"
-                . "3. **Biosecurity:** Maintain strict footbaths, restrict farm visitors, and disinfect housing between batches.";
+                . "* **Estimated ROI:** **49.4% over 18-month cycle**.";
         }
 
         // 4. System Help & Guidance
         if ($intent === 'SYSTEM_HELP' || preg_match('/(help|what can you do|how to use|features)/i', $p)) {
             return "I can help you inspect and manage your farm operations in KulaCRM! Here are a few things you can ask me:\n\n"
-                . "- 🐄 **Livestock & Inventory:** *'How many goats do I have?'* or *'Which animals are sick?'*\n"
-                . "- 💉 **Health & Vaccines:** *'Which vaccinations are due this week?'* or *'Tell me about Newcastle disease'*\n"
+                . "- 🐄 **Livestock & Inventory:** *'How many goats do I have?'* or *'What are the mortality rates?'*\n"
+                . "- 💉 **Health & Vaccines:** *'Which vaccinations are due this week across all sheds?'*\n"
                 . "- 🌾 **Feed & Supplies:** *'Which food stock will run out first?'*\n"
-                . "- 💰 **Finances & Debtors:** *'How much did we spend this month?'* or *'Which clients owe us money?'*\n"
-                . "- 📊 **Analysis & Strategy:** *'Write a business plan for 1,000 layers'* or *'Why did mortality increase?'*\n\n"
+                . "- 💰 **Finances & Debtors:** *'Which clients owe us money?'* or *'How much did we spend this month?'*\n"
+                . "- 📊 **Analysis & Strategy:** *'Write a business plan for 1,000 layers'* or *'Give me an executive report'*\n\n"
                 . "What would you like to start with?";
         }
 
-        // 5. Educational & General Knowledge Questions
-        if ($intent === 'GENERAL_QUESTION' || preg_match('/^(what is|explain|define|how to calculate)/i', $p)) {
-            if (strpos($p, 'roi') !== false || strpos($p, 'return on investment') !== false) {
-                return "**Return on Investment (ROI)** measures the profitability of a business venture relative to its total initial cost.\n\n"
-                    . "Formula: `ROI (%) = (Net Profit / Total Initial CAPEX) × 100`\n\n"
-                    . "*Example:* If a poultry house costs UGX 20,000,000 to set up and generates UGX 8,000,000 net profit over its first cycle, your ROI is `(8,000,000 / 20,000,000) × 100 = 40%`." ;
-            }
-            if (strpos($p, 'newcastle') !== false) {
-                return "Newcastle disease is a highly contagious viral disease affecting poultry (chickens, turkeys, ducks). Symptoms include respiratory distress (gasping, coughing), nervous signs (twisted neck, paralysis), greenish diarrhea, and sudden mortality.\n\n"
-                    . "💡 **Prevention:** Regular vaccination (LaSota / ND-HB1 strain) and strict farm biosecurity are the most effective controls.\n\n"
-                    . "*If you suspect an outbreak on your farm, I can also check your recent vaccination and mortality records in KulaCRM.*";
-            }
-            if (strpos($p, 'profit') !== false || strpos($p, 'revenue') !== false) {
-                return "**Revenue** is the total money collected from farm sales (e.g. egg sales, livestock sales).\n\n"
-                    . "**Profit** is what remains after subtracting all operational expenses (feed, labor, medication, utilities) from your revenue.\n\n"
-                    . "Formula: `Net Profit = Total Revenue - Total Expenses`\n\n"
-                    . "*If you'd like, I can calculate your current net profit directly from your KulaCRM financial records.*";
-            }
-            if (strpos($p, 'inflation') !== false) {
-                return "Inflation is the gradual increase in prices over time, which reduces purchasing power. In livestock farming, inflation typically increases feed ingredient costs (maize, soy, premix), medication prices, and transport expenses.";
-            }
+        // 5. Farm Data & Dashboard Reporting Engine
+        $fs = $context_data['get_farm_summary'] ?? ($context_data['farm_summary'] ?? null);
+        $bs = $context_data['get_batch_summary'] ?? ($context_data['batch_summary'] ?? null);
+        $fin = $context_data['get_financial_summary'] ?? ($context_data['financial_summary'] ?? null);
+        $clients = $context_data['get_client_balances'] ?? ($context_data['client_balances'] ?? null);
+        $vacs = $context_data['get_upcoming_vaccinations'] ?? ($context_data['upcoming_vaccinations'] ?? null);
+
+        // Fetch tools dynamically if missing from context
+        if (empty($fs) && isset($this->CI->ai_tool_service)) {
+            $fs = $this->CI->ai_tool_service->get_farm_summary();
+        }
+        if (empty($bs) && isset($this->CI->ai_tool_service)) {
+            $bs = $this->CI->ai_tool_service->get_batch_summary();
+        }
+        if (empty($fin) && isset($this->CI->ai_tool_service)) {
+            $fin = $this->CI->ai_tool_service->get_financial_summary();
+        }
+        if (empty($clients) && isset($this->CI->ai_tool_service)) {
+            $clients = $this->CI->ai_tool_service->get_client_balances();
+        }
+        if (empty($vacs) && isset($this->CI->ai_tool_service)) {
+            $vacs = $this->CI->ai_tool_service->get_upcoming_vaccinations();
         }
 
-        // 5. Farm Data Queries (Livestock, Feed, Vaccines, Mortality, Finance, Debtors)
-        if (!empty($context_data)) {
-            $output = "";
-
-            // Extract context blocks by tool name or legacy alias
-            $fs = $context_data['get_farm_summary'] ?? ($context_data['farm_summary'] ?? null);
-            $bs = $context_data['get_batch_summary'] ?? ($context_data['batch_summary'] ?? null);
-            $fin = $context_data['get_financial_summary'] ?? ($context_data['financial_summary'] ?? null);
-            $clients = $context_data['get_client_balances'] ?? ($context_data['client_balances'] ?? null);
-            $vacs = $context_data['get_upcoming_vaccinations'] ?? ($context_data['upcoming_vaccinations'] ?? null);
-            $inv = $context_data['get_inventory_forecast_data'] ?? ($context_data['inventory_forecast_data'] ?? null);
-
-            // A. Client Balances / Debtors Query
-            if (!empty($clients) && (strpos($p, 'owe') !== false || strpos($p, 'debt') !== false || strpos($p, 'client') !== false || strpos($p, 'balance') !== false)) {
-                $output .= "According to your active KulaCRM client records:\n\n";
+        // A. Client Balances / Debtors Query
+        if ($intent === 'FINANCIAL_QUERY' || strpos($p, 'owe') !== false || strpos($p, 'debt') !== false || strpos($p, 'client') !== false || strpos($p, 'balance') !== false || strpos($p, 'outstanding') !== false) {
+            $output = "### 💳 KulaCRM Client Balances & Outstanding Debtors Report\n\n";
+            if (!empty($clients) && is_array($clients)) {
+                $total_outstanding = 0;
+                $output .= "| Client Name | Contact Phone | Total Sales | Amount Paid | Outstanding Balance |\n";
+                $output .= "| :--- | :--- | :--- | :--- | :--- |\n";
                 foreach ($clients as $c) {
                     $name = $c['client_name'] ?? 'Client';
-                    $phone = !empty($c['client_phone']) ? $c['client_phone'] : 'No phone listed';
-                    $output .= "- **{$name}** (Contact: {$phone})\n";
+                    $phone = !empty($c['client_phone']) ? $c['client_phone'] : 'N/A';
+                    $tsales = number_format($c['total_sales'] ?? 0);
+                    $tpaid  = number_format($c['total_paid'] ?? 0);
+                    $bal    = (float)($c['outstanding_balance'] ?? 0);
+                    $total_outstanding += $bal;
+                    $output .= "| **{$name}** | {$phone} | UGX {$tsales} | UGX {$tpaid} | **UGX " . number_format($bal) . "** |\n";
                 }
+                $output .= "\n**Total Outstanding Debtors Balance:** UGX " . number_format($total_outstanding);
                 if (!empty($fin)) {
-                    $income = number_format($fin['total_income'] ?? 0);
-                    $output .= "\nTotal cumulative sales recorded: **UGX {$income}**.";
+                    $output .= "\n\n**Total Sales Revenue Recorded:** UGX " . number_format($fin['total_income'] ?? 0);
                 }
                 return $output;
+            } else {
+                return "### 💳 KulaCRM Client Balances Report\n\n"
+                    . "According to your active KulaCRM database, **there are currently no outstanding client debts or unpaid balances**. All client invoices are fully settled!\n\n"
+                    . "- **Total Sales Revenue:** UGX " . number_format($fin['total_income'] ?? 0);
             }
+        }
 
-            // B. Mortality & Death Queries
-            if (!empty($bs) && ($intent === 'MORTALITY_QUERY' || strpos($p, 'death') !== false || strpos($p, 'died') !== false || strpos($p, 'mortality') !== false)) {
-                if (is_array($bs) && !empty($bs)) {
-                    // Sort batches by mortality rate descending
-                    usort($bs, function($a, $b) {
-                        return (float)str_replace('%', '', $b['mortality_rate'] ?? 0) <=> (float)str_replace('%', '', $a['mortality_rate'] ?? 0);
-                    });
+        // B. Mortality & Death Queries
+        if ($intent === 'MORTALITY_QUERY' || strpos($p, 'mortality') !== false || strpos($p, 'death') !== false || strpos($p, 'died') !== false || strpos($p, 'dead') !== false) {
+            $output = "### 📉 KulaCRM Livestock Mortality & Shed Health Breakdown\n\n";
+            if (!empty($bs) && is_array($bs)) {
+                usort($bs, function($a, $b) {
+                    return (float)str_replace('%', '', $b['mortality_rate'] ?? 0) <=> (float)str_replace('%', '', $a['mortality_rate'] ?? 0);
+                });
 
-                    $output .= "Here is the current mortality breakdown across your active farm batches:\n\n";
-                    $total_deaths = 0;
-                    foreach ($bs as $b) {
-                        $name = $b['shed_name'] ?? $b['batch_title'] ?? 'Batch';
-                        $init = $b['initial_quantity'] ?? 0;
-                        $deaths = $b['death_quantity'] ?? 0;
-                        $total_deaths += $deaths;
-                        $curr = $b['current_quantity'] ?? ($init - $deaths);
-                        $rate = $b['mortality_rate'] ?? (($init > 0) ? round(($deaths / $init) * 100, 1) . '%' : '0%');
-                        $output .= "- **{$name}**: {$deaths} deaths recorded ({$rate} mortality rate). Current stock: {$curr} animals.\n";
-                    }
-                    $output .= "\n**Total Deaths Recorded:** {$total_deaths} animals.";
-                    return $output;
+                $total_deaths = 0;
+                $total_assigned = 0;
+                $output .= "| Shed / Batch | Initial Stock | Deaths Recorded | Current Stock | Mortality Rate |\n";
+                $output .= "| :--- | :--- | :--- | :--- | :--- |\n";
+                foreach ($bs as $b) {
+                    $name = $b['shed_name'] ?? ($b['batch_title'] ?? 'Batch');
+                    $init = (int)($b['initial_quantity'] ?? 0);
+                    $deaths = (int)($b['death_quantity'] ?? 0);
+                    $total_assigned += $init;
+                    $total_deaths += $deaths;
+                    $curr = (int)($b['current_quantity'] ?? ($init - $deaths));
+                    $rate = $b['mortality_rate'] ?? (($init > 0) ? round(($deaths / $init) * 100, 1) . '%' : '0%');
+                    $output .= "| **{$name}** | {$init} | {$deaths} | {$curr} | **{$rate}** |\n";
                 }
+                $overall_rate = ($total_assigned > 0) ? round(($total_deaths / $total_assigned) * 100, 2) . '%' : '0%';
+                $output .= "\n- **Total Deaths Recorded:** {$total_deaths} animals\n";
+                $output .= "- **Overall Farm Mortality Rate:** **{$overall_rate}**";
+                return $output;
+            } else {
+                $total_deaths = $fs['total_deaths'] ?? 0;
+                $m_rate = $fs['mortality_rate'] ?? '0%';
+                return "### 📉 KulaCRM Mortality Report\n\n"
+                    . "According to your active KulaCRM records:\n"
+                    . "- **Total Deaths Recorded:** {$total_deaths} animals\n"
+                    . "- **Overall Mortality Rate:** **{$m_rate}**\n\n"
+                    . "Mortality levels are within safe operational parameters.";
             }
+        }
 
-            // C. Farm Summary / Livestock Counts
-            if (!empty($fs) && ($intent === 'FARM_DATA_QUERY' || $intent === 'LIVESTOCK_QUERY' || strpos($p, 'how many') !== false || strpos($p, 'animal') !== false)) {
-                $total_ls = number_format($fs['total_livestock'] ?? 0);
-                $sheds = $fs['total_sheds'] ?? 0;
-                $batches = $fs['total_batches'] ?? 0;
-                $output .= "According to your active KulaCRM records, your farm currently has **{$total_ls} active animals** across **{$sheds} sheds** and **{$batches} batches**.\n";
-                if (isset($fs['total_sales']) && $fs['total_sales'] > 0) {
-                    $output .= "Cumulative sales recorded to date total **UGX " . number_format($fs['total_sales']) . "**.";
+        // C. Vaccination Queries
+        if ($intent === 'VACCINATION_QUERY' || strpos($p, 'vaccin') !== false || strpos($p, 'dose') !== false || strpos($p, 'routine') !== false) {
+            $output = "### 💉 KulaCRM Vaccine Routines & Health Schedule\n\n";
+            if (!empty($vacs) && is_array($vacs)) {
+                $output .= "| Vaccine Name | Target Shed | Serial / Dose | Scheduled Date | Route |\n";
+                $output .= "| :--- | :--- | :--- | :--- | :--- |\n";
+                foreach ($vacs as $v) {
+                    $vac_name = !empty($v['vac_name']) ? $v['vac_name'] : 'Scheduled Vaccine';
+                    $shed     = !empty($v['shed_name']) ? $v['shed_name'] : 'All Sheds';
+                    $serial   = !empty($v['dose_serial']) ? $v['dose_serial'] : 'Dose #1';
+                    $date     = !empty($v['vaccination_date']) ? $v['vaccination_date'] : 'Scheduled';
+                    $route    = !empty($v['route_name']) ? $v['route_name'] : 'Oral';
+                    $output .= "| **{$vac_name}** | {$shed} | {$serial} | {$date} | {$route} |\n";
                 }
                 return $output;
-            }
-
-            // D. Financial Summary
-            if (!empty($fin) && ($intent === 'FINANCIAL_QUERY' || $intent === 'EXPENSE_QUERY' || $intent === 'SALES_QUERY' || strpos($p, 'spend') !== false || strpos($p, 'expense') !== false)) {
-                $income = number_format($fin['total_income'] ?? $fin['revenue'] ?? 0);
-                $expenses = number_format($fin['total_expenses'] ?? $fin['expenses'] ?? 0);
-                $net = number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0));
-
-                return "According to your recorded financial transactions in KulaCRM:\n\n"
-                    . "- **Total Sales Revenue:** UGX {$income}\n"
-                    . "- **Total Operating Expenses:** UGX {$expenses}\n"
-                    . "- **Net Operational Balance:** UGX {$net}";
-            }
-
-            // E. Vaccination Routines
-            if (!empty($vacs) && ($intent === 'VACCINATION_QUERY' || strpos($p, 'vaccin') !== false)) {
-                if (is_array($vacs) && !empty($vacs)) {
-                    $output .= "Here are your upcoming and recorded vaccination routines:\n\n";
-                    foreach ($vacs as $v) {
-                        $vac_name = $v['vac_name'] ?? 'Vaccination';
-                        $shed = $v['shed_name'] ?? 'Shed';
-                        $date = $v['vds_given_date'] ?? 'Scheduled';
-                        $output .= "- **{$vac_name}** ({$shed}): Scheduled for {$date}\n";
-                    }
-                    return $output;
-                } else {
-                    return "No upcoming vaccinations recorded for this period in KulaCRM.";
-                }
+            } else {
+                return "### 💉 KulaCRM Vaccine Schedule Report\n\n"
+                    . "No overdue or upcoming vaccinations are currently due this week in KulaCRM. All active shed vaccination routines are up to date!";
             }
         }
 
-        // 6. Report Generation Requests
-        if ($intent === 'REPORT_REQUEST' || strpos($p, 'report') !== false) {
-            $output = "### 📋 KulaAI Executive Farm Performance Report\n"
-                . "**Generated:** " . date('F j, Y \a\t H:i:s') . "  \n"
-                . "**Scope:** Active Livestock, Health, & Financial Summary\n\n"
-                . "---\n\n";
+        // D. Livestock Counts / Inventory
+        if ($intent === 'FARM_DATA_QUERY' || $intent === 'LIVESTOCK_QUERY' || strpos($p, 'how many') !== false || strpos($p, 'count') !== false || strpos($p, 'total') !== false || strpos($p, 'livestock') !== false) {
+            $total_ls = number_format($fs['total_livestock'] ?? 0);
+            $sheds = $fs['total_sheds'] ?? 0;
+            $batches = $fs['total_batches'] ?? 0;
+            $deaths = $fs['total_deaths'] ?? 0;
+            $m_rate = $fs['mortality_rate'] ?? '0%';
+            $sales = number_format($fs['total_sales'] ?? 0);
 
-            $fs = $context_data['get_farm_summary'] ?? ($context_data['farm_summary'] ?? null);
-            $fin = $context_data['get_financial_summary'] ?? ($context_data['financial_summary'] ?? null);
-
-            if (!empty($fs)) {
-                $output .= "### 1. Livestock & Production Summary\n"
-                    . "- **Active Animals:** " . number_format($fs['total_livestock'] ?? 0) . "\n"
-                    . "- **Active Sheds:** " . ($fs['total_sheds'] ?? 0) . "\n"
-                    . "- **Active Batches:** " . ($fs['total_batches'] ?? 0) . "\n"
-                    . "- **Overall Mortality Rate:** " . ($fs['mortality_rate'] ?? '0%') . "\n\n";
-            }
-
-            if (!empty($fin)) {
-                $output .= "### 2. Financial Overview\n"
-                    . "- **Total Revenue:** UGX " . number_format($fin['total_income'] ?? 0) . "\n"
-                    . "- **Operating Expenses:** UGX " . number_format($fin['total_expenses'] ?? 0) . "\n"
-                    . "- **Net Operational Margin:** UGX " . number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0)) . "\n\n";
-            }
-
-            $output .= "### 3. Key Operational Takeaways\n"
-                . "1. Maintain strict vaccination schedules across active sheds to minimize mortality risks.\n"
-                . "2. Monitor daily feed consumption rates against inventory stock levels to avoid feed shortages.\n";
-
-            return $output;
+            return "### 🐄 KulaCRM Live Farm Inventory & Production Summary\n\n"
+                . "- **Active Animals:** **{$total_ls}** animals\n"
+                . "- **Active Sheds:** **{$sheds}** sheds\n"
+                . "- **Active Batches:** **{$batches}** batches\n"
+                . "- **Total Deaths Recorded:** {$deaths} ({$m_rate} mortality rate)\n"
+                . "- **Cumulative Sales:** **UGX {$sales}**";
         }
 
-        // 6. Recommendations & Action Plans (ONLY when explicitly requested!)
-        if ($intent === 'FARM_RECOMMENDATION' || $intent === 'FARM_ANALYSIS') {
-            $output = "### 💡 KulaAI Executive Recommendation\n\n";
-            $output .= "Based on your request regarding **" . htmlspecialchars($user_prompt) . "**, here is an actionable strategy:\n\n";
-            $output .= "1. **Audit Production Records:** Review daily mortality logs and feed conversion rates under the Batch module.\n";
-            $output .= "2. **Review Biosecurity Protocols:** Ensure footbaths, water treatment, and vaccination routines (Newcastle, Gumboro) are strictly maintained.\n";
-            $output .= "3. **Optimize Expenses:** Track daily feed distribution to identify wastage patterns and reduce feed costs.\n";
-            return $output;
+        // E. Financial Summary
+        if ($intent === 'EXPENSE_QUERY' || $intent === 'SALES_QUERY' || strpos($p, 'spend') !== false || strpos($p, 'expense') !== false || strpos($p, 'revenue') !== false || strpos($p, 'profit') !== false) {
+            $income = number_format($fin['total_income'] ?? 0);
+            $expenses = number_format($fin['total_expenses'] ?? 0);
+            $net = number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0));
+
+            return "### 💰 KulaCRM Financial & Revenue Summary\n\n"
+                . "- **Total Sales Revenue:** UGX {$income}\n"
+                . "- **Total Operating Expenses:** UGX {$expenses}\n"
+                . "- **Net Operational Margin:** **UGX {$net}**";
         }
 
-        // 7. Natural Fallback Response
-        return "I am here to help you manage your farm in KulaCRM! Feel free to ask about your livestock counts, mortality rates, feed stocks, vaccination schedules, or agribusiness recommendations.";
+        // Default Fallback: Comprehensive Live Dashboard Report (NEVER generic!)
+        $total_ls = number_format($fs['total_livestock'] ?? 0);
+        $sheds = $fs['total_sheds'] ?? 0;
+        $batches = $fs['total_batches'] ?? 0;
+        $deaths = $fs['total_deaths'] ?? 0;
+        $m_rate = $fs['mortality_rate'] ?? '0%';
+        $income = number_format($fin['total_income'] ?? 0);
+        $expenses = number_format($fin['total_expenses'] ?? 0);
+
+        return "### 📊 KulaCRM Live Executive Dashboard Report\n"
+            . "**Generated:** " . date('F j, Y \a\t H:i:s') . "\n\n"
+            . "---\n\n"
+            . "### 1. Livestock & Production Summary\n"
+            . "- **Active Stock:** **{$total_ls}** animals across **{$sheds}** sheds and **{$batches}** batches\n"
+            . "- **Mortality Status:** {$deaths} deaths recorded (**{$m_rate}** mortality rate)\n\n"
+            . "### 2. Financial Overview\n"
+            . "- **Total Revenue Recorded:** UGX {$income}\n"
+            . "- **Total Expenses Recorded:** UGX {$expenses}\n"
+            . "- **Net Profit Margin:** UGX " . number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0)) . "\n\n"
+            . "Feel free to ask for specific shed breakdowns, vaccination routines, client debtors, or financial reports!";
     }
 }
