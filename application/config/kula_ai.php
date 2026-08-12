@@ -28,8 +28,8 @@ $config['kula_ai_providers'] = [
         'endpoint'=> 'https://api.groq.com/openai/v1/chat/completions'
     ],
     'ollama' => [
-        'base_url'=> 'http://localhost:11434/api/generate',
-        'model'   => 'llama3'
+        'base_url'=> 'http://localhost:11434/api/chat',
+        'model'   => 'llama3.2'
     ]
 ];
 

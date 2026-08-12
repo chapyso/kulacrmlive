@@ -1449,22 +1449,39 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        const vElem = document.getElementById('camera_video') || document.getElementById('m_camera_video');
+        const mVElem = document.getElementById('m_camera_video') || vElem;
+
         navigator.mediaDevices.getUserMedia({
             video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } }
         })
         .then(stream => {
             mediaStream = stream;
-            videoElem.srcObject = stream;
-            mVideoElem.srcObject = stream;
 
-            videoElem.play();
-            mVideoElem.play();
+            if (vElem) {
+                try {
+                    vElem.srcObject = stream;
+                    var p1 = vElem.play();
+                    if (p1 && p1.catch) p1.catch(e => console.warn('vElem play notice:', e));
+                } catch(e) { console.warn(e); }
+            }
+
+            if (mVElem && mVElem !== vElem) {
+                try {
+                    mVElem.srcObject = stream;
+                    var p2 = mVElem.play();
+                    if (p2 && p2.catch) p2.catch(e => console.warn('mVElem play notice:', e));
+                } catch(e) { console.warn(e); }
+            }
 
             isScanning = true;
 
-            // Start sampling loop (1 frame every 1.5 seconds)
+            // Start sampling loop (1 frame every 1 second)
             if (scanIntervalTimer) clearInterval(scanIntervalTimer);
-            scanIntervalTimer = setInterval(captureAndProcessFrame, 1500);
+            scanIntervalTimer = setInterval(captureAndProcessFrame, 1000);
+
+            // Trigger immediate first scan after 500ms
+            setTimeout(captureAndProcessFrame, 500);
         })
         .catch(err => {
             console.error('Camera Access Error:', err);
@@ -1491,10 +1508,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Prevent overlapping requests
         if (isProcessingFrame) return;
 
-        const targetVideo = (window.innerWidth < 768) ? mVideoElem : videoElem;
-        const targetCanvas = (window.innerWidth < 768) ? mCanvasElem : canvasElem;
+        var vElem  = document.getElementById('m_camera_video');
+        var desktopVElem = document.getElementById('camera_video');
+        var targetVideo = (vElem && vElem.videoWidth > 0) ? vElem : ((desktopVElem && desktopVElem.videoWidth > 0) ? desktopVElem : (vElem || desktopVElem));
 
-        if (!targetVideo || !targetVideo.videoWidth) return;
+        var cElem  = document.getElementById('m_camera_canvas');
+        var desktopCElem = document.getElementById('camera_canvas');
+        var targetCanvas = cElem || desktopCElem;
+
+        if (!targetVideo || !targetCanvas) {
+            console.warn('Vision: targetVideo or targetCanvas element missing.');
+            return;
+        }
+
+        if (!targetVideo.videoWidth || !targetVideo.videoHeight) {
+            console.warn('Vision: video stream not ready yet.');
+            return;
+        }
 
         isProcessingFrame = true;
         framesCapturedCount++;

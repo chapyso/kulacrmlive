@@ -384,24 +384,57 @@ class Ai_provider {
      * Call Local Ollama instance
      */
     protected function call_ollama($config, $system_prompt, $user_prompt, $context_data, $chat_history = array()) {
-        $endpoint = $config['base_url'] ?? 'http://localhost:11434/api/generate';
-        $model = $config['model'] ?? 'llama3';
+        $base_url = $config['base_url'] ?? 'http://localhost:11434/api/chat';
+        $model = $config['model'] ?? 'llama3.2';
+
+        // Auto-detect endpoint type (/api/chat vs /api/generate)
+        $endpoint = $base_url;
+        if (strpos($endpoint, '/api/') === false) {
+            $endpoint = rtrim($endpoint, '/') . '/api/chat';
+        }
 
         $context_str = !empty($context_data) ? "\n\nLIVE KULACRM DATA CONTEXT:\n" . json_encode($context_data, JSON_PRETTY_PRINT) : "";
-        $prompt = $system_prompt . "\n\n" . $user_prompt . $context_str;
 
-        $payload = array(
-            'model'  => $model,
-            'prompt' => $prompt,
-            'stream' => false
-        );
+        if (strpos($endpoint, '/api/chat') !== false) {
+            $messages = array(
+                array('role' => 'system', 'content' => $system_prompt)
+            );
+
+            if (!empty($chat_history) && is_array($chat_history)) {
+                foreach (array_slice($chat_history, -8) as $msg) {
+                    $role = (isset($msg['role']) && $msg['role'] === 'user') ? 'user' : 'assistant';
+                    $text = is_array($msg) ? ($msg['content'] ?? ($msg['prompt'] ?? '')) : (string)$msg;
+                    if (!empty($text)) {
+                        $messages[] = array('role' => $role, 'content' => $text);
+                    }
+                }
+            }
+
+            $messages[] = array('role' => 'user', 'content' => $user_prompt . $context_str);
+
+            $payload = array(
+                'model'    => $model,
+                'messages' => $messages,
+                'stream'   => false,
+                'options'  => array(
+                    'temperature' => (float)($this->config['kula_ai_temperature'] ?? 0.2)
+                )
+            );
+        } else {
+            $prompt = $system_prompt . "\n\n" . $user_prompt . $context_str;
+            $payload = array(
+                'model'  => $model,
+                'prompt' => $prompt,
+                'stream' => false
+            );
+        }
 
         $ch = curl_init($endpoint);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
         $response = curl_exec($ch);
         $err = curl_error($ch);
@@ -412,6 +445,15 @@ class Ai_provider {
         }
 
         $res_json = json_decode($response, true);
+
+        if (isset($res_json['message']['content'])) {
+            return array(
+                'status'   => true,
+                'provider' => 'ollama (' . $model . ')',
+                'response' => trim($res_json['message']['content'])
+            );
+        }
+
         if (isset($res_json['response'])) {
             return array(
                 'status'   => true,

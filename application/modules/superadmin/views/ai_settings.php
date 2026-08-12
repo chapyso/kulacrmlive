@@ -99,7 +99,7 @@ function updateModelOptions(provider) {
     } else if (provider === 'groq') {
         modelInput.value = 'llama-3.3-70b-versatile';
     } else if (provider === 'ollama') {
-        modelInput.value = 'llama3';
+        modelInput.value = 'llama3.2';
     }
 }
 </script>
