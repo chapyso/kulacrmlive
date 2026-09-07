@@ -20,9 +20,8 @@ $is_essential_only = ($cookie_cfg->mode === 'essential_only') || ($cookie_cfg->m
 $site_url = base_url();
 ?>
 
-<!-- Cookie Notice Styles -->
+<!-- Cookie Notice & Consent Styles -->
 <style>
-    /* Scope styles cleanly without polluting global CSS */
     .kula-consent-hidden {
         display: none !important;
     }
@@ -31,80 +30,80 @@ $site_url = base_url();
         overflow: hidden !important;
     }
 
-    /* Fixed Bottom Notice Banner */
+    /* Floating Notice Card (Bottom-Left Desktop) */
     #kula-cookie-banner {
         position: fixed;
-        bottom: 16px;
-        left: 16px;
-        right: 16px;
-        max-width: 920px;
-        margin: 0 auto;
+        bottom: 20px;
+        left: 20px;
+        right: auto;
+        width: calc(100% - 40px);
+        max-width: 400px;
+        max-height: calc(100vh - 32px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
         background: rgba(15, 23, 42, 0.96);
         color: #f8fafc;
         border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 18px;
-        padding: 20px 24px;
-        box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
         z-index: 99998;
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        animation: kulaSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: kulaCardSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         box-sizing: border-box;
     }
 
-    @keyframes kulaSlideUp {
-        from { transform: translateY(100%) scale(0.96); opacity: 0; }
+    @keyframes kulaCardSlideUp {
+        from { transform: translateY(20px) scale(0.97); opacity: 0; }
         to { transform: translateY(0) scale(1); opacity: 1; }
     }
 
-    .kula-banner-inner {
+    .kula-card-inner {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    @media (min-width: 860px) {
-        .kula-banner-inner {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
-    }
-
-    .kula-banner-content {
-        flex: 1;
-    }
-
-    .kula-banner-title {
+    .kula-card-title {
         font-size: 15px;
         font-weight: 800;
         color: #ffffff;
-        margin: 0 0 4px 0;
+        margin: 0 0 6px 0;
         display: flex;
         align-items: center;
         gap: 8px;
         letter-spacing: -0.2px;
+        line-height: 1.3;
     }
 
-    .kula-banner-title i {
+    .kula-card-title i {
         color: #10b981;
+        font-size: 16px;
     }
 
-    .kula-banner-desc {
-        font-size: 13px;
+    .kula-card-desc {
+        font-size: 13.5px;
         line-height: 1.5;
         color: #cbd5e1;
-        margin: 0;
+        margin: 0 0 14px 0;
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    .kula-banner-actions {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-        flex-shrink: 0;
+    /* Actions Grid: Equal-width buttons */
+    .kula-card-btn-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .kula-btn-full {
+        width: 100%;
     }
 
     /* Common Button Styles */
@@ -112,8 +111,8 @@ $site_url = base_url();
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 9px 18px;
-        border-radius: 10px;
+        padding: 9px 12px;
+        border-radius: 9px;
         font-size: 13px;
         font-weight: 700;
         cursor: pointer;
@@ -121,8 +120,10 @@ $site_url = base_url();
         border: none;
         outline: none;
         text-decoration: none !important;
-        white-space: nowrap;
+        text-align: center;
         user-select: none;
+        min-height: 38px;
+        box-sizing: border-box;
     }
 
     .kula-btn:focus-visible {
@@ -143,7 +144,7 @@ $site_url = base_url();
     .kula-btn-secondary {
         background: rgba(255, 255, 255, 0.1);
         color: #f8fafc !important;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.16);
     }
     .kula-btn-secondary:hover {
         background: rgba(255, 255, 255, 0.18);
@@ -151,18 +152,34 @@ $site_url = base_url();
         transform: translateY(-1px);
     }
 
-    .kula-btn-text {
-        background: transparent;
-        color: #94a3b8 !important;
-        padding: 8px 12px;
-        font-size: 12.5px;
+    /* Secondary Text Links Row */
+    .kula-card-links-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        padding: 0 2px;
+        width: 100%;
+        box-sizing: border-box;
     }
-    .kula-btn-text:hover {
+
+    .kula-btn-text-link {
+        background: transparent;
+        border: none;
+        color: #94a3b8 !important;
+        padding: 4px 0;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none !important;
+        transition: color 0.2s ease;
+    }
+    .kula-btn-text-link:hover {
         color: #f8fafc !important;
         text-decoration: underline !important;
     }
 
-    /* Modal Backdrop & Container */
+    /* Modal Backdrop & Dialog Container */
     .kula-modal-overlay {
         position: fixed;
         top: 0;
@@ -178,7 +195,7 @@ $site_url = base_url();
         justify-content: center;
         padding: 16px;
         box-sizing: border-box;
-        animation: kulaFadeIn 0.25s ease;
+        animation: kulaFadeIn 0.2s ease;
     }
 
     @keyframes kulaFadeIn {
@@ -190,25 +207,25 @@ $site_url = base_url();
         background: #ffffff;
         color: #0f172a;
         width: 100%;
-        max-width: 680px;
+        max-width: 620px;
         max-height: 85vh;
-        border-radius: 20px;
+        border-radius: 16px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
         display: flex;
         flex-direction: column;
         overflow: hidden;
         border: 1px solid #e2e8f0;
-        animation: kulaPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: kulaPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     @keyframes kulaPop {
-        from { transform: scale(0.95) translateY(10px); opacity: 0; }
+        from { transform: scale(0.96) translateY(8px); opacity: 0; }
         to { transform: scale(1) translateY(0); opacity: 1; }
     }
 
     .kula-modal-header {
-        padding: 20px 24px;
+        padding: 18px 22px;
         border-bottom: 1px solid #e2e8f0;
         display: flex;
         align-items: center;
@@ -218,7 +235,7 @@ $site_url = base_url();
 
     .kula-modal-header h3 {
         margin: 0;
-        font-size: 17px;
+        font-size: 16px;
         font-weight: 800;
         color: #0f172a;
         display: flex;
@@ -242,7 +259,7 @@ $site_url = base_url();
     }
 
     .kula-modal-body {
-        padding: 24px;
+        padding: 22px;
         overflow-y: auto;
         flex: 1;
     }
@@ -250,9 +267,9 @@ $site_url = base_url();
     .kula-category-item {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 16px;
-        margin-bottom: 14px;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
         transition: border-color 0.2s;
     }
     .kula-category-item:hover {
@@ -267,7 +284,7 @@ $site_url = base_url();
     }
 
     .kula-category-title {
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 800;
         color: #0f172a;
         margin: 0;
@@ -349,17 +366,17 @@ $site_url = base_url();
     }
 
     .kula-modal-footer {
-        padding: 16px 24px;
+        padding: 14px 22px;
         border-top: 1px solid #e2e8f0;
         background: #f8fafc;
         display: flex;
         align-items: center;
         justify-content: flex-end;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 8px;
     }
 
-    /* Persistent Trigger Badge */
+    /* Persistent Launcher Pill */
     #kula-cookie-trigger-btn {
         position: fixed;
         bottom: 16px;
@@ -369,7 +386,7 @@ $site_url = base_url();
         color: #10b981;
         border: 1px solid rgba(255, 255, 255, 0.15);
         border-radius: 9999px;
-        padding: 8px 14px;
+        padding: 7px 13px;
         font-size: 12px;
         font-weight: 700;
         display: flex;
@@ -388,78 +405,100 @@ $site_url = base_url();
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
     }
 
-    @media (max-width: 600px) {
+    /* Mobile Responsive Adaptation */
+    @media (max-width: 480px) {
         #kula-cookie-banner {
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-            padding: 16px;
+            left: 12px;
+            right: 12px;
+            bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            width: calc(100% - 24px);
+            max-width: calc(100% - 24px);
+            padding: 13px 14px;
+            border-radius: 14px;
         }
-        .kula-banner-actions {
-            width: 100%;
+
+        /* Elevate card when mobile bottom navigation bar exists */
+        .site-mobile-bottom-nav ~ #kula-cookie-banner,
+        .site-mobile-bottom-nav ~ * #kula-cookie-banner {
+            bottom: calc(74px + env(safe-area-inset-bottom, 0px));
         }
-        .kula-banner-actions .kula-btn {
-            flex: 1;
-            min-width: 130px;
-            text-align: center;
+
+        #kula-cookie-banner .kula-btn {
+            min-height: 44px;
+            font-size: 13px;
         }
+
         #kula-cookie-trigger-btn {
-            padding: 6px 10px;
+            padding: 6px 11px;
             font-size: 11px;
-            bottom: 10px;
-            left: 10px;
+            bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            left: 12px;
+        }
+
+        .site-mobile-bottom-nav ~ #kula-cookie-trigger-btn,
+        .site-mobile-bottom-nav ~ * #kula-cookie-trigger-btn {
+            bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+        }
+    }
+
+    /* Ultra-narrow mobile stacking (< 340px) */
+    @media (max-width: 340px) {
+        .kula-card-btn-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
 
-<!-- 1. Notice Banner -->
-<div id="kula-cookie-banner" class="kula-consent-hidden" role="region" aria-label="Cookie consent banner" aria-hidden="true">
-    <div class="kula-banner-inner">
-        <div class="kula-banner-content">
-            <?php if ($is_essential_only): ?>
-                <h4 class="kula-banner-title">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <?php echo htmlspecialchars($cookie_cfg->banner_title_essential ?: 'Essential cookies'); ?>
-                </h4>
-                <p class="kula-banner-desc">
-                    <?php echo htmlspecialchars($cookie_cfg->banner_desc_essential ?: 'KULACRM uses essential cookies to keep you signed in and help the platform work securely.'); ?>
-                </p>
-            <?php else: ?>
-                <h4 class="kula-banner-title">
-                    <i class="fa-solid fa-cookie-bite"></i>
-                    <?php echo htmlspecialchars($cookie_cfg->banner_title_optional ?: 'Your privacy matters'); ?>
-                </h4>
-                <p class="kula-banner-desc">
-                    <?php echo htmlspecialchars($cookie_cfg->banner_desc_optional ?: 'We use essential cookies to keep you signed in and help KULACRM work securely. With your permission, we also use optional cookies for the purposes you choose. You can change your preferences anytime.'); ?>
-                </p>
-            <?php endif; ?>
-        </div>
-
-        <div class="kula-banner-actions">
-            <?php if ($is_essential_only): ?>
-                <button type="button" class="kula-btn kula-btn-primary" onclick="KulaConsent.acknowledgeEssential()">
-                    <i class="fa-solid fa-check mr-1" style="margin-right: 4px;"></i>
-                    <?php echo htmlspecialchars($cookie_cfg->btn_got_it_label ?: 'Got it'); ?>
+<!-- 1. Floating Notice Card -->
+<div id="kula-cookie-banner" class="kula-consent-hidden" role="region" aria-label="Cookie consent notice" aria-hidden="true">
+    <div class="kula-card-inner">
+        <?php if ($is_essential_only): ?>
+            <h4 class="kula-card-title">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span><?php echo htmlspecialchars($cookie_cfg->banner_title_essential ?: 'Essential cookies'); ?></span>
+            </h4>
+            <p class="kula-card-desc">
+                <?php echo htmlspecialchars($cookie_cfg->banner_desc_essential ?: 'KULACRM uses essential cookies to keep you signed in and help the platform work securely.'); ?>
+            </p>
+            <div style="width: 100%;">
+                <button type="button" class="kula-btn kula-btn-primary kula-btn-full" onclick="KulaConsent.acknowledgeEssential()">
+                    <i class="fa-solid fa-check" style="margin-right: 5px;"></i>
+                    <span><?php echo htmlspecialchars($cookie_cfg->btn_got_it_label ?: 'Got it'); ?></span>
                 </button>
-            <?php else: ?>
+            </div>
+            <div class="kula-card-links-row" style="justify-content: center; margin-top: 8px;">
+                <button type="button" class="kula-btn-text-link" onclick="KulaConsent.openPolicyModal()">
+                    <?php echo htmlspecialchars($cookie_cfg->btn_cookie_policy_label ?: 'Cookie Policy'); ?>
+                </button>
+            </div>
+        <?php else: ?>
+            <h4 class="kula-card-title">
+                <i class="fa-solid fa-cookie-bite"></i>
+                <span><?php echo htmlspecialchars($cookie_cfg->banner_title_optional ?: 'Your privacy matters'); ?></span>
+            </h4>
+            <p class="kula-card-desc">
+                <?php echo htmlspecialchars($cookie_cfg->banner_desc_optional ?: 'We use essential cookies to keep KULACRM secure. Optional cookies are used only with your permission. Change your preferences anytime.'); ?>
+            </p>
+            
+            <div class="kula-card-btn-grid">
                 <button type="button" class="kula-btn kula-btn-primary" onclick="KulaConsent.acceptAll()">
-                    <i class="fa-solid fa-check" style="margin-right: 4px;"></i>
-                    <?php echo htmlspecialchars($cookie_cfg->btn_accept_all_label ?: 'Accept optional cookies'); ?>
+                    <span><?php echo htmlspecialchars($cookie_cfg->btn_accept_all_label ?: 'Accept optional'); ?></span>
                 </button>
                 <button type="button" class="kula-btn kula-btn-secondary" onclick="KulaConsent.rejectAll()">
-                    <i class="fa-solid fa-xmark" style="margin-right: 4px;"></i>
-                    <?php echo htmlspecialchars($cookie_cfg->btn_reject_all_label ?: 'Reject optional cookies'); ?>
+                    <span><?php echo htmlspecialchars($cookie_cfg->btn_reject_all_label ?: 'Reject optional'); ?></span>
                 </button>
-                <button type="button" class="kula-btn kula-btn-secondary" onclick="KulaConsent.openPreferences()">
-                    <i class="fa-solid fa-sliders" style="margin-right: 4px;"></i>
-                    <?php echo htmlspecialchars($cookie_cfg->btn_manage_label ?: 'Manage preferences'); ?>
-                </button>
-            <?php endif; ?>
+            </div>
 
-            <a href="javascript:void(0)" class="kula-btn kula-btn-text" onclick="KulaConsent.openPolicyModal()">
-                <?php echo htmlspecialchars($cookie_cfg->btn_cookie_policy_label ?: 'Cookie Policy'); ?>
-            </a>
-        </div>
+            <div class="kula-card-links-row">
+                <button type="button" class="kula-btn-text-link" onclick="KulaConsent.openPreferences()">
+                    <i class="fa-solid fa-sliders" style="margin-right: 4px; font-size: 11px;"></i>
+                    <span><?php echo htmlspecialchars($cookie_cfg->btn_manage_label ?: 'Preferences'); ?></span>
+                </button>
+                <button type="button" class="kula-btn-text-link" onclick="KulaConsent.openPolicyModal()">
+                    <span><?php echo htmlspecialchars($cookie_cfg->btn_cookie_policy_label ?: 'Cookie Policy'); ?></span>
+                </button>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -477,7 +516,7 @@ $site_url = base_url();
         </div>
 
         <div class="kula-modal-body">
-            <p style="font-size: 13px; color: #64748b; margin: 0 0 18px 0; line-height: 1.5;">
+            <p style="font-size: 13px; color: #64748b; margin: 0 0 16px 0; line-height: 1.5;">
                 Customize which optional cookie and browser storage categories you permit KULACRM to use. You can change or withdraw your consent at any time.
             </p>
 
@@ -552,8 +591,8 @@ $site_url = base_url();
                 </div>
             <?php endif; ?>
 
-            <div style="margin-top: 16px; padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 12px; color: #1e40af; display: flex; align-items: center; justify-content: space-between;">
-                <span>Need complete technical inventory details?</span>
+            <div style="margin-top: 14px; padding: 10px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 12px; color: #1e40af; display: flex; align-items: center; justify-content: space-between;">
+                <span>Need technical inventory details?</span>
                 <a href="<?php echo base_url('cookie_consent/policy'); ?>" target="_blank" style="font-weight: 700; color: #1d4ed8; text-decoration: underline;">
                     View Cookie Policy &rarr;
                 </a>
@@ -577,7 +616,7 @@ $site_url = base_url();
 
 <!-- 3. Policy Quick Modal -->
 <div id="kula-cookie-policy-modal" class="kula-modal-overlay kula-consent-hidden" role="dialog" aria-modal="true" aria-labelledby="kula-policy-title" aria-hidden="true">
-    <div class="kula-modal-card" style="max-width: 780px;" role="document">
+    <div class="kula-modal-card" style="max-width: 740px;" role="document">
         <div class="kula-modal-header">
             <h3 id="kula-policy-title">
                 <i class="fa-solid fa-book-open text-emerald-600" style="color: #10b981;"></i>
@@ -605,8 +644,8 @@ $site_url = base_url();
     </div>
 </div>
 
-<!-- 4. Persistent Privacy Trigger Pill -->
-<button type="button" id="kula-cookie-trigger-btn" title="Manage Cookie Consent &amp; Privacy Preferences" onclick="KulaConsent.openPreferences()" aria-label="Open Cookie Preferences">
+<!-- 4. Persistent Privacy Trigger Pill (Hidden when notice card or modal is open) -->
+<button type="button" id="kula-cookie-trigger-btn" class="kula-consent-hidden" title="Manage Cookie Consent &amp; Privacy Preferences" onclick="KulaConsent.openPreferences()" aria-label="Open Cookie Preferences">
     <i class="fa-solid fa-cookie-bite"></i>
     <span>Cookie Preferences</span>
 </button>

@@ -42,9 +42,12 @@
             if (!current || this.isExpiredOrMateriallyChanged(current)) {
                 if (this.config.bannerEnabled) {
                     this.showBanner();
+                } else {
+                    this.showTrigger();
                 }
             } else {
                 this.applyConsent(current.categories);
+                this.showTrigger();
             }
         },
 
@@ -297,12 +300,38 @@
             document.dispatchEvent(event);
         },
 
+        showTrigger: function () {
+            var trigger = document.getElementById('kula-cookie-trigger-btn');
+            var banner = document.getElementById('kula-cookie-banner');
+            var modal = document.getElementById('kula-cookie-preferences-modal');
+            var isBannerVisible = banner && !banner.classList.contains('kula-consent-hidden');
+            var isModalVisible = modal && !modal.classList.contains('kula-consent-hidden');
+            if (trigger) {
+                if (isBannerVisible || isModalVisible) {
+                    trigger.classList.add('kula-consent-hidden');
+                    trigger.setAttribute('aria-hidden', 'true');
+                } else {
+                    trigger.classList.remove('kula-consent-hidden');
+                    trigger.setAttribute('aria-hidden', 'false');
+                }
+            }
+        },
+
+        hideTrigger: function () {
+            var trigger = document.getElementById('kula-cookie-trigger-btn');
+            if (trigger) {
+                trigger.classList.add('kula-consent-hidden');
+                trigger.setAttribute('aria-hidden', 'true');
+            }
+        },
+
         showBanner: function () {
             var banner = document.getElementById('kula-cookie-banner');
             if (banner) {
                 banner.classList.remove('kula-consent-hidden');
                 banner.setAttribute('aria-hidden', 'false');
             }
+            this.hideTrigger();
         },
 
         hideBanner: function () {
@@ -311,6 +340,7 @@
                 banner.classList.add('kula-consent-hidden');
                 banner.setAttribute('aria-hidden', 'true');
             }
+            this.showTrigger();
         },
 
         openPreferences: function () {
@@ -338,6 +368,7 @@
             modal.classList.remove('kula-consent-hidden');
             modal.setAttribute('aria-hidden', 'false');
             document.body.classList.add('kula-consent-modal-open');
+            this.hideTrigger();
 
             // Focus first interactive element
             var saveBtn = document.getElementById('kula-consent-save-prefs-btn');
@@ -351,6 +382,7 @@
                 modal.setAttribute('aria-hidden', 'true');
                 document.body.classList.remove('kula-consent-modal-open');
             }
+            this.showTrigger();
         },
 
         openPolicyModal: function () {
@@ -373,6 +405,7 @@
                 modal.setAttribute('aria-hidden', 'true');
                 document.body.classList.remove('kula-consent-modal-open');
             }
+            this.showTrigger();
         },
 
         bindEvents: function () {

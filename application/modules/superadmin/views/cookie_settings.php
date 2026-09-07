@@ -133,21 +133,21 @@
                                 </div>
                                 <div class="form-group" style="margin-bottom: 16px;">
                                     <label style="font-weight: 700; font-size: 13px; color: #334155;">Banner Description</label>
-                                    <textarea name="banner_desc_optional" rows="3" class="form-control" style="border-radius: 10px; font-size: 13px;"><?php echo htmlspecialchars($cookie_settings->banner_desc_optional ?: 'We use essential cookies to keep you signed in and help KULACRM work securely. With your permission, we also use optional cookies for the purposes you choose. You can change your preferences anytime.'); ?></textarea>
+                                    <textarea name="banner_desc_optional" rows="3" class="form-control" style="border-radius: 10px; font-size: 13px;"><?php echo htmlspecialchars($cookie_settings->banner_desc_optional ?: 'We use essential cookies to keep KULACRM secure. Optional cookies are used only with your permission. Change your preferences anytime.'); ?></textarea>
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 form-group" style="margin-bottom: 16px;">
                                         <label style="font-weight: 700; font-size: 12.5px; color: #334155;">&quot;Accept Optional&quot; Button</label>
-                                        <input type="text" name="btn_accept_all_label" value="<?php echo htmlspecialchars($cookie_settings->btn_accept_all_label ?: 'Accept optional cookies'); ?>" class="form-control" style="border-radius: 10px; height: 40px; font-weight: 600;">
+                                        <input type="text" name="btn_accept_all_label" value="<?php echo htmlspecialchars($cookie_settings->btn_accept_all_label ?: 'Accept optional'); ?>" class="form-control" style="border-radius: 10px; height: 40px; font-weight: 600;">
                                     </div>
                                     <div class="col-md-6 form-group" style="margin-bottom: 16px;">
                                         <label style="font-weight: 700; font-size: 12.5px; color: #334155;">&quot;Reject Optional&quot; Button</label>
-                                        <input type="text" name="btn_reject_all_label" value="<?php echo htmlspecialchars($cookie_settings->btn_reject_all_label ?: 'Reject optional cookies'); ?>" class="form-control" style="border-radius: 10px; height: 40px; font-weight: 600;">
+                                        <input type="text" name="btn_reject_all_label" value="<?php echo htmlspecialchars($cookie_settings->btn_reject_all_label ?: 'Reject optional'); ?>" class="form-control" style="border-radius: 10px; height: 40px; font-weight: 600;">
                                     </div>
                                     <div class="col-md-6 form-group" style="margin-bottom: 16px;">
-                                        <label style="font-weight: 700; font-size: 12.5px; color: #334155;">&quot;Manage Preferences&quot; Button</label>
-                                        <input type="text" name="btn_manage_label" value="<?php echo htmlspecialchars($cookie_settings->btn_manage_label ?: 'Manage preferences'); ?>" class="form-control" style="border-radius: 10px; height: 40px; font-weight: 600;">
+                                        <label style="font-weight: 700; font-size: 12.5px; color: #334155;">&quot;Preferences&quot; Button Label</label>
+                                        <input type="text" name="btn_manage_label" value="<?php echo htmlspecialchars($cookie_settings->btn_manage_label ?: 'Preferences'); ?>" class="form-control" style="border-radius: 10px; height: 40px; font-weight: 600;">
                                     </div>
                                     <div class="col-md-6 form-group" style="margin-bottom: 16px;">
                                         <label style="font-weight: 700; font-size: 12.5px; color: #334155;">&quot;Save Preferences&quot; Button</label>
@@ -355,16 +355,16 @@
             <div class="tab-pane" id="tab-preview">
                 <div class="panel" style="border-radius: 16px; border: 1px solid #e2e8f0; background: #ffffff; padding: 24px;">
                     <div style="margin-bottom: 20px;">
-                        <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Live Notice &amp; Modal Preview</h3>
-                        <span style="font-size: 13px; color: #64748b;">Simulate how visitors see the notices and preferences dialogs in real-time</span>
+                        <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0;">Live Notice Card &amp; Modal Preview</h3>
+                        <span style="font-size: 13px; color: #64748b;">Simulate how visitors see the floating card notice and preferences dialogs in real-time</span>
                     </div>
 
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                         <button type="button" class="btn btn-default" onclick="showPreview('essential')" style="border-radius: 8px; font-weight: 700; font-size: 12.5px;">
-                            <i class="fa-solid fa-shield-halved" style="color: #3b82f6; margin-right: 4px;"></i> Preview Essential-Only Banner
+                            <i class="fa-solid fa-shield-halved" style="color: #3b82f6; margin-right: 4px;"></i> Preview Essential-Only Card
                         </button>
                         <button type="button" class="btn btn-default" onclick="showPreview('optional')" style="border-radius: 8px; font-weight: 700; font-size: 12.5px;">
-                            <i class="fa-solid fa-cookie-bite" style="color: #10b981; margin-right: 4px;"></i> Preview Optional Consent Banner
+                            <i class="fa-solid fa-cookie-bite" style="color: #10b981; margin-right: 4px;"></i> Preview Optional Consent Card
                         </button>
                         <button type="button" class="btn btn-default" onclick="showPreview('modal')" style="border-radius: 8px; font-weight: 700; font-size: 12.5px;">
                             <i class="fa-solid fa-sliders" style="color: #8b5cf6; margin-right: 4px;"></i> Preview Preferences Dialog
@@ -372,43 +372,61 @@
                     </div>
 
                     <!-- Sandbox Frame Area -->
-                    <div style="background: #0f172a; border-radius: 16px; padding: 30px; position: relative; min-height: 280px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #1e293b;">
+                    <div style="background: #0f172a; border-radius: 16px; padding: 30px; position: relative; min-height: 320px; display: flex; align-items: flex-end; justify-content: flex-start; overflow: hidden; border: 1px solid #1e293b;">
                         
-                        <!-- Essential Preview Box -->
-                        <div id="preview-box-essential" style="width: 100%; max-width: 800px; background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 18px 22px; color: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-                            <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-                                <div style="flex: 1;">
-                                    <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
-                                        <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> <?php echo htmlspecialchars($cookie_settings->banner_title_essential ?: 'Essential cookies'); ?>
-                                    </h4>
-                                    <p style="margin: 0; font-size: 12.5px; color: #cbd5e1;"><?php echo htmlspecialchars($cookie_settings->banner_desc_essential ?: 'KULACRM uses essential cookies to keep you signed in and help the platform work securely.'); ?></p>
-                                </div>
-                                <div style="display: flex; gap: 8px; align-items: center;">
-                                    <button type="button" class="btn btn-sm btn-success" style="border-radius: 8px; font-weight: 700;"><?php echo htmlspecialchars($cookie_cfg->btn_got_it_label ?: 'Got it'); ?></button>
-                                    <span style="font-size: 12px; color: #94a3b8; text-decoration: underline; cursor: pointer;"><?php echo htmlspecialchars($cookie_cfg->btn_cookie_policy_label ?: 'Cookie Policy'); ?></span>
-                                </div>
+                        <!-- Essential Preview Card (400px Floating Card) -->
+                        <div id="preview-box-essential" style="width: 100%; max-width: 400px; background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 16px; color: #fff; box-shadow: 0 16px 36px rgba(0,0,0,0.5);">
+                            <h4 style="margin: 0 0 6px 0; font-size: 15px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i>
+                                <span><?php echo htmlspecialchars($cookie_settings->banner_title_essential ?: 'Essential cookies'); ?></span>
+                            </h4>
+                            <p style="margin: 0 0 14px 0; font-size: 13.5px; line-height: 1.5; color: #cbd5e1;">
+                                <?php echo htmlspecialchars($cookie_settings->banner_desc_essential ?: 'KULACRM uses essential cookies to keep you signed in and help the platform work securely.'); ?>
+                            </p>
+                            <div style="width: 100%;">
+                                <button type="button" class="btn btn-success btn-block" style="border-radius: 9px; font-weight: 700; background: #10b981; border: none; min-height: 38px;">
+                                    <i class="fa-solid fa-check" style="margin-right: 4px;"></i> <?php echo htmlspecialchars($cookie_settings->btn_got_it_label ?: 'Got it'); ?>
+                                </button>
+                            </div>
+                            <div style="display: flex; justify-content: center; margin-top: 8px;">
+                                <span style="font-size: 12.5px; color: #94a3b8; text-decoration: underline; cursor: pointer; font-weight: 600;">
+                                    <?php echo htmlspecialchars($cookie_settings->btn_cookie_policy_label ?: 'Cookie Policy'); ?>
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Optional Preview Box -->
-                        <div id="preview-box-optional" style="display: none; width: 100%; max-width: 800px; background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 18px 22px; color: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-                            <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
-                                <div style="flex: 1;">
-                                    <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
-                                        <i class="fa-solid fa-cookie-bite" style="color: #10b981;"></i> <?php echo htmlspecialchars($cookie_settings->banner_title_optional ?: 'Your privacy matters'); ?>
-                                    </h4>
-                                    <p style="margin: 0; font-size: 12.5px; color: #cbd5e1;"><?php echo htmlspecialchars($cookie_settings->banner_desc_optional ?: 'We use essential cookies to keep you signed in and help KULACRM work securely.'); ?></p>
-                                </div>
-                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                    <button type="button" class="btn btn-sm btn-success" style="border-radius: 8px; font-weight: 700;"><?php echo htmlspecialchars($cookie_cfg->btn_accept_all_label ?: 'Accept optional cookies'); ?></button>
-                                    <button type="button" class="btn btn-sm btn-default" style="border-radius: 8px; font-weight: 700; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);"><?php echo htmlspecialchars($cookie_cfg->btn_reject_all_label ?: 'Reject optional cookies'); ?></button>
-                                    <button type="button" class="btn btn-sm btn-default" style="border-radius: 8px; font-weight: 700; background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2);"><?php echo htmlspecialchars($cookie_cfg->btn_manage_label ?: 'Manage preferences'); ?></button>
-                                </div>
+                        <!-- Optional Preview Card (400px Floating Card) -->
+                        <div id="preview-box-optional" style="display: none; width: 100%; max-width: 400px; background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 16px; color: #fff; box-shadow: 0 16px 36px rgba(0,0,0,0.5);">
+                            <h4 style="margin: 0 0 6px 0; font-size: 15px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-cookie-bite" style="color: #10b981;"></i>
+                                <span><?php echo htmlspecialchars($cookie_settings->banner_title_optional ?: 'Your privacy matters'); ?></span>
+                            </h4>
+                            <p style="margin: 0 0 14px 0; font-size: 13.5px; line-height: 1.5; color: #cbd5e1;">
+                                <?php echo htmlspecialchars($cookie_settings->banner_desc_optional ?: 'We use essential cookies to keep KULACRM secure. Optional cookies are used only with your permission. Change your preferences anytime.'); ?>
+                            </p>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%;">
+                                <button type="button" class="btn btn-success" style="border-radius: 9px; font-weight: 700; background: #10b981; border: none; min-height: 38px;">
+                                    <?php echo htmlspecialchars($cookie_settings->btn_accept_all_label ?: 'Accept optional'); ?>
+                                </button>
+                                <button type="button" class="btn btn-default" style="border-radius: 9px; font-weight: 700; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.16); min-height: 38px;">
+                                    <?php echo htmlspecialchars($cookie_settings->btn_reject_all_label ?: 'Reject optional'); ?>
+                                </button>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; width: 100%;">
+                                <span style="font-size: 12.5px; color: #94a3b8; cursor: pointer; font-weight: 600;">
+                                    <i class="fa-solid fa-sliders" style="margin-right: 4px; font-size: 11px;"></i>
+                                    <?php echo htmlspecialchars($cookie_settings->btn_manage_label ?: 'Preferences'); ?>
+                                </span>
+                                <span style="font-size: 12.5px; color: #94a3b8; text-decoration: underline; cursor: pointer; font-weight: 600;">
+                                    <?php echo htmlspecialchars($cookie_settings->btn_cookie_policy_label ?: 'Cookie Policy'); ?>
+                                </span>
                             </div>
                         </div>
 
                         <!-- Modal Preview Box -->
-                        <div id="preview-box-modal" style="display: none; width: 100%; max-width: 540px; background: #ffffff; border-radius: 16px; padding: 20px; color: #0f172a; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+                        <div id="preview-box-modal" style="display: none; width: 100%; max-width: 520px; background: #ffffff; border-radius: 16px; padding: 20px; color: #0f172a; box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin: auto;">
                             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 14px;">
                                 <h4 style="margin: 0; font-size: 15px; font-weight: 800;">Cookie &amp; Privacy Preferences</h4>
                                 <i class="fa-solid fa-xmark" style="color: #64748b;"></i>
