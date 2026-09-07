@@ -3,7 +3,7 @@ if (!defined('BASEPATH')) exit('No direct script access allowed');
 
 /**
  * MY_Controller - Base Multi-Tenant SaaS Controller
- * Extends MX_Controller to support HMVC module architecture while enforcing global multi-tenant isolation and route guards.
+ * Extends MX_Controller to support HMVC module architecture while enforcing global multi-tenant isolation, route guards, and CSRF protection.
  */
 #[AllowDynamicProperties]
 class MY_Controller extends MX_Controller {
@@ -19,6 +19,7 @@ class MY_Controller extends MX_Controller {
         $this->enforce_security_headers();
         $this->load->library('session');
         $this->load->database();
+        $this->load->helper('action_token');
         if (!isset($this->ion_auth)) {
             $this->load->library('Ion_auth');
         }
@@ -52,7 +53,7 @@ class MY_Controller extends MX_Controller {
         // 4. Referrer Policy
         header('Referrer-Policy: strict-origin-when-cross-origin');
 
-        // 5. Permissions Policy (Restrict camera/microphone unless intentionally requested)
+        // 5. Permissions Policy
         header('Permissions-Policy: camera=(self), microphone=(), geolocation=(self)');
 
         // 6. XSS Protection legacy fallback
@@ -155,10 +156,83 @@ class MY_Controller extends MX_Controller {
         $this->is_impersonating = (bool)$this->session->userdata('is_impersonating');
         $is_superadmin = false;
 
-        $segment1 = strtolower($this->uri->segment(1));
+        $segment1 = strtolower((string)$this->uri->segment(1));
         $system_segments = array('superadmin', 'auth', 'api', 'common', 'uploads', 'settings', 'assets', 'cron', 'home', 'livestock', 'shed', 'vaccine', 'food', 'purchase', 'sale', 'client', 'supplier', 'expense', 'staff', 'report', 'product', 'users', 'kula_ai');
 
-        // Path-based tenant resolution check (e.g. /kulafarms/dashboard)
+        if ($this->ion_auth->logged_in()) {
+            $user = $this->ion_auth->user()->row();
+            
+            // Check if user account is disabled
+            if ($user && (int)$user->active !== 1) {
+                $this->ion_auth->logout();
+                $this->session->set_flashdata('message', 'Your account has been deactivated. Please contact support.');
+                redirect('auth/login', 'refresh');
+                return;
+            }
+
+            $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+
+            if ($is_superadmin) {
+                if ($this->is_impersonating && $this->session->userdata('tenant_id')) {
+                    $this->context = 'TENANT';
+                    $this->tenant_id = (int)$this->session->userdata('tenant_id');
+                    $this->tenant_slug = $this->session->userdata('tenant_slug') ?: 'kulafarms';
+                    $tenant = $this->db->get_where('tenants', array('id' => $this->tenant_id))->row();
+                    if ($tenant) {
+                        $this->tenant_data = $tenant;
+                    }
+                    return;
+                } else {
+                    // Super Admin in PLATFORM mode
+                    if (empty($segment1) || in_array($segment1, array('superadmin', 'auth', 'api', 'common', 'uploads', 'assets'))) {
+                        $this->context = 'PLATFORM';
+                        $this->tenant_id = null;
+                        $this->tenant_slug = null;
+                        return;
+                    }
+                    // Super Admin browsing a tenant page
+                    $this->context = 'TENANT';
+                    $this->tenant_id = $this->session->userdata('tenant_id') ? (int)$this->session->userdata('tenant_id') : 1;
+                    $this->tenant_slug = $this->session->userdata('tenant_slug') ?: 'default';
+                    return;
+                }
+            } else {
+                // Regular Tenant User Context: Tenant ID is strictly bound to user's assigned tenant
+                $this->context = 'TENANT';
+                if ($user && !empty($user->tenant_id)) {
+                    $tenant = $this->db->get_where('tenants', array('id' => (int)$user->tenant_id))->row();
+                    if ($tenant) {
+                        // Check if tenant organization is suspended
+                        if ($tenant->status !== 'active') {
+                            $this->ion_auth->logout();
+                            $this->session->set_flashdata('message', 'Your organization account is suspended. Please contact support.');
+                            redirect('auth/login', 'refresh');
+                            return;
+                        }
+
+                        $this->tenant_id = (int)$tenant->id;
+                        $this->tenant_slug = !empty($tenant->slug) ? $tenant->slug : 'default';
+                        $this->tenant_data = $tenant;
+                        $this->session->set_userdata('tenant_id', $this->tenant_id);
+                        $this->session->set_userdata('tenant_slug', $this->tenant_slug);
+
+                        // If user requested a path with another tenant's slug, enforce isolation redirect
+                        if (!empty($segment1) && !in_array($segment1, $system_segments)) {
+                            $expected_slug = strtolower($this->tenant_slug);
+                            $expected_alt = !empty($tenant->slug_name) ? strtolower($tenant->slug_name) : $expected_slug;
+                            if ($segment1 !== $expected_slug && $segment1 !== $expected_alt) {
+                                // Prevent cross-tenant URL spoofing
+                                redirect(base_url($expected_slug . '/dashboard'), 'refresh');
+                                return;
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Unauthenticated or Public Path-based tenant resolution check (e.g. /kulafarms/login)
         if (!empty($segment1) && !in_array($segment1, $system_segments)) {
             $this->db->group_start();
             if ($this->db->field_exists('slug', 'tenants')) {
@@ -175,79 +249,8 @@ class MY_Controller extends MX_Controller {
                 $this->tenant_id = (int)$tenant->id;
                 $this->tenant_slug = !empty($tenant->slug) ? $tenant->slug : $segment1;
                 $this->tenant_data = $tenant;
-                $this->session->set_userdata('tenant_id', $this->tenant_id);
-                $this->session->set_userdata('tenant_slug', $this->tenant_slug);
                 return;
             }
-        }
-        
-        if ($this->ion_auth->logged_in()) {
-            $user = $this->ion_auth->user()->row();
-            $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
-
-            if ($is_superadmin) {
-                if ($this->is_impersonating && $this->session->userdata('tenant_id')) {
-                    $this->context = 'TENANT';
-                    $this->tenant_id = (int)$this->session->userdata('tenant_id');
-                    $this->tenant_slug = $this->session->userdata('tenant_slug') ?: 'kulafarms';
-                    $tenant = $this->db->get_where('tenants', array('id' => $this->tenant_id))->row();
-                    if ($tenant) {
-                        $this->tenant_data = $tenant;
-                    }
-                    return;
-                } else {
-                    // Super Admin operating on tenant page defaults to active tenant
-                    $this->context = 'TENANT';
-                    $this->tenant_id = $this->session->userdata('tenant_id') ? (int)$this->session->userdata('tenant_id') : 1;
-                    $this->tenant_slug = $this->session->userdata('tenant_slug') ?: 'default';
-                    return;
-                }
-            } else {
-                // Regular Tenant User Context
-                $this->context = 'TENANT';
-                if ($user && !empty($user->tenant_id)) {
-                    $tenant = $this->db->get_where('tenants', array('id' => (int)$user->tenant_id))->row();
-                    if ($tenant) {
-                        $this->tenant_id = (int)$tenant->id;
-                        $this->tenant_slug = !empty($tenant->slug) ? $tenant->slug : 'default';
-                        $this->tenant_data = $tenant;
-                        $this->session->set_userdata('tenant_id', $this->tenant_id);
-                        $this->session->set_userdata('tenant_slug', $this->tenant_slug);
-                        return;
-                    }
-                }
-            }
-        }
-
-        // Host Subdomain fallback
-        $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
-        $parts = explode('.', $host);
-        if (count($parts) >= 2 && $parts[0] !== 'www' && $parts[0] !== 'localhost' && !is_numeric($parts[0])) {
-            $slug = strtolower($parts[0]);
-            $tenant = $this->db->where('slug', $slug)
-                               ->where('status', 'active')
-                               ->get('tenants')
-                               ->row();
-            if ($tenant) {
-                $this->context = 'TENANT';
-                $this->tenant_id = (int)$tenant->id;
-                $this->tenant_slug = !empty($tenant->slug_name) ? $tenant->slug_name : $tenant->slug;
-                $this->tenant_data = $tenant;
-                $this->session->set_userdata('tenant_id', $this->tenant_id);
-                $this->session->set_userdata('tenant_slug', $this->tenant_slug);
-                return;
-            }
-        }
-
-        // Fallback for non-superadmin tenant requests only
-        if (!$is_superadmin && (empty($this->uri->segment(1)) || $this->uri->segment(1) === 'home')) {
-            $sess_tid = $this->session->userdata('tenant_id');
-            $sess_slug = $this->session->userdata('tenant_slug');
-            $this->context = 'TENANT';
-            $this->tenant_id = !empty($sess_tid) ? (int)$sess_tid : 1;
-            $this->tenant_slug = !empty($sess_slug) ? $sess_slug : 'kulafarms';
-            $this->session->set_userdata('tenant_id', $this->tenant_id);
-            $this->session->set_userdata('tenant_slug', $this->tenant_slug);
         }
     }
 
@@ -261,7 +264,7 @@ class MY_Controller extends MX_Controller {
 
         $user = $this->ion_auth->user()->row();
         $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
-        $segment1 = strtolower($this->uri->segment(1));
+        $segment1 = strtolower((string)$this->uri->segment(1));
         $is_superadmin_route = ($segment1 === 'superadmin');
 
         // 1. Super Admin in PLATFORM context attempting to visit a tenant business module without impersonation
@@ -306,7 +309,7 @@ class MY_Controller extends MX_Controller {
             $full_path .= trim($subfolder, '/') . '/';
         }
         if (!is_dir($full_path)) {
-            mkdir($full_path, 0777, true);
+            mkdir($full_path, 0755, true);
         }
         return $full_path;
     }
@@ -353,6 +356,26 @@ class MY_Controller extends MX_Controller {
     }
 
     /**
+     * Enforce CSRF token verification on state-changing requests
+     */
+    protected function require_csrf_token(): void {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'DELETE' || $_SERVER['REQUEST_METHOD'] === 'PUT') {
+            if (!verify_action_token()) {
+                if ($this->input->is_ajax_request() || (!empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                    if (!headers_sent()) {
+                        header('Content-Type: application/json; charset=utf-8');
+                        http_response_code(403);
+                    }
+                    echo json_encode(array('status' => false, 'error' => 'Invalid or expired CSRF action token.'));
+                    exit;
+                } else {
+                    show_error('Invalid or expired CSRF token. Please refresh the page and try again.', 403, 'CSRF Protection Guard');
+                }
+            }
+        }
+    }
+
+    /**
      * Evaluate if active logged-in user possesses a permission
      */
     public function has_permission($permission_name) {
@@ -393,8 +416,16 @@ class MY_Controller extends MX_Controller {
      */
     public function check_permission($permission_name) {
         if (!$this->has_permission($permission_name)) {
-            show_error("Access Denied: You do not possess the required permission ('$permission_name') to perform this action.", 403, "Permission Denied Guard");
+            if ($this->input->is_ajax_request() || (!empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+                if (!headers_sent()) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    http_response_code(403);
+                }
+                echo json_encode(array('status' => false, 'error' => "Access Denied: You do not possess the required permission ('$permission_name')."));
+                exit;
+            } else {
+                show_error("Access Denied: You do not possess the required permission ('$permission_name') to perform this action.", 403, "Permission Denied Guard");
+            }
         }
     }
 }
-

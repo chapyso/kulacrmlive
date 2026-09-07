@@ -951,6 +951,8 @@
                 <div>
                     <h4 class="footer-column-title">LEGAL</h4>
                     <ul class="footer-links">
+                        <li><a href="<?php echo base_url('cookie_consent/policy'); ?>">Cookie Policy</a></li>
+                        <li><a href="javascript:void(0)" onclick="if(window.KulaConsent)KulaConsent.openPreferences();">Cookie Preferences</a></li>
                         <li><a href="#">Privacy Policy</a></li>
                         <li><a href="#">Terms of Service</a></li>
                         <li><a href="#">Data Protection</a></li>
@@ -1135,5 +1137,6 @@
             }
         }
     </script>
+    <?php $this->load->view('_partials/cookie_consent'); ?>
 </body>
 </html>

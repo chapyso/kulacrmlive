@@ -585,11 +585,31 @@ document.addEventListener('keydown', function(e) {
     var sidebar = document.getElementById('sidebar');
     var body = document.body;
     var isCollapsed = localStorage.getItem('kula_sidebar_collapsed') === 'true';
-    if (isCollapsed && sidebar) {
+    if (isCollapsed && sidebar && window.innerWidth > 991) {
         sidebar.classList.add('kula-collapsed');
         if (body) body.classList.add('kula-sidebar-collapsed-body');
     }
 })();
+
+window.addEventListener('resize', function() {
+    var sidebar = document.getElementById('sidebar');
+    var backdrop = document.getElementById('kula-mobile-backdrop');
+    var body = document.body;
+    if (window.innerWidth > 991) {
+        if (sidebar) sidebar.classList.remove('kula-mobile-open');
+        if (backdrop) backdrop.classList.remove('show');
+        var isCollapsed = localStorage.getItem('kula_sidebar_collapsed') === 'true';
+        if (isCollapsed && sidebar) {
+            sidebar.classList.add('kula-collapsed');
+            if (body) body.classList.add('kula-sidebar-collapsed-body');
+        } else if (sidebar) {
+            sidebar.classList.remove('kula-collapsed');
+            if (body) body.classList.remove('kula-sidebar-collapsed-body');
+        }
+    } else {
+        if (body) body.classList.remove('kula-sidebar-collapsed-body');
+    }
+});
 
 // Global Immediate Event Delegation for Sidebar Collapse (Retract), Tree Toggles, and Dropdowns
 document.addEventListener('click', function(e) {
@@ -908,6 +928,7 @@ $(document).ready(function() {
 </script>
 
 <?php $this->load->view('kula_ai/ai_chat_modal'); ?>
+<?php $this->load->view('_partials/cookie_consent'); ?>
 
 </body>
 

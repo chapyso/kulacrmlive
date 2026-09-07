@@ -97,10 +97,11 @@
 		if (in_array($_ci_host, $_ci_dev_hosts, TRUE) || substr($_ci_host, -5) === '.test') {
 			$_ci_env_override = 'development';
 		}
-		unset($_ci_dev_hosts);
+		unset($_ci_dev_hosts, $_ci_host);
 	}
-	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : ($_ci_env_override ?: 'production'));
-	unset($_ci_env_override, $_ci_host);
+	$_ci_env_val = isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : (getenv('CI_ENV') ?: null);
+	define('ENVIRONMENT', $_ci_env_val ?: ($_ci_env_override ?: 'production'));
+	unset($_ci_env_override, $_ci_env_val);
 
 /*
  *---------------------------------------------------------------

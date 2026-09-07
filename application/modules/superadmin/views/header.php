@@ -290,6 +290,11 @@
                         <span class="kula-menu-text">Platform Settings</span>
                     </a>
 
+                    <a href="<?php echo base_url('superadmin/cookie_settings'); ?>" class="kula-menu-item" data-tooltip="Cookie & Privacy Management">
+                        <div class="kula-menu-icon"><i class="fa-solid fa-cookie-bite" style="color: #10b981;"></i></div>
+                        <span class="kula-menu-text">Cookie Management</span>
+                    </a>
+
                     <a href="<?php echo base_url('superadmin/smtpSettings'); ?>" class="kula-menu-item" data-tooltip="SMTP & Mail Configuration">
                         <div class="kula-menu-icon"><i class="fa-solid fa-envelope" style="color: #ef4444;"></i></div>
                         <span class="kula-menu-text">SMTP &amp; Mail Server</span>

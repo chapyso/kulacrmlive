@@ -19,11 +19,8 @@ class Api_v1 extends CI_Controller {
     public function __construct() {
         parent::__construct();
 
-        // Enable CORS for API clients
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-API-Key, X-Requested-With');
-        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-        header('Content-Type: application/json; charset=utf-8');
+        // Enable CORS and security headers for API clients
+        $this->enforce_cors_and_headers();
 
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             exit(0);
@@ -31,7 +28,20 @@ class Api_v1 extends CI_Controller {
 
         $this->load->database();
         $this->load->library('ion_auth');
+        $this->load->library('Rate_limiter', null, 'rate_limiter');
         $this->load->helper('action_token');
+    }
+
+    /**
+     * Enforce strict CORS and security headers
+     */
+    private function enforce_cors_and_headers(): void {
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-API-Key, X-Requested-With');
+        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+        header('Content-Type: application/json; charset=utf-8');
+        header('X-Content-Type-Options: nosniff');
+        header('X-Frame-Options: DENY');
     }
 
     /**
@@ -54,7 +64,7 @@ class Api_v1 extends CI_Controller {
             $this->output_json([
                 'status'  => 'error',
                 'code'    => 401,
-                'message' => 'Invalid or expired API token'
+                'message' => 'Invalid, expired, or revoked API token'
             ], 401);
         }
 
@@ -62,10 +72,13 @@ class Api_v1 extends CI_Controller {
         $this->tenant_id  = (int)$payload['tenant_id'];
         $this->user_email = (string)$payload['email'];
         $this->user_role  = (string)($payload['role'] ?? 'user');
+
+        // Apply rate limit per tenant
+        $this->rate_limiter->enforce('api_v1:tenant:' . $this->tenant_id, 120, 60);
     }
 
     /**
-     * Extract token from Authorization header or X-API-Key
+     * Extract token strictly from Authorization header or X-API-Key (URL parameters rejected)
      */
     private function extract_bearer_token(): ?string {
         $headers = array_change_key_case(getallheaders() ?: [], CASE_LOWER);
@@ -81,20 +94,37 @@ class Api_v1 extends CI_Controller {
             return trim($headers['x-api-key']);
         }
 
-        $token_get = $this->input->get('token');
-        if (!empty($token_get)) {
-            return (string)$token_get;
+        return null;
+    }
+
+    /**
+     * Check if authenticated user possesses specific permission
+     */
+    protected function check_user_permission(string $permission_name): void {
+        if ($this->user_role === 'superadmin' || $this->user_role === 'admin') {
+            return;
         }
 
-        return null;
+        $this->load->model('Rbac_model');
+        if (!$this->Rbac_model->hasPermission($this->user_id, $permission_name)) {
+            $this->output_json([
+                'status'  => 'error',
+                'code'    => 403,
+                'message' => "Forbidden: You do not possess the required permission ('{$permission_name}')"
+            ], 403);
+        }
     }
 
     /**
      * POST /api/v1/auth/login
      */
     public function login(): void {
+        // Rate limit login by IP
+        $ip = $this->input->ip_address();
+        $this->rate_limiter->enforce('login:ip:' . $ip, 5, 60);
+
         $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-        $identity = (string)($input['identity'] ?? '');
+        $identity = trim((string)($input['identity'] ?? ''));
         $password = (string)($input['password'] ?? '');
 
         if (empty($identity) || empty($password)) {
@@ -107,8 +137,29 @@ class Api_v1 extends CI_Controller {
 
         if ($this->ion_auth->login($identity, $password, false)) {
             $user = $this->ion_auth->user()->row();
+
+            if ((int)$user->active !== 1) {
+                $this->output_json([
+                    'status'  => 'error',
+                    'code'    => 403,
+                    'message' => 'User account is deactivated'
+                ], 403);
+            }
+
             $tenant_id = isset($user->tenant_id) ? (int)$user->tenant_id : 1;
             
+            // Check tenant status
+            if ($tenant_id > 0 && $this->db->table_exists('tenants')) {
+                $tenant = $this->db->get_where('tenants', array('id' => $tenant_id))->row();
+                if ($tenant && $tenant->status !== 'active') {
+                    $this->output_json([
+                        'status'  => 'error',
+                        'code'    => 403,
+                        'message' => 'Tenant organization account is suspended'
+                    ], 403);
+                }
+            }
+
             $groups = $this->ion_auth->get_users_groups($user->id)->result();
             $role = !empty($groups) ? $groups[0]->name : 'members';
 
@@ -218,17 +269,19 @@ class Api_v1 extends CI_Controller {
         $this->authenticate();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->check_user_permission('livestock.create');
+
             $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-            $name = trim((string)($input['name'] ?? ''));
-            $desc = trim((string)($input['description'] ?? ''));
+            $name = trim((string)($input['name'] ?? $input['ls_name'] ?? ''));
+            $desc = trim((string)($input['description'] ?? $input['ls_description'] ?? ''));
 
             if (empty($name)) {
                 $this->output_json(['status' => 'error', 'code' => 400, 'message' => 'Livestock name is required'], 400);
             }
 
             $data = array(
-                'ls_name'        => $name,
-                'ls_description' => $desc,
+                'ls_name'        => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
+                'ls_description' => htmlspecialchars($desc, ENT_QUOTES, 'UTF-8'),
                 'ls_status'      => 1,
                 'tenant_id'      => $this->tenant_id,
                 'created_at'     => date('Y-m-d H:i:s')
@@ -246,6 +299,9 @@ class Api_v1 extends CI_Controller {
 
         $animals = $this->db->select('ls_id, ls_name, ls_description, ls_status, created_at')
                             ->where('tenant_id', $this->tenant_id)
+                            ->where('ls_status', 1)
+                            ->order_by('ls_id', 'DESC')
+                            ->limit(200)
                             ->get('livestock')->result_array();
 
         $this->output_json([
@@ -264,6 +320,8 @@ class Api_v1 extends CI_Controller {
 
         $sheds = $this->db->select('sh_id, sh_title, sh_no, sh_description, sh_status')
                           ->where('tenant_id', $this->tenant_id)
+                          ->where('sh_status', 1)
+                          ->order_by('sh_no', 'ASC')
                           ->get('shed')->result_array();
 
         $this->output_json([
@@ -282,6 +340,8 @@ class Api_v1 extends CI_Controller {
 
         $vaccines = $this->db->select('vccn_id, vccn_name, vccn_description, vccn_status')
                              ->where('tenant_id', $this->tenant_id)
+                             ->where('vccn_status', 1)
+                             ->order_by('vccn_id', 'DESC')
                              ->get('vaccine')->result_array();
 
         $this->output_json([
@@ -299,6 +359,8 @@ class Api_v1 extends CI_Controller {
         $this->authenticate();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->check_user_permission('sales.create');
+
             $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
             $client_id = (int)($input['client_id'] ?? 0);
             $grand_total = (float)($input['grand_total'] ?? 0.0);
@@ -307,7 +369,15 @@ class Api_v1 extends CI_Controller {
                 $this->output_json(['status' => 'error', 'code' => 400, 'message' => 'Valid grand total is required'], 400);
             }
 
-            $reference = 'INV-' . strtoupper(substr(md5((string)microtime()), 0, 8));
+            // Verify client belongs to active tenant if specified
+            if ($client_id > 0) {
+                $client = $this->db->get_where('client', array('c_id' => $client_id, 'tenant_id' => $this->tenant_id))->row();
+                if (!$client) {
+                    $this->output_json(['status' => 'error', 'code' => 400, 'message' => 'Invalid client selected for this tenant'], 400);
+                }
+            }
+
+            $reference = 'INV-' . strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 8));
             $data = array(
                 'tenant_id'        => $this->tenant_id,
                 'client_id'        => $client_id,
@@ -330,6 +400,7 @@ class Api_v1 extends CI_Controller {
         $sales = $this->db->select('id, reference, client_id, sale_grand_total, sale_status, created_at')
                           ->where('tenant_id', $this->tenant_id)
                           ->order_by('id', 'DESC')
+                          ->limit(200)
                           ->get('sale')->result_array();
 
         $this->output_json([
@@ -347,18 +418,20 @@ class Api_v1 extends CI_Controller {
         $this->authenticate();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->check_user_permission('finance.create');
+
             $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
             $amount = (float)($input['amount'] ?? 0.0);
-            $purpose = trim((string)($input['purpose'] ?? ''));
+            $purpose = trim((string)($input['purpose'] ?? $input['ex_purpose'] ?? ''));
 
             if ($amount <= 0 || empty($purpose)) {
-                $this->output_json(['status' => 'error', 'code' => 400, 'message' => 'Amount and purpose are required'], 400);
+                $this->output_json(['status' => 'error', 'code' => 400, 'message' => 'Valid amount and purpose are required'], 400);
             }
 
             $data = array(
                 'tenant_id'  => $this->tenant_id,
                 'amount'     => $amount,
-                'ex_purpose' => $purpose,
+                'ex_purpose' => htmlspecialchars($purpose, ENT_QUOTES, 'UTF-8'),
                 'ex_status'  => 1,
                 'created_at' => date('Y-m-d H:i:s')
             );
@@ -376,6 +449,7 @@ class Api_v1 extends CI_Controller {
         $expenses = $this->db->select('ex_id, amount, ex_purpose, ex_status, created_at')
                              ->where('tenant_id', $this->tenant_id)
                              ->order_by('ex_id', 'DESC')
+                             ->limit(200)
                              ->get('expense')->result_array();
 
         $this->output_json([
@@ -393,8 +467,10 @@ class Api_v1 extends CI_Controller {
         $this->authenticate();
 
         $clients = $this->db->select('c_id, c_name, c_email, c_phone, c_status')
-                           ->where('tenant_id', $this->tenant_id)
-                           ->get('client')->result_array();
+                            ->where('tenant_id', $this->tenant_id)
+                            ->where('c_status', 1)
+                            ->order_by('c_name', 'ASC')
+                            ->get('client')->result_array();
 
         $this->output_json([
             'status' => 'success',
@@ -411,8 +487,10 @@ class Api_v1 extends CI_Controller {
         $this->authenticate();
 
         $suppliers = $this->db->select('s_id, s_name, s_email, s_phone, s_status')
-                             ->where('tenant_id', $this->tenant_id)
-                             ->get('supplier')->result_array();
+                              ->where('tenant_id', $this->tenant_id)
+                              ->where('s_status', 1)
+                              ->order_by('s_name', 'ASC')
+                              ->get('supplier')->result_array();
 
         $this->output_json([
             'status' => 'success',
@@ -448,6 +526,8 @@ class Api_v1 extends CI_Controller {
      */
     public function users(): void {
         $this->authenticate();
+        $this->check_user_permission('users.view');
+
         $this->load->model('Tenant_user_model');
         $users = $this->Tenant_user_model->getTenantUsers($this->tenant_id);
 
@@ -464,6 +544,8 @@ class Api_v1 extends CI_Controller {
      */
     public function roles(): void {
         $this->authenticate();
+        $this->check_user_permission('roles.view');
+
         $this->load->model('Rbac_model');
         $roles = $this->Rbac_model->getRoles($this->tenant_id);
 
@@ -480,6 +562,8 @@ class Api_v1 extends CI_Controller {
      */
     public function permissions(): void {
         $this->authenticate();
+        $this->check_user_permission('roles.view');
+
         $this->load->model('Rbac_model');
         $grouped = $this->Rbac_model->getAllPermissionsGrouped();
 
@@ -495,6 +579,8 @@ class Api_v1 extends CI_Controller {
      */
     public function departments(): void {
         $this->authenticate();
+        $this->check_user_permission('departments.view');
+
         $this->load->model('Department_model');
         $departments = $this->Department_model->getDepartments($this->tenant_id);
 
@@ -505,7 +591,6 @@ class Api_v1 extends CI_Controller {
             'data'   => $departments
         ]);
     }
-
 
     /**
      * Output standardized JSON response with proper HTTP status

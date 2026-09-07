@@ -120,6 +120,10 @@ class Kula_ai extends MY_Controller {
             header('Content-Type: application/json');
         }
 
+        // Rate limit AI chat interactions per tenant
+        $this->load->library('Rate_limiter', null, 'rate_limiter');
+        $this->rate_limiter->enforce('ai_chat:tenant:' . $this->tenant_id, 30, 60);
+
         $prompt = trim($this->input->post('prompt') ?? '');
         if (empty($prompt)) {
             echo json_encode(array('status' => false, 'error' => 'Prompt cannot be empty.'));
@@ -544,24 +548,49 @@ class Kula_ai extends MY_Controller {
     public function upload_document() {
         header('Content-Type: application/json');
 
+        // Rate limit document uploads per tenant
+        $this->load->library('Rate_limiter', null, 'rate_limiter');
+        $this->rate_limiter->enforce('ai_upload:tenant:' . $this->tenant_id, 10, 60);
+
         if (empty($_FILES['document']['tmp_name'])) {
             echo json_encode(array('status' => false, 'error' => 'No file uploaded. Please attach a PDF or image.'));
             return;
         }
 
         $file = $_FILES['document'];
-        $mime = $file['type'] ?? mime_content_type($file['tmp_name']);
-        $ext  = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $tmp_path = $file['tmp_name'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
-        $allowed = array('pdf', 'jpg', 'jpeg', 'png', 'webp');
-        if (!in_array($ext, $allowed)) {
+        $allowed_exts = array('pdf', 'jpg', 'jpeg', 'png', 'webp');
+        if (!in_array($ext, $allowed_exts)) {
             echo json_encode(array('status' => false, 'error' => 'Only PDF, JPG, PNG, and WebP files are supported.'));
+            return;
+        }
+
+        // Verify MIME type using finfo
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $detected_mime = finfo_file($finfo, $tmp_path);
+        finfo_close($finfo);
+
+        $allowed_mimes = array('application/pdf', 'image/jpeg', 'image/png', 'image/webp');
+        if (!in_array($detected_mime, $allowed_mimes)) {
+            echo json_encode(array('status' => false, 'error' => 'Invalid file format detected (' . htmlspecialchars($detected_mime) . ').'));
             return;
         }
 
         // Check file size (max 10MB)
         if ($file['size'] > 10 * 1024 * 1024) {
             echo json_encode(array('status' => false, 'error' => 'File size must be under 10MB.'));
+            return;
+        }
+
+        // Secure tenant upload path
+        $safe_name = time() . '_' . preg_replace('/[^a-zA-Z0-9_.-]/', '_', basename($file['name']));
+        $tenant_upload_dir = $this->get_tenant_upload_path('ai_imports');
+        $dest_path = $tenant_upload_dir . $safe_name;
+
+        if (!move_uploaded_file($tmp_path, $dest_path)) {
+            echo json_encode(array('status' => false, 'error' => 'Failed to securely store uploaded document.'));
             return;
         }
 
@@ -588,30 +617,18 @@ class Kula_ai extends MY_Controller {
             return;
         }
 
-        $tmp_path = $file['tmp_name'];
         $gemini_result = array();
 
-        if ($ext === 'pdf') {
-            // Extract text from PDF first
-            $extracted_text = $this->ai_ingestion_service->extract_pdf_text($tmp_path);
-
-            // Pass to Gemini text API
+        if ($ext === 'pdf' || $detected_mime === 'application/pdf') {
+            $extracted_text = $this->ai_ingestion_service->extract_pdf_text($dest_path);
             $gemini_result = $this->ai_ingestion_service->extract_from_text_via_gemini($api_key, $model, $extracted_text);
         } else {
-            // Image — use Gemini Vision multimodal
-            $allowed_mimes = array(
-                'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
-                'png' => 'image/png', 'webp' => 'image/webp'
-            );
-            $img_mime   = $allowed_mimes[$ext] ?? 'image/jpeg';
-            $base64_img = $this->ai_ingestion_service->image_to_base64($tmp_path, $img_mime);
-
+            $base64_img = $this->ai_ingestion_service->image_to_base64($dest_path, $detected_mime);
             if (!$base64_img) {
                 echo json_encode(array('status' => false, 'error' => 'Failed to read the uploaded image.'));
                 return;
             }
-
-            $gemini_result = $this->ai_ingestion_service->extract_from_image_via_gemini($api_key, $model, $base64_img, $img_mime);
+            $gemini_result = $this->ai_ingestion_service->extract_from_image_via_gemini($api_key, $model, $base64_img, $detected_mime);
         }
 
         if (!$gemini_result['status']) {
@@ -633,9 +650,12 @@ class Kula_ai extends MY_Controller {
             + count($parsed['deaths'])
             + count($parsed['vaccinations']);
 
+        // Generate idempotency hash for preview payload to prevent double import
+        $import_hash = hash('sha256', json_encode($parsed) . $this->tenant_id . time());
+
         // Log the interaction
         $this->kula_ai_model->log_interaction(
-            'Document ingestion: ' . ($file['name'] ?? 'uploaded file'),
+            'Document ingestion: ' . htmlspecialchars($file['name']),
             array('document_upload', 'gemini_vision'),
             'document_ingestion',
             'success'
@@ -643,7 +663,8 @@ class Kula_ai extends MY_Controller {
 
         echo json_encode(array(
             'status'        => true,
-            'file_name'     => $file['name'],
+            'file_name'     => htmlspecialchars($file['name']),
+            'import_hash'   => $import_hash,
             'total_records' => $total_records,
             'sales'         => $parsed['sales'],
             'purchases'     => $parsed['purchases'],
@@ -654,13 +675,14 @@ class Kula_ai extends MY_Controller {
 
     /**
      * Document Ingestion — Step 2: Confirm & Save
-     * Receives the previewed extracted data from the client and writes to KulaCRM DB.
+     * Receives previewed extracted data and atomically writes to tenant DB with duplicate prevention.
      */
     public function confirm_import() {
         header('Content-Type: application/json');
 
         $raw   = $this->input->post('data');
         $types = $this->input->post('types') ?: array('sales', 'purchases', 'deaths', 'vaccinations');
+        $import_hash = trim((string)($this->input->post('import_hash') ?? ''));
 
         if (empty($raw)) {
             echo json_encode(array('status' => false, 'error' => 'No data submitted for import.'));
@@ -672,6 +694,22 @@ class Kula_ai extends MY_Controller {
             echo json_encode(array('status' => false, 'error' => 'Invalid data payload.'));
             return;
         }
+
+        // Duplicate submission prevention via import hash check
+        if (!empty($import_hash) && $this->db->table_exists('audit_logs')) {
+            $duplicate = $this->db->get_where('audit_logs', array(
+                'action' => 'AI_IMPORT_CONFIRMED_' . $import_hash,
+                'tenant_id' => $this->tenant_id
+            ))->row();
+
+            if ($duplicate) {
+                echo json_encode(array('status' => false, 'error' => 'This import batch has already been confirmed and processed.'));
+                return;
+            }
+        }
+
+        // Execute inside atomic database transaction
+        $this->db->trans_start();
 
         $results = array();
 
@@ -688,7 +726,18 @@ class Kula_ai extends MY_Controller {
             $results['vaccinations'] = $this->ai_ingestion_service->save_vaccinations($data['vaccinations']);
         }
 
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === FALSE) {
+            echo json_encode(array('status' => false, 'error' => 'Database transaction failed during batch import. No records were written.'));
+            return;
+        }
+
         $total_saved = array_sum(array_column($results, 'saved'));
+
+        if (!empty($import_hash)) {
+            $this->log_audit('AI_IMPORT_CONFIRMED_' . $import_hash, $this->tenant_id, array('total_saved' => $total_saved));
+        }
 
         $this->kula_ai_model->log_interaction(
             'Document ingestion confirmed: ' . $total_saved . ' records saved.',

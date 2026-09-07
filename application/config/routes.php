@@ -46,8 +46,6 @@ $route['about'] = 'auth/about';
 $route['auth/about'] = 'auth/about';
 $route['landing'] = 'auth/landing';
 $route['auth/landing'] = 'auth/landing';
-$route['auth/seed_superadmin'] = 'auth/seed/superadmin';
-$route['auth/test_home_500'] = 'auth/seed/test_home_500';
 
 
 

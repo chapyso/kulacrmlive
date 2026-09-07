@@ -366,6 +366,7 @@
             </a>
         </div>
     </div>
+    <?php $this->load->view('_partials/cookie_consent'); ?>
 </body>
 
 </html>

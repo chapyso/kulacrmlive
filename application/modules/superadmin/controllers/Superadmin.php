@@ -172,11 +172,13 @@ class Superadmin extends MY_Controller {
     }
 
     public function toggle_status($id) {
+        $id = (int)$id;
         $tenant = $this->db->get_where('tenants', array('id' => $id))->row();
         if ($tenant) {
             $next_status = ($tenant->status === 'active') ? 'suspended' : 'active';
             $this->db->where('id', $id)->update('tenants', array('status' => $next_status));
-            $this->session->set_flashdata('feedback', 'Tenant Status Updated');
+            $this->log_audit('TENANT_STATUS_TOGGLE', $id, array('from' => $tenant->status, 'to' => $next_status));
+            $this->session->set_flashdata('feedback', "Tenant '{$tenant->name}' status updated to {$next_status}.");
         }
         redirect('superadmin/tenants');
     }
@@ -800,5 +802,148 @@ class Superadmin extends MY_Controller {
         $this->db->where('id', $id)->delete('notifications');
         $this->session->set_flashdata('feedback', 'Notification record deleted from history.');
         redirect('superadmin/notifications');
+    }
+
+    public function cookie_settings() {
+        $this->load->model('Cookie_model');
+        $data = array();
+        $data['settings'] = $this->settings_model->getSettings();
+        $data['cookie_settings'] = $this->Cookie_model->get_settings();
+        $data['inventory'] = $this->Cookie_model->get_inventory(false);
+        $data['inventory_grouped'] = $this->Cookie_model->get_inventory_grouped(false);
+        $data['consent_stats'] = $this->Cookie_model->get_consent_stats();
+        $data['audit_logs'] = $this->Cookie_model->get_audit_logs(30);
+
+        $this->load->view('superadmin/header', $data);
+        $this->load->view('superadmin/cookie_settings', $data);
+        $this->load->view('home/footer');
+    }
+
+    public function save_cookie_settings() {
+        $this->load->model('Cookie_model');
+        $tab = $this->input->post('tab');
+        $user = $this->ion_auth->user()->row();
+        $user_id = $user ? $user->id : 1;
+        $username = $user ? $user->username : 'Superadmin';
+
+        if ($tab === 'policy') {
+            $policy_content = $this->input->post('cookie_policy_content', false); // Allow safe HTML
+            $this->Cookie_model->update_settings(array(
+                'cookie_policy_content' => $policy_content
+            ), $user_id, $username);
+            $this->session->set_flashdata('feedback', 'Cookie policy content updated successfully.');
+        } else {
+            $banner_enabled = $this->input->post('banner_enabled') ? 1 : 0;
+            $mode = $this->input->post('mode') ?: 'auto';
+            $banner_title_essential = trim($this->input->post('banner_title_essential'));
+            $banner_desc_essential = trim($this->input->post('banner_desc_essential'));
+            $btn_got_it_label = trim($this->input->post('btn_got_it_label'));
+            $banner_title_optional = trim($this->input->post('banner_title_optional'));
+            $banner_desc_optional = trim($this->input->post('banner_desc_optional'));
+            $btn_accept_all_label = trim($this->input->post('btn_accept_all_label'));
+            $btn_reject_all_label = trim($this->input->post('btn_reject_all_label'));
+            $btn_manage_label = trim($this->input->post('btn_manage_label'));
+            $btn_save_preferences_label = trim($this->input->post('btn_save_preferences_label'));
+            $btn_cookie_policy_label = trim($this->input->post('btn_cookie_policy_label'));
+            
+            $enable_preferences = $this->input->post('enable_preferences_category') ? 1 : 0;
+            $enable_analytics = $this->input->post('enable_analytics_category') ? 1 : 0;
+            $enable_marketing = $this->input->post('enable_marketing_category') ? 1 : 0;
+
+            $preferences_desc = trim($this->input->post('preferences_category_desc'));
+            $analytics_desc = trim($this->input->post('analytics_category_desc'));
+            $marketing_desc = trim($this->input->post('marketing_category_desc'));
+
+            $policy_version = trim($this->input->post('policy_version')) ?: '1.0.0';
+            $consent_lifetime = (int)$this->input->post('consent_lifetime_days') ?: 365;
+
+            $update_data = array(
+                'banner_enabled' => $banner_enabled,
+                'mode' => $mode,
+                'banner_title_essential' => $banner_title_essential ?: 'Essential cookies',
+                'banner_desc_essential' => $banner_desc_essential,
+                'btn_got_it_label' => $btn_got_it_label ?: 'Got it',
+                'banner_title_optional' => $banner_title_optional ?: 'Your privacy matters',
+                'banner_desc_optional' => $banner_desc_optional,
+                'btn_accept_all_label' => $btn_accept_all_label ?: 'Accept optional cookies',
+                'btn_reject_all_label' => $btn_reject_all_label ?: 'Reject optional cookies',
+                'btn_manage_label' => $btn_manage_label ?: 'Manage preferences',
+                'btn_save_preferences_label' => $btn_save_preferences_label ?: 'Save preferences',
+                'btn_cookie_policy_label' => $btn_cookie_policy_label ?: 'Cookie Policy',
+                'enable_preferences_category' => $enable_preferences,
+                'enable_analytics_category' => $enable_analytics,
+                'enable_marketing_category' => $enable_marketing,
+                'preferences_category_desc' => $preferences_desc,
+                'analytics_category_desc' => $analytics_desc,
+                'marketing_category_desc' => $marketing_desc,
+                'policy_version' => $policy_version,
+                'consent_lifetime_days' => $consent_lifetime
+            );
+
+            $this->Cookie_model->update_settings($update_data, $user_id, $username);
+            $this->session->set_flashdata('feedback', 'Cookie notice and category settings saved successfully.');
+        }
+
+        redirect('superadmin/cookie_settings');
+    }
+
+    public function publish_cookie_settings() {
+        $this->load->model('Cookie_model');
+        $bump_version = (bool)$this->input->post('bump_version');
+        $user = $this->ion_auth->user()->row();
+        $user_id = $user ? $user->id : 1;
+        $username = $user ? $user->username : 'Superadmin';
+
+        $new_ver = $this->Cookie_model->publish_settings($bump_version, $user_id, $username);
+        $this->session->set_flashdata('feedback', 'Cookie configuration published successfully. Active Policy Version: ' . $new_ver);
+        redirect('superadmin/cookie_settings');
+    }
+
+    public function save_cookie_inventory_item() {
+        $this->load->model('Cookie_model');
+        $user = $this->ion_auth->user()->row();
+        $user_id = $user ? $user->id : 1;
+        $username = $user ? $user->username : 'Superadmin';
+
+        $id = (int)$this->input->post('id');
+        $cookie_name = trim($this->input->post('cookie_name'));
+        $category = $this->input->post('category') ?: 'essential';
+        $type = $this->input->post('type') ?: 'HTTP Cookie';
+        $provider = trim($this->input->post('provider')) ?: 'KULACRM (First-party)';
+        $duration = trim($this->input->post('duration')) ?: 'Session';
+        $purpose = trim($this->input->post('purpose'));
+        $is_active = $this->input->post('is_active') ? 1 : 0;
+
+        if (empty($cookie_name) || empty($purpose)) {
+            $this->session->set_flashdata('error', 'Error: Cookie Name and Purpose are required.');
+            redirect('superadmin/cookie_settings');
+            return;
+        }
+
+        $data = array(
+            'id' => $id > 0 ? $id : null,
+            'cookie_name' => $cookie_name,
+            'category' => $category,
+            'type' => $type,
+            'provider' => $provider,
+            'duration' => $duration,
+            'purpose' => $purpose,
+            'is_active' => $is_active
+        );
+
+        $this->Cookie_model->save_inventory_item($data, $user_id, $username);
+        $this->session->set_flashdata('feedback', 'Cookie inventory record saved successfully.');
+        redirect('superadmin/cookie_settings');
+    }
+
+    public function delete_cookie_inventory_item($id) {
+        $this->load->model('Cookie_model');
+        $user = $this->ion_auth->user()->row();
+        $user_id = $user ? $user->id : 1;
+        $username = $user ? $user->username : 'Superadmin';
+
+        $this->Cookie_model->delete_inventory_item((int)$id, $user_id, $username);
+        $this->session->set_flashdata('feedback', 'Cookie item deleted from inventory.');
+        redirect('superadmin/cookie_settings');
     }
 }

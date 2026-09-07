@@ -25,13 +25,13 @@
                 </h1>
                 <p class="hero-subtitle" style="margin: 0; font-size: 13px; color: #64748b;">Here's what's happening on your farm today.</p>
             </div>
-            <div class="hero-actions-right" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; flex-wrap: nowrap;">
-                <div class="hero-date-pill" style="white-space: nowrap !important; display: inline-flex !important; align-items: center !important; flex-direction: row !important; height: 38px !important; padding: 6px 14px !important; flex: 1 1 auto !important; border: 1.5px solid #e2e8f0; border-radius: 12px; background: #ffffff; justify-content: center; overflow: hidden;" title="<?php echo date('F j, Y'); ?>">
+            <div class="hero-actions-right" style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; width: 100%; flex-wrap: wrap;">
+                <div class="hero-date-pill" style="white-space: nowrap !important; display: inline-flex !important; align-items: center !important; flex-direction: row !important; height: 38px !important; padding: 6px 14px !important; flex: 1 1 auto !important; min-width: 150px; border: 1.5px solid #e2e8f0; border-radius: 12px; background: #ffffff; justify-content: center; overflow: hidden;" title="<?php echo date('F j, Y'); ?>">
                     <i class="fa-regular fa-calendar-days" style="margin-right: 6px; flex-shrink: 0;"></i>
                     <span style="white-space: nowrap !important; display: inline-block !important; font-size: 13px !important; font-weight: 700 !important; overflow: hidden; text-overflow: ellipsis;">Today, <?php echo date('M d, Y'); ?></span>
                     <i class="fa-solid fa-chevron-down" style="margin-left: 6px; flex-shrink: 0;"></i>
                 </div>
-                <a href="<?php echo base_url('report/viewFinancialReport'); ?>" class="hero-export-btn" style="white-space: nowrap !important; display: inline-flex !important; align-items: center !important; height: 38px !important; padding: 6px 16px !important; background: #047857; color: #ffffff; border-radius: 12px; font-weight: 700; font-size: 13px; text-decoration: none; flex-shrink: 0;">
+                <a href="<?php echo base_url('report/viewFinancialReport'); ?>" class="hero-export-btn" style="white-space: nowrap !important; display: inline-flex !important; align-items: center !important; height: 38px !important; padding: 6px 16px !important; background: #047857; color: #ffffff; border-radius: 12px; font-weight: 700; font-size: 13px; text-decoration: none; flex: 0 0 auto;">
                     <i class="fa-solid fa-download" style="margin-right: 6px;"></i> <span>Export</span>
                 </a>
             </div>
@@ -70,6 +70,7 @@
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                flex-wrap: wrap;
             }
             body.dark-theme .kula-ai-banner-title,
             html.dark-theme .kula-ai-banner-title {
@@ -85,10 +86,17 @@
             html.dark-theme .kula-ai-banner-desc {
                 color: #94a3b8 !important;
             }
+            .kula-ai-actions-wrap {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
             .kula-ai-btn-primary {
                 white-space: nowrap;
                 display: inline-flex;
                 align-items: center;
+                justify-content: center;
                 gap: 6px;
                 padding: 8px 16px;
                 background: linear-gradient(135deg, #047857 0%, #059669 100%);
@@ -109,6 +117,7 @@
                 white-space: nowrap;
                 display: inline-flex;
                 align-items: center;
+                justify-content: center;
                 gap: 6px;
                 padding: 8px 16px;
                 background: #f1f5f9;
@@ -133,24 +142,39 @@
             html.dark-theme .kula-ai-btn-secondary:hover {
                 background: rgba(255, 255, 255, 0.15) !important;
             }
+            @media (max-width: 640px) {
+                .kula-ai-feature-banner {
+                    padding: 14px 16px !important;
+                }
+                .kula-ai-actions-wrap {
+                    width: 100% !important;
+                    flex-direction: column !important;
+                    align-items: stretch !important;
+                }
+                .kula-ai-btn-primary,
+                .kula-ai-btn-secondary {
+                    width: 100% !important;
+                    box-sizing: border-box !important;
+                }
+            }
         </style>
 
         <div class="kula-ai-feature-banner">
-            <div style="display: flex; align-items: center; gap: 14px; flex: 1 1 320px;">
+            <div style="display: flex; align-items: center; gap: 14px; flex: 1 1 280px; min-width: 0;">
                 <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #047857, #10b981); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(4, 120, 87, 0.35);">
                     <i class="fa-solid fa-brain"></i>
                 </div>
-                <div>
+                <div style="min-width: 0;">
                     <div class="kula-ai-banner-title">
                         <span>KulaAI Agribusiness &amp; Predictive Intelligence</span>
-                        <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 10px;">Active</span>
+                        <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 10px; flex-shrink: 0;">Active</span>
                     </div>
                     <p class="kula-ai-banner-desc">
                         Ask KulaAI anything — real-time farm predictive mortality insights, custom agribusiness plans, veterinary disease advice, feed formulations, and financial forecasts.
                     </p>
                 </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+            <div class="kula-ai-actions-wrap">
                 <a href="<?php echo base_url('kula_ai/intelligence'); ?>" class="kula-ai-btn-primary">
                     <i class="fa-solid fa-chart-line"></i> View Kula Intelligence Page
                 </a>

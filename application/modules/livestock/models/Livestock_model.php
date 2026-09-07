@@ -50,7 +50,7 @@ class Livestock_model extends MY_Model
         $this->db->where('ls_status', 1);
         $this->db->where('ls_id', $id);
         $query = $this->db->get('livestock');
-        if ($this->db->affected_rows() > 0) {
+        if ($query && $query->num_rows() > 0) {
             return $query->row();
         } else {
             return false;

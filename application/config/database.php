@@ -3,88 +3,98 @@
 | -------------------------------------------------------------------
 | DATABASE CONNECTIVITY SETTINGS
 | -------------------------------------------------------------------
-| This file will contain the settings needed to access your database.
-|
-| For complete instructions please consult the 'Database Connection'
-| page of the User Guide.
-|
+| Dynamic multi-environment database configuration with support for
+| Docker, Coolify, Traefik, Local Herd/XAMPP, and Cloud hosting.
 | -------------------------------------------------------------------
-| EXPLANATION OF VARIABLES
-| -------------------------------------------------------------------
-|
-|	['hostname'] The hostname of your database server.
-|	['username'] The username used to connect to the database
-|	['password'] The password used to connect to the database
-|	['database'] The name of the database you want to connect to
-|	['dbdriver'] The database type. ie: mysql.  Currently supported:
-				 mysql, mysqli, postgre, odbc, mssql, sqlite, oci8
-|	['dbprefix'] You can add an optional prefix, which will be added
-|				 to the table name when using the  Active Record class
-|	['pconnect'] TRUE/FALSE - Whether to use a persistent connection
-|	['db_debug'] TRUE/FALSE - Whether database errors should be displayed.
-|	['cache_on'] TRUE/FALSE - Enables/disables query caching
-|	['cachedir'] The path to the folder where cache files should be stored
-|	['char_set'] The character set used in communicating with the database
-|	['dbcollat'] The character collation used in communicating with the database
-|				 NOTE: For MySQL and MySQLi databases, this setting is only used
-| 				 as a backup if your server is running PHP < 5.2.3 or MySQL < 5.0.7
-|				 (and in table creation queries made with DB Forge).
-| 				 There is an incompatibility in PHP with mysql_real_escape_string() which
-| 				 can make your site vulnerable to SQL injection if you are using a
-| 				 multi-byte character set and are running versions lower than these.
-| 				 Sites using Latin-1 or UTF-8 database character set and collation are unaffected.
-|	['swap_pre'] A default table prefix that should be swapped with the dbprefix
-|	['autoinit'] Whether or not to automatically initialize the database.
-|	['stricton'] TRUE/FALSE - forces 'Strict Mode' connections
-|							- good for ensuring strict SQL while developing
-|
-| The $active_group variable lets you choose which connection group to
-| make active.  By default there is only one group (the 'default' group).
-|
-| The $active_record variables lets you determine whether or not to load
-| the active record class
 */
 
-$active_group = 'default';
 $active_record = TRUE;
-if (!defined('DATABASENAME') || DATABASENAME == 'offline') {
-    // ── Local development (Laravel Herd / XAMPP / Laragon) ──────────────────
-    $default_host = file_exists('/.dockerenv') ? 'kula-db' : '127.0.0.1';
-    $db['default']['hostname'] = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: $default_host;
-    $db['default']['username'] = getenv('DB_USER') ?: getenv('DB_USERNAME') ?: 'root';
-    $db['default']['password'] = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: (file_exists('/.dockerenv') ? 'kula_root_pass' : '');
-    $db['default']['database'] = getenv('DB_NAME') ?: getenv('DB_DATABASE') ?: 'livestock';
-    $db['default']['dbdriver'] = 'mysqli';
-    $db['default']['dbprefix'] = '';
-    $db['default']['pconnect'] = FALSE;
-    $db['default']['db_debug'] = TRUE;
-    $db['default']['cache_on'] = FALSE;
-    $db['default']['cachedir'] = '';
-    $db['default']['char_set'] = 'utf8';
-    $db['default']['dbcollat'] = 'utf8_general_ci';
-    $db['default']['swap_pre'] = '';
-    $db['default']['autoinit'] = TRUE;
-    $db['default']['stricton'] = FALSE;
+
+// Resolve active database group
+$_env_group = getenv('CI_DB_GROUP') ?: (isset($_SERVER['CI_DB_GROUP']) ? $_SERVER['CI_DB_GROUP'] : null);
+if (!empty($_env_group)) {
+    $active_group = $_env_group;
+} elseif (defined('DATABASENAME') && !empty(DATABASENAME)) {
+    $active_group = DATABASENAME;
 } else {
-    // ── Production / live server ─────────────────────────────────────────────
-    // Reads from environment variables (DB_HOST, DB_USER, DB_PASS, DB_NAME)
-    $db['default']['hostname'] = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: 'kula-db';
-    $db['default']['username'] = getenv('DB_USER') ?: getenv('DB_USERNAME') ?: 'root';
-    $db['default']['password'] = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: 'kula_root_pass';
-    $db['default']['database'] = getenv('DB_NAME') ?: getenv('DB_DATABASE') ?: 'livestock';
-    $db['default']['dbdriver'] = 'mysqli';
-    $db['default']['dbprefix'] = '';
-    $db['default']['pconnect'] = FALSE;
-    $db['default']['db_debug'] = (defined('ENVIRONMENT') && ENVIRONMENT === 'development'); // Disable DB debug in production
-    $db['default']['cache_on'] = FALSE;
-    $db['default']['cachedir'] = '';
-    $db['default']['char_set'] = 'utf8';
-    $db['default']['dbcollat'] = 'utf8_general_ci';
-    $db['default']['swap_pre'] = '';
-    $db['default']['autoinit'] = TRUE;
-    $db['default']['stricton'] = FALSE;
+    $active_group = 'default';
 }
 
+// ── Environment Variable Resolution ─────────────────────────────────────────
+$db_host = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: (file_exists('/.dockerenv') ? 'kula-db' : '127.0.0.1');
+$db_user = getenv('DB_USER') ?: getenv('DB_USERNAME') ?: 'root';
+$db_pass = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: (file_exists('/.dockerenv') ? 'kula_root_pass' : '');
+$db_name = getenv('DB_NAME') ?: getenv('DB_DATABASE') ?: 'livestock';
+$db_port = getenv('DB_PORT') ? (int)getenv('DB_PORT') : 3306;
+
+// ── Default / Active Connection Group ───────────────────────────────────────
+$db['default'] = array(
+    'dsn'	       => '',
+    'hostname'     => $db_host,
+    'username'     => $db_user,
+    'password'     => $db_pass,
+    'database'     => $db_name,
+    'port'         => $db_port,
+    'dbdriver'     => 'mysqli',
+    'dbprefix'     => '',
+    'pconnect'     => FALSE,
+    'db_debug'     => (defined('ENVIRONMENT') && ENVIRONMENT === 'development'),
+    'cache_on'     => FALSE,
+    'cachedir'     => '',
+    'char_set'     => 'utf8mb4',
+    'dbcollat'     => 'utf8mb4_unicode_ci',
+    'swap_pre'     => '',
+    'autoinit'     => TRUE,
+    'stricton'     => FALSE,
+    'failover'     => array(),
+    'save_queries' => (defined('ENVIRONMENT') && ENVIRONMENT === 'development')
+);
+
+// ── Production / Online Docker Cluster Group ────────────────────────────────
+$db['online'] = array(
+    'dsn'	       => '',
+    'hostname'     => getenv('DB_HOST') ?: 'kula-db',
+    'username'     => getenv('DB_USER') ?: 'root',
+    'password'     => getenv('DB_PASS') ?: 'kula_root_pass',
+    'database'     => getenv('DB_NAME') ?: 'livestock',
+    'port'         => $db_port,
+    'dbdriver'     => 'mysqli',
+    'dbprefix'     => '',
+    'pconnect'     => FALSE,
+    'db_debug'     => (defined('ENVIRONMENT') && ENVIRONMENT === 'development'),
+    'cache_on'     => FALSE,
+    'cachedir'     => '',
+    'char_set'     => 'utf8mb4',
+    'dbcollat'     => 'utf8mb4_unicode_ci',
+    'swap_pre'     => '',
+    'autoinit'     => TRUE,
+    'stricton'     => FALSE,
+    'failover'     => array(),
+    'save_queries' => FALSE
+);
+
+// ── Local Development / Offline Group ───────────────────────────────────────
+$db['offline'] = array(
+    'dsn'	       => '',
+    'hostname'     => getenv('DB_HOST') ?: '127.0.0.1',
+    'username'     => getenv('DB_USER') ?: 'root',
+    'password'     => getenv('DB_PASS') !== false ? getenv('DB_PASS') : '',
+    'database'     => getenv('DB_NAME') ?: 'livestock',
+    'port'         => $db_port,
+    'dbdriver'     => 'mysqli',
+    'dbprefix'     => '',
+    'pconnect'     => FALSE,
+    'db_debug'     => TRUE,
+    'cache_on'     => FALSE,
+    'cachedir'     => '',
+    'char_set'     => 'utf8mb4',
+    'dbcollat'     => 'utf8mb4_unicode_ci',
+    'swap_pre'     => '',
+    'autoinit'     => TRUE,
+    'stricton'     => FALSE,
+    'failover'     => array(),
+    'save_queries' => TRUE
+);
 
 /* End of file database.php */
 /* Location: ./application/config/database.php */
