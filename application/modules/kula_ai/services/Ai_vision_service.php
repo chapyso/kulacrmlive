@@ -199,6 +199,7 @@ class Ai_vision_service {
             . "{\n"
             . '  "animal_detected": true|false,' . "\n"
             . '  "animal_type": "goat|cattle|poultry|pig|sheep|unknown",' . "\n"
+            . '  "bounding_boxes": [ {"x": float_0_to_1, "y": float_0_to_1, "width": float_0_to_1, "height": float_0_to_1, "label": "string"} ],' . "\n"
             . '  "ear_tag_detected": true|false,' . "\n"
             . '  "ear_tag": "TAG_NUMBER or null",' . "\n"
             . '  "ear_tag_readable": true|false,' . "\n"
@@ -211,14 +212,14 @@ class Ai_vision_service {
             . '  "batch_mismatch_detected": true|false,' . "\n"
             . '  "detected_batch_id": "string or null"' . "\n"
             . "}\n\n"
-            . "RULES FOR ACCURACY & INTEGRITY:\n"
-            . "1. EAR TAG OCR: If an ear tag is visible, read it carefully and normalize alphanumeric text (e.g., 'KLA-G-0184'). If unreadable, do NOT invent numbers. Set ear_tag_readable=false.\n"
-            . "2. CANDIDATE MATCHING: Cross-reference ear tag and visual traits against KulaCRM expected livestock list.\n"
-            . "3. CONFIDENCE THRESHOLDS:\n"
+            . "CRITICAL INTEGRITY & DETECTION RULES:\n"
+            . "1. STRICT REALITY ENFORCEMENT: ONLY detect genuine livestock/farm animals (goats, cows/cattle, sheep, pigs, poultry). If the image contains NO livestock (for example: empty barn/room, floor, wall, ceiling, human, desk, outdoor landscape without animals, blurry image), YOU MUST SET animal_detected=false, bounding_boxes=[], ear_tag_detected=false, ear_tag=null, identification_status='unknown', confidence_level=0. NEVER fabricate or hallucinate an animal.\n"
+            . "2. BOUNDING BOXES: If animals are detected, provide accurate normalized coordinates (x, y, width, height between 0.0 and 1.0) tightly surrounding each detected animal.\n"
+            . "3. EAR TAG OCR: If an ear tag is clearly visible on an animal, read its characters accurately. If no ear tag is visible or readable, set ear_tag_detected=false and ear_tag=null. Never invent tag numbers.\n"
+            . "4. CONFIDENCE THRESHOLDS:\n"
             . "   - Confidence >= 85% -> identification_status = 'confirmed', requires_human_confirmation = false.\n"
             . "   - Confidence 50%..84% -> identification_status = 'needs_review', requires_human_confirmation = true.\n"
-            . "   - Confidence < 50% -> identification_status = 'unknown'.\n"
-            . "4. AVOID FALSE MATCHES: NEVER fabricate identification. If ambiguous, mark as 'needs_review' or 'unknown'.";
+            . "   - Confidence < 50% -> identification_status = 'unknown'.\n";
 
         $vision_res = $this->CI->ai_provider->generate_vision($system_prompt, $image_base64, $mime_type, $context_payload);
 
@@ -251,6 +252,8 @@ class Ai_vision_service {
                 'status'           => true,
                 'animal_detected'  => false,
                 'message'          => 'No animal detected in camera frame. Point camera directly at livestock.',
+                'bounding_boxes'   => array(),
+                'bounding_box'     => null,
                 'current_counts'   => array(
                     'confirmed'    => $session->confirmed_count,
                     'needs_review' => $session->needs_review_count,
@@ -287,6 +290,31 @@ class Ai_vision_service {
             if ($existing_id_lock) { $already_counted = true; }
         }
 
+        // Parse Genuine Detected Bounding Boxes from AI
+        $raw_boxes = array();
+        if (!empty($parsed['bounding_boxes']) && is_array($parsed['bounding_boxes'])) {
+            foreach ($parsed['bounding_boxes'] as $b) {
+                if (is_array($b) && isset($b['x'], $b['y'])) {
+                    $raw_boxes[] = array(
+                        'x'      => max(0.0, min(1.0, (float)$b['x'])),
+                        'y'      => max(0.0, min(1.0, (float)$b['y'])),
+                        'width'  => max(0.05, min(1.0, (float)($b['width'] ?? $b['w'] ?? 0.3))),
+                        'height' => max(0.05, min(1.0, (float)($b['height'] ?? $b['h'] ?? 0.3))),
+                        'label'  => !empty($b['label']) ? (string)$b['label'] : (!empty($detected_tag) ? $detected_tag : 'LIVESTOCK')
+                    );
+                }
+            }
+        } elseif (!empty($parsed['bounding_box']) && is_array($parsed['bounding_box'])) {
+            $b = $parsed['bounding_box'];
+            $raw_boxes[] = array(
+                'x'      => max(0.0, min(1.0, (float)($b['x'] ?? 0.2))),
+                'y'      => max(0.0, min(1.0, (float)($b['y'] ?? 0.15))),
+                'width'  => max(0.05, min(1.0, (float)($b['width'] ?? 0.4))),
+                'height' => max(0.05, min(1.0, (float)($b['height'] ?? 0.5))),
+                'label'  => !empty($detected_tag) ? $detected_tag : 'LIVESTOCK'
+            );
+        }
+
         if ($already_counted) {
             $this->CI->db->trans_complete();
             return array(
@@ -296,6 +324,8 @@ class Ai_vision_service {
                 'identification_status'=> 'already_counted',
                 'tag_number'           => $detected_tag,
                 'livestock_id'         => $detected_id,
+                'bounding_boxes'       => $raw_boxes,
+                'bounding_box'         => (!empty($raw_boxes) ? $raw_boxes[0] : null),
                 'confidence'           => $parsed['confidence_level'] ?? 90,
                 'visual_features'      => $parsed['visual_features'] ?? array(),
                 'message'              => "Animal (" . ($detected_tag ?: "ID #{$detected_id}") . ") ALREADY COUNTED in this session. Count not incremented.",
@@ -364,6 +394,8 @@ class Ai_vision_service {
             'identification_status'      => $id_status,
             'tag_number'                 => $detected_tag,
             'livestock_id'               => $detected_id,
+            'bounding_boxes'             => $raw_boxes,
+            'bounding_box'               => (!empty($raw_boxes) ? $raw_boxes[0] : null),
             'candidate_matches'          => $parsed['candidate_matches'] ?? array(),
             'visual_features'            => $parsed['visual_features'] ?? array(),
             'confidence'                 => $confidence,

@@ -1291,6 +1291,17 @@ document.addEventListener('DOMContentLoaded', function() {
             legendContainer.innerHTML = html;
         }
 
+        clearCanvas(canvasElem) {
+            if (!canvasElem) return;
+            const container = canvasElem.parentElement;
+            const width  = (container ? container.clientWidth : 0) || canvasElem.clientWidth || window.innerWidth || 640;
+            const height = (container ? container.clientHeight : 0) || canvasElem.clientHeight || 420;
+            canvasElem.width  = width;
+            canvasElem.height = height;
+            const ctx = canvasElem.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
+        }
+
         renderCanvasOverlay(canvasElem, customBbox, tagLabel) {
             if (!canvasElem) return;
 
@@ -1309,22 +1320,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let boxes = [];
             if (Array.isArray(customBbox)) {
-                boxes = customBbox;
-            } else if (typeof customBbox === 'object') {
-                boxes = [
-                    customBbox,
-                    { x: 0.08, y: 0.22, width: 0.38, height: 0.42, label: 'KLA-G-0012' },
-                    { x: 0.52, y: 0.28, width: 0.40, height: 0.46, label: 'KLA-G-0048' },
-                    { x: 0.32, y: 0.48, width: 0.32, height: 0.38, label: 'KLA-G-0089' }
-                ];
+                boxes = customBbox.filter(b => b && typeof b === 'object');
+            } else if (typeof customBbox === 'object' && customBbox !== null) {
+                boxes = [customBbox];
             }
 
+            if (boxes.length === 0) return;
+
             boxes.forEach((b, idx) => {
-                const bx = (b.x || 0.2) * width;
-                const by = (b.y || 0.15) * height;
-                const bw = (b.width || 0.4) * width;
-                const bh = (b.height || 0.5) * height;
-                const labelText = b.label || tagLabel || (idx === 0 ? 'CONFIRMED' : 'MATCHED');
+                const bx = (b.x !== undefined ? b.x : 0.2) * width;
+                const by = (b.y !== undefined ? b.y : 0.15) * height;
+                const bw = (b.width || b.w || 0.4) * width;
+                const bh = (b.height || b.h || 0.5) * height;
+                const labelText = b.label || tagLabel || 'LIVESTOCK';
 
                 // Glowing Outer Bounding Box
                 ctx.strokeStyle = '#10b981';
@@ -1426,7 +1434,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mBatchSelect) mBatchSelect.addEventListener('change', function() { batchSelect.value = this.value; });
 
     // Start Session Core Function
-    function startSession() {
+    function startSession(callback) {
         const selectedShed = shedSelect.value || mShedSelect.value;
         const selectedBatch = batchSelect.value || mBatchSelect.value;
 
@@ -1466,14 +1474,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const statsGrid = document.getElementById('stats_grid');
             if (statsGrid) statsGrid.style.display = 'grid';
 
-            // Start Camera Streams
-            initCamera();
+            if (typeof callback === 'function') {
+                callback();
+            } else {
+                initCamera();
+            }
         });
     }
 
     if (startForm) startForm.addEventListener('submit', function(e) { e.preventDefault(); startSession(); });
     const mBtnStartSession = document.getElementById('m_btn_start_session');
-    if (mBtnStartSession) mBtnStartSession.addEventListener('click', startSession);
+    if (mBtnStartSession) mBtnStartSession.addEventListener('click', function() { startSession(); });
 
     // Camera Stream Controller
     function initCamera() {
@@ -1538,49 +1549,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el) el.textContent = val;
     };
 
-    // Capture & Send Frame
-    function captureAndProcessFrame() {
-        if (!isScanning || !activeSessionId) return;
-
-        // Prevent overlapping requests
+    // Send Frame Payload to Backend
+    function sendFramePayload(frameBase64) {
+        if (!activeSessionId || !frameBase64) return;
         if (isProcessingFrame) return;
 
-        var vElem  = document.getElementById('m_camera_video');
-        var desktopVElem = document.getElementById('camera_video');
-        var targetVideo = (vElem && vElem.videoWidth > 0) ? vElem : ((desktopVElem && desktopVElem.videoWidth > 0) ? desktopVElem : (vElem || desktopVElem));
-
-        var cElem  = document.getElementById('m_camera_canvas');
-        var desktopCElem = document.getElementById('camera_canvas');
-        var targetCanvas = cElem || desktopCElem;
-
-        if (!targetVideo || !targetCanvas) {
-            console.warn('Vision: targetVideo or targetCanvas element missing.');
-            return;
-        }
-
-        if (!targetVideo.videoWidth || !targetVideo.videoHeight) {
-            console.warn('Vision: video stream not ready yet.');
-            return;
-        }
-
         isProcessingFrame = true;
-        framesCapturedCount++;
-        setTxt('diag_frames_captured', framesCapturedCount);
-        setTxt('diag_cam_state', 'CONNECTED');
-        setTxt('diag_session_state', 'ACTIVE');
-        setTxt('diag_capture_state', 'RUNNING');
-
-        const ctx = targetCanvas.getContext('2d');
-        targetCanvas.width = 640;
-        targetCanvas.height = 480;
-        ctx.drawImage(targetVideo, 0, 0, targetCanvas.width, targetCanvas.height);
-
-        const frameBase64 = targetCanvas.toDataURL('image/jpeg', 0.8);
         framesSubmittedCount++;
         aiRequestsCount++;
         setTxt('diag_frames_submitted', framesSubmittedCount);
         setTxt('diag_ai_requests', aiRequestsCount);
-        setTxt('diag_db_status', 'WRITING...');
+        setTxt('diag_db_status', 'ANALYZING...');
 
         const payload = new FormData();
         payload.append('session_id', activeSessionId);
@@ -1608,6 +1587,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTxt('diag_last_error', lastErrorTrace);
                 setTxt('diag_db_status', 'FAILED');
                 setTxt('m_last_scan_text', '⚠️ ' + lastErrorTrace);
+                visionTracker.clearCanvas(mOverlayCanvas);
                 return;
             }
 
@@ -1636,19 +1616,35 @@ document.addEventListener('DOMContentLoaded', function() {
             setTxt('m_stat_accuracy', accuracy + '%');
             setTxt('m_stat_accuracy_level', accuracy >= 90 ? 'High' : 'Normal');
 
-            setTxt('m_last_scan_text', 'Last Scan: ' + nowStr + ' (' + (data.tag_number ? 'Tag: ' + data.tag_number : 'Analyzed') + ')');
+            // CRITICAL: IF NO ANIMAL WAS DETECTED IN THIS FRAME
+            if (!data.animal_detected) {
+                visionTracker.clearCanvas(mOverlayCanvas);
+                setTxt('m_status_text', 'AI READY - NO ANIMAL');
+                const pill = document.getElementById('m_status_pill');
+                if (pill) pill.style.background = 'rgba(234, 179, 8, 0.2)';
+                setTxt('m_last_scan_text', 'No animal detected (' + nowStr + ')');
+                return;
+            }
 
-            // Register animal in visual tracker engine & render bounding box
+            // Real Animal Was Detected!
+            setTxt('m_status_text', 'ANIMAL DETECTED');
+            const pill = document.getElementById('m_status_pill');
+            if (pill) pill.style.background = 'rgba(16, 185, 129, 0.2)';
+
+            const detectedTag = data.tag_number || (data.livestock_id ? 'TAG #' + data.livestock_id : null);
+            setTxt('m_last_scan_text', 'Detected: ' + (detectedTag || 'Livestock') + ' (' + nowStr + ')');
+
+            // Register animal in visual tracker engine
             const track = visionTracker.getOrCreateTrack(data.tag_number, data.livestock_id, data.already_counted || data.identification_status === 'confirmed');
             visionTracker.updateStates();
 
-            let bbox = data.bounding_box;
-            if (!bbox && data.animal_detected) {
-                bbox = { x: 0.18, y: 0.15, width: 0.50, height: 0.55 };
-            }
-            const tagLabel = data.tag_number || (data.livestock_id ? 'TAG-' + data.livestock_id : 'KLA-G-0184');
+            // Render ONLY genuine bounding box(es)
+            const boxesToRender = (data.bounding_boxes && data.bounding_boxes.length > 0)
+                ? data.bounding_boxes
+                : (data.bounding_box ? [data.bounding_box] : null);
 
-            visionTracker.renderCanvasOverlay(mOverlayCanvas, bbox, tagLabel);
+            const tagLabel = detectedTag || (data.animal_type ? data.animal_type.toUpperCase() : 'LIVESTOCK');
+            visionTracker.renderCanvasOverlay(mOverlayCanvas, boxesToRender, tagLabel);
 
             if (data.requires_human_confirmation || data.identification_status === 'needs_review') {
                 isScanning = false;
@@ -1670,7 +1666,46 @@ document.addEventListener('DOMContentLoaded', function() {
             setTxt('diag_last_error', lastErrorTrace);
             setTxt('diag_http_status', 'ERR');
             setTxt('m_last_scan_text', '⚠️ API ERROR: ' + lastErrorTrace);
+            visionTracker.clearCanvas(mOverlayCanvas);
         });
+    }
+
+    // Capture & Send Frame
+    function captureAndProcessFrame() {
+        if (!isScanning || !activeSessionId) return;
+        if (isProcessingFrame) return;
+
+        var vElem  = document.getElementById('m_camera_video');
+        var desktopVElem = document.getElementById('camera_video');
+        var targetVideo = (vElem && vElem.videoWidth > 0) ? vElem : ((desktopVElem && desktopVElem.videoWidth > 0) ? desktopVElem : (vElem || desktopVElem));
+
+        var cElem  = document.getElementById('m_camera_canvas');
+        var desktopCElem = document.getElementById('camera_canvas');
+        var targetCanvas = cElem || desktopCElem;
+
+        if (!targetVideo || !targetCanvas) {
+            console.warn('Vision: targetVideo or targetCanvas element missing.');
+            return;
+        }
+
+        if (!targetVideo.videoWidth || !targetVideo.videoHeight) {
+            console.warn('Vision: video stream not ready yet.');
+            return;
+        }
+
+        framesCapturedCount++;
+        setTxt('diag_frames_captured', framesCapturedCount);
+        setTxt('diag_cam_state', 'CONNECTED');
+        setTxt('diag_session_state', 'ACTIVE');
+        setTxt('diag_capture_state', 'RUNNING');
+
+        const ctx = targetCanvas.getContext('2d');
+        targetCanvas.width = 640;
+        targetCanvas.height = 480;
+        ctx.drawImage(targetVideo, 0, 0, targetCanvas.width, targetCanvas.height);
+
+        const frameBase64 = targetCanvas.toDataURL('image/jpeg', 0.8);
+        sendFramePayload(frameBase64);
     }
 
     // Trigger Single Scan on Main Button Click
@@ -1771,6 +1806,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!activeSessionId) return;
             isScanning = false;
             if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+            visionTracker.clearCanvas(mOverlayCanvas);
 
             const payload = new FormData();
             payload.append('session_id', activeSessionId);
@@ -1793,6 +1829,57 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Photo Upload Handler (Mobile & Desktop)
+    function setupPhotoUpload(inputId) {
+        const inputElem = document.getElementById(inputId);
+        if (!inputElem) return;
+
+        inputElem.addEventListener('change', function(e) {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+
+            function processFile() {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const base64 = evt.target.result;
+                    const img = new Image();
+                    img.onload = function() {
+                        const cElem  = document.getElementById('m_camera_canvas');
+                        const desktopCElem = document.getElementById('camera_canvas');
+                        const targetCanvas = cElem || desktopCElem;
+                        if (targetCanvas) {
+                            targetCanvas.width = 640;
+                            targetCanvas.height = 480;
+                            const ctx = targetCanvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, targetCanvas.width, targetCanvas.height);
+                        }
+                        const setupOverlay = document.getElementById('m_setup_overlay');
+                        if (setupOverlay) setupOverlay.style.display = 'none';
+
+                        sendFramePayload(base64);
+                    };
+                    img.src = base64;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            if (!activeSessionId) {
+                const selectedShed = (shedSelect && shedSelect.value) || (mShedSelect && mShedSelect.value);
+                if (!selectedShed) {
+                    alert('Please select a Shed above before uploading a livestock photo.');
+                    e.target.value = '';
+                    return;
+                }
+                startSession(processFile);
+            } else {
+                processFile();
+            }
+        });
+    }
+
+    setupPhotoUpload('m_file_upload');
+    setupPhotoUpload('file_upload_fallback');
 });
 </script>
 
