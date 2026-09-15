@@ -303,40 +303,55 @@
             @media (max-width: 640px) {
                 .kula-dashboard-card-body,
                 .kula-fin-card-body {
-                    padding: 16px 12px !important;
+                    padding: 14px 10px !important;
                 }
                 .kula-fin-header {
-                    margin-bottom: 12px !important;
-                    padding-bottom: 10px !important;
-                    gap: 8px !important;
+                    margin-bottom: 10px !important;
+                    padding-bottom: 8px !important;
+                    gap: 6px !important;
                 }
                 .kula-fin-header h3 {
-                    font-size: 15.5px !important;
+                    font-size: 15px !important;
                 }
                 .kula-fin-header p {
-                    font-size: 12px !important;
+                    font-size: 11.5px !important;
                 }
                 .kula-fin-badge-wrap span {
-                    font-size: 11px !important;
-                    padding: 4px 10px !important;
+                    font-size: 10.5px !important;
+                    padding: 3px 8px !important;
+                }
+                .kula-fin-chart-col {
+                    margin-bottom: 4px !important;
+                }
+                #incomeExpenseStatement {
+                    max-width: 180px !important;
+                    margin: 0 auto !important;
                 }
                 .kula-fin-stats-grid {
-                    grid-template-columns: 1fr !important;
-                    gap: 10px !important;
+                    grid-template-columns: 1fr 1fr !important;
+                    gap: 8px !important;
                 }
                 .kula-fin-stat-card {
                     grid-column: span 1 !important;
-                    padding: 12px 14px !important;
+                    padding: 10px 10px !important;
+                    border-radius: 12px !important;
+                }
+                .kula-fin-stat-card span {
+                    font-size: 11px !important;
                 }
                 .kula-fin-net-card {
-                    grid-column: span 1 !important;
-                    padding: 12px 14px !important;
+                    grid-column: span 2 !important;
+                    padding: 10px 12px !important;
+                    border-radius: 12px !important;
                 }
                 .kula-fin-amount {
-                    font-size: 17px !important;
+                    font-size: 13.5px !important;
+                    margin: 0 0 4px 0 !important;
+                    letter-spacing: -0.2px !important;
                 }
                 .kula-fin-net-amount {
-                    font-size: 18px !important;
+                    font-size: 15px !important;
+                    margin: 2px 0 0 0 !important;
                 }
                 .kula-stock-legend-grid {
                     grid-template-columns: repeat(2, 1fr) !important;
@@ -1222,7 +1237,8 @@
                              offsetY: 4,
                              formatter: function (val) {
                                  var sum = paidAmount + receivedAmount;
-                                 return '<?= $settings->currency; ?> ' + Number(sum).toLocaleString();
+                                 var cur = <?php echo json_encode(!empty($settings->currency) ? $settings->currency : 'UGX'); ?>;
+                                 return cur + ' ' + Number(sum).toLocaleString();
                              }
                          },
                          total: {
@@ -1233,7 +1249,8 @@
                              color: '#64748b',
                              formatter: function (w) {
                                  var sum = paidAmount + receivedAmount;
-                                 return '<?= $settings->currency; ?> ' + Number(sum).toLocaleString();
+                                 var cur = <?php echo json_encode(!empty($settings->currency) ? $settings->currency : 'UGX'); ?>;
+                                 return cur + ' ' + Number(sum).toLocaleString();
                              }
                          }
                      }
@@ -1251,21 +1268,24 @@
              breakpoint: 640,
              options: {
                  chart: {
-                     height: 220
+                     height: 170,
+                     width: '100%'
                  },
                  plotOptions: {
                      pie: {
                          donut: {
-                             size: '70%',
+                             size: '68%',
                              labels: {
                                  name: {
-                                     fontSize: '11px'
+                                     fontSize: '10px',
+                                     offsetY: -4
                                  },
                                  value: {
-                                     fontSize: '13px'
+                                     fontSize: '12px',
+                                     offsetY: 2
                                  },
                                  total: {
-                                     fontSize: '11px'
+                                     fontSize: '10px'
                                  }
                              }
                          }
@@ -1373,7 +1393,8 @@
              theme: 'light',
              y: {
                  formatter: function(val) {
-                     return val + " <?= $settings->unit; ?>";
+                     var un = <?php echo json_encode(!empty($settings->unit) ? ' ' . $settings->unit : ''); ?>;
+                     return val + un;
                  }
              }
          }
