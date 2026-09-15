@@ -157,6 +157,212 @@
                     box-sizing: border-box !important;
                 }
             }
+
+            /* ==========================================================================
+               DASHBOARD MOBILE & RESPONSIVE COMPONENT ENGINE
+               ========================================================================== */
+            .kula-dashboard-card-body,
+            .kula-fin-card-body {
+                padding: 24px;
+            }
+            .kula-fin-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-bottom: 20px;
+                border-bottom: 1px solid #f1f5f9;
+                padding-bottom: 16px;
+            }
+            .kula-fin-title-wrap {
+                flex: 1 1 240px;
+                min-width: 0;
+            }
+            .kula-fin-badge-wrap {
+                flex-shrink: 0;
+            }
+            .kula-fin-content-row {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 20px;
+            }
+            .kula-fin-chart-col {
+                flex: 0 0 38%;
+                max-width: 38%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-width: 220px;
+            }
+            .kula-fin-stats-col {
+                flex: 1 1 55%;
+                min-width: 260px;
+            }
+            .kula-fin-stats-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+            .kula-fin-stat-card {
+                border-radius: 14px;
+                padding: 14px 16px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                min-width: 0;
+            }
+            .kula-fin-net-card {
+                grid-column: span 2;
+                border-radius: 14px;
+                padding: 14px 16px;
+                min-width: 0;
+            }
+            .kula-fin-amount {
+                font-size: 19px;
+                font-weight: 800;
+                margin: 0 0 6px 0;
+                word-break: break-word;
+            }
+            .kula-fin-net-amount {
+                font-size: 20px;
+                font-weight: 800;
+                margin: 4px 0 0 0;
+                word-break: break-word;
+            }
+
+            /* Card 2: Livestock Stock Analysis */
+            .kula-stock-legend-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            .kula-stock-chip {
+                border-radius: 12px;
+                padding: 12px 14px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 0;
+            }
+
+            /* Card 3: Farm Entities Directory */
+            .kula-entities-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 18px;
+            }
+            .kula-entity-card {
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 14px;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                min-width: 0;
+            }
+
+            /* Dark Mode Support */
+            body.dark-theme .kula-fin-header,
+            html.dark-theme .kula-fin-header {
+                border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+            }
+            body.dark-theme .kula-entity-card,
+            html.dark-theme .kula-entity-card {
+                background: #0f172a !important;
+                border-color: rgba(255, 255, 255, 0.08) !important;
+            }
+
+            /* Tablet & Mobile Media Queries */
+            @media (max-width: 991px) {
+                .kula-fin-content-row {
+                    flex-direction: column !important;
+                    gap: 16px !important;
+                }
+                .kula-fin-chart-col {
+                    flex: 0 0 100% !important;
+                    max-width: 100% !important;
+                    margin-bottom: 6px !important;
+                }
+                .kula-fin-stats-col {
+                    flex: 0 0 100% !important;
+                    width: 100% !important;
+                    max-width: 100% !important;
+                }
+                .kula-stock-legend-grid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                }
+                .kula-entities-grid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                }
+            }
+
+            @media (max-width: 640px) {
+                .kula-dashboard-card-body,
+                .kula-fin-card-body {
+                    padding: 16px 12px !important;
+                }
+                .kula-fin-header {
+                    margin-bottom: 12px !important;
+                    padding-bottom: 10px !important;
+                    gap: 8px !important;
+                }
+                .kula-fin-header h3 {
+                    font-size: 15.5px !important;
+                }
+                .kula-fin-header p {
+                    font-size: 12px !important;
+                }
+                .kula-fin-badge-wrap span {
+                    font-size: 11px !important;
+                    padding: 4px 10px !important;
+                }
+                .kula-fin-stats-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 10px !important;
+                }
+                .kula-fin-stat-card {
+                    grid-column: span 1 !important;
+                    padding: 12px 14px !important;
+                }
+                .kula-fin-net-card {
+                    grid-column: span 1 !important;
+                    padding: 12px 14px !important;
+                }
+                .kula-fin-amount {
+                    font-size: 17px !important;
+                }
+                .kula-fin-net-amount {
+                    font-size: 18px !important;
+                }
+                .kula-stock-legend-grid {
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 8px !important;
+                }
+                .kula-stock-chip {
+                    padding: 10px 12px !important;
+                    gap: 8px !important;
+                }
+                .kula-stock-chip h4 {
+                    font-size: 16px !important;
+                }
+                .kula-entities-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 12px !important;
+                }
+                .kula-entity-card {
+                    padding: 16px !important;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .kula-stock-legend-grid {
+                    grid-template-columns: 1fr !important;
+                }
+            }
         </style>
 
         <div class="kula-ai-feature-banner">
@@ -475,32 +681,32 @@
           <!-- CARD 1: Full-Width Expense & Income Breakdown -->
           <div class="row" style="margin-bottom: 24px;">
               <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                  <section class="panel custom__table" style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 0;">
-                      <div class="panel-body kula-dashboard-card-body" style="padding: 24px;">
-                          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
-                              <div>
+                  <section class="panel custom__table kula-fin-card" style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 0;">
+                      <div class="panel-body kula-dashboard-card-body kula-fin-card-body">
+                          <div class="kula-fin-header">
+                              <div class="kula-fin-title-wrap">
                                   <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px; border: none; padding: 0; text-transform: none; letter-spacing: -0.3px;">
                                       <i class="fa-solid fa-chart-pie" style="color: #059669;"></i> Expense &amp; Financial Breakdown
                                   </h3>
                                   <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 500;">Comparison of total operational expenses vs cumulative farm revenue</p>
                               </div>
-                              <div style="display: flex; align-items: center; gap: 10px;">
-                                  <span style="background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                              <div class="kula-fin-badge-wrap">
+                                  <span style="background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center;">
                                       <i class="fa-regular fa-clock" style="margin-right: 5px;"></i> Lifetime Statements
                                   </span>
                               </div>
                           </div>
 
-                          <div class="row" style="margin-top: 10px;">
+                          <div class="kula-fin-content-row">
                               <!-- Donut Chart Column -->
-                              <div class="col-lg-5 col-md-5 col-sm-12" style="margin-bottom: 20px;">
+                              <div class="kula-fin-chart-col">
                                   <div style="width: 100%; display: flex; justify-content: center; align-items: center;">
                                       <div id="incomeExpenseStatement" style="width: 100%; max-width: 280px;"></div>
                                   </div>
                               </div>
 
                               <!-- Financial Details & Metrics Grid Column -->
-                              <div class="col-lg-7 col-md-7 col-sm-12">
+                              <div class="kula-fin-stats-col">
                                   <?php
                                   $sumTotal = (float)$totalPaidAmount + (float)$totalReceivedAmount;
                                   $expPct = $sumTotal > 0 ? round(((float)$totalPaidAmount / $sumTotal) * 100) : 0;
@@ -508,51 +714,51 @@
                                   $netBalance = (float)$totalReceivedAmount - (float)$totalPaidAmount;
                                   ?>
                                   
-                                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
+                                  <div class="kula-fin-stats-grid">
                                       <!-- Expenses Card -->
-                                      <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 14px; padding: 14px;">
+                                      <div class="kula-fin-stat-card" style="background: #fef2f2; border: 1px solid #fecaca;">
                                           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                               <span style="font-size: 12px; font-weight: 700; color: #991b1b; display: flex; align-items: center; gap: 6px;">
                                                   <i class="fa-solid fa-arrow-down-long"></i> Total Expenses
                                               </span>
                                               <span style="background: #ef4444; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $expPct; ?>%</span>
                                           </div>
-                                          <h4 style="font-size: 19px; font-weight: 800; color: #7f1d1d; margin: 0 0 6px 0;">
+                                          <h4 class="kula-fin-amount" style="color: #7f1d1d;">
                                               <?= $currency . number_format_currency($totalPaidAmount, 2); ?>
                                           </h4>
-                                          <div style="height: 6px; background: #fee2e2; border-radius: 4px; overflow: hidden;">
+                                          <div style="height: 6px; background: #fee2e2; border-radius: 4px; overflow: hidden; margin-top: 4px;">
                                               <div style="width: <?= $expPct; ?>%; height: 100%; background: #ef4444; border-radius: 4px;"></div>
                                           </div>
                                       </div>
 
                                       <!-- Income Card -->
-                                      <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 14px; padding: 14px;">
+                                      <div class="kula-fin-stat-card" style="background: #ecfdf5; border: 1px solid #a7f3d0;">
                                           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                                               <span style="font-size: 12px; font-weight: 700; color: #065f46; display: flex; align-items: center; gap: 6px;">
                                                   <i class="fa-solid fa-arrow-up-long"></i> Total Revenue
                                               </span>
                                               <span style="background: #059669; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $incPct; ?>%</span>
                                           </div>
-                                          <h4 style="font-size: 19px; font-weight: 800; color: #064e3b; margin: 0 0 6px 0;">
+                                          <h4 class="kula-fin-amount" style="color: #064e3b;">
                                               <?= $currency . number_format_currency($totalReceivedAmount, 2); ?>
                                           </h4>
-                                          <div style="height: 6px; background: #d1fae5; border-radius: 4px; overflow: hidden;">
+                                          <div style="height: 6px; background: #d1fae5; border-radius: 4px; overflow: hidden; margin-top: 4px;">
                                               <div style="width: <?= $incPct; ?>%; height: 100%; background: #059669; border-radius: 4px;"></div>
                                           </div>
                                       </div>
 
                                       <!-- Net Balance Card -->
-                                      <div class="kula-span-mobile-1" style="background: <?= $netBalance >= 0 ? '#f0fdf4' : '#fff1f2'; ?>; border: 1px solid <?= $netBalance >= 0 ? '#bbf7d0' : '#fecdd3'; ?>; border-radius: 14px; padding: 14px; grid-column: span 2;">
+                                      <div class="kula-fin-net-card" style="background: <?= $netBalance >= 0 ? '#f0fdf4' : '#fff1f2'; ?>; border: 1px solid <?= $netBalance >= 0 ? '#bbf7d0' : '#fecdd3'; ?>;">
                                           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                                               <div>
                                                   <span style="font-size: 12px; font-weight: 700; color: <?= $netBalance >= 0 ? '#166534' : '#9f1239'; ?>;">
                                                       Net Operating Profit / Balance
                                                   </span>
-                                                  <h4 style="font-size: 20px; font-weight: 800; color: <?= $netBalance >= 0 ? '#14532d' : '#881337'; ?>; margin: 4px 0 0 0;">
+                                                  <h4 class="kula-fin-net-amount" style="color: <?= $netBalance >= 0 ? '#14532d' : '#881337'; ?>;">
                                                       <?= ($netBalance >= 0 ? '+' : '-') . $currency . number_format_currency(abs($netBalance), 2); ?>
                                                   </h4>
                                               </div>
-                                              <span style="background: <?= $netBalance >= 0 ? '#166534' : '#9f1239'; ?>; color: #ffffff; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px;">
+                                              <span style="background: <?= $netBalance >= 0 ? '#166534' : '#9f1239'; ?>; color: #ffffff; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px;">
                                                   <?= $netBalance >= 0 ? '<i class="fa-solid fa-circle-check"></i> Profitable' : '<i class="fa-solid fa-circle-exclamation"></i> Deficit' ?>
                                               </span>
                                           </div>
@@ -586,8 +792,8 @@
                           </div>
 
                           <!-- Interactive Stat Legend Chips -->
-                          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                              <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                          <div class="kula-stock-legend-grid">
+                              <div class="kula-stock-chip" style="background: #eff6ff; border: 1px solid #bfdbfe;">
                                   <div style="width: 36px; height: 36px; border-radius: 10px; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
                                       <i class="fa-solid fa-cart-shopping"></i>
                                   </div>
@@ -597,7 +803,7 @@
                                   </div>
                               </div>
 
-                              <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                              <div class="kula-stock-chip" style="background: #fefce8; border: 1px solid #fef08a;">
                                   <div style="width: 36px; height: 36px; border-radius: 10px; background: #eab308; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
                                       <i class="fa-solid fa-file-invoice-dollar"></i>
                                   </div>
@@ -607,7 +813,7 @@
                                   </div>
                               </div>
 
-                              <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                              <div class="kula-stock-chip" style="background: #fef2f2; border: 1px solid #fecaca;">
                                   <div style="width: 36px; height: 36px; border-radius: 10px; background: #ef4444; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
                                       <i class="fa-solid fa-skull-crossbones"></i>
                                   </div>
@@ -617,7 +823,7 @@
                                   </div>
                               </div>
 
-                              <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                              <div class="kula-stock-chip" style="background: #ecfdf5; border: 1px solid #a7f3d0;">
                                   <div style="width: 36px; height: 36px; border-radius: 10px; background: #059669; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
                                       <i class="fa-solid fa-warehouse"></i>
                                   </div>
@@ -651,9 +857,9 @@
                               </span>
                           </div>
 
-                          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
+                          <div class="kula-entities-grid">
                               <!-- Suppliers Card -->
-                              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                              <div class="kula-entity-card">
                                   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                                       <div style="width: 44px; height: 44px; border-radius: 12px; background: #0284c7; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);">
                                           <i class="fa-solid fa-truck-field"></i>
@@ -672,7 +878,7 @@
                               </div>
 
                               <!-- Clients Card -->
-                              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                              <div class="kula-entity-card">
                                   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                                       <div style="width: 44px; height: 44px; border-radius: 12px; background: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);">
                                           <i class="fa-solid fa-address-book"></i>
@@ -691,7 +897,7 @@
                               </div>
 
                               <!-- Staff Card -->
-                              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                              <div class="kula-entity-card">
                                   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                                       <div style="width: 44px; height: 44px; border-radius: 12px; background: #059669; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);">
                                           <i class="fa-solid fa-user-group"></i>
@@ -710,7 +916,7 @@
                               </div>
 
                               <!-- Sheds Card -->
-                              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                              <div class="kula-entity-card">
                                   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                                       <div style="width: 44px; height: 44px; border-radius: 12px; background: #8b5cf6; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);">
                                           <i class="fa-solid fa-warehouse"></i>
@@ -1021,7 +1227,7 @@
                          },
                          total: {
                              show: true,
-                             label: 'Total Expenses',
+                             label: 'Total Volume',
                              fontSize: '12px',
                              fontWeight: '600',
                              color: '#64748b',
@@ -1040,7 +1246,33 @@
          labels: ['<?= lang('expense'); ?>', '<?= lang('income'); ?>'],
          legend: {
              show: false
-         }
+         },
+         responsive: [{
+             breakpoint: 640,
+             options: {
+                 chart: {
+                     height: 220
+                 },
+                 plotOptions: {
+                     pie: {
+                         donut: {
+                             size: '70%',
+                             labels: {
+                                 name: {
+                                     fontSize: '11px'
+                                 },
+                                 value: {
+                                     fontSize: '13px'
+                                 },
+                                 total: {
+                                     fontSize: '11px'
+                                 }
+                             }
+                         }
+                     }
+                 }
+             }
+         }]
      };
  
      var chart = new ApexCharts(document.querySelector("#incomeExpenseStatement"), options);
@@ -1079,6 +1311,14 @@
             toolbar: { show: false },
             zoom: { enabled: false }
         },
+         responsive: [{
+             breakpoint: 640,
+             options: {
+                 chart: {
+                     height: 250
+                 }
+             }
+         }],
          colors: ['#2563eb', '#eab308', '#ef4444', '#059669'],
          stroke: {
              curve: 'smooth',
