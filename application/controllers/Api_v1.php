@@ -26,7 +26,8 @@ class Api_v1 extends CI_Controller {
             exit(0);
         }
 
-        $this->load->database();
+        // Explicitly attach the DB handle so libraries using get_instance()->db (Rate_limiter) can rely on it
+        $this->db = $this->load->database('', TRUE);
         $this->load->library('ion_auth');
         $this->load->library('Rate_limiter', null, 'rate_limiter');
         $this->load->helper('action_token');
