@@ -78,7 +78,7 @@
                                                             <i class="fa-solid fa-shield"></i> Protected
                                                         </span>
                                                     <?php else: ?>
-                                                        <a href="<?php echo base_url('superadmin/delete_user/' . $u->id); ?>" class="btn btn-xs btn-danger" onclick="return confirm('Are you sure you want to delete user <?php echo htmlspecialchars($u->username); ?>?');" style="border-radius: 8px; font-weight: 700;">
+                                                        <a href="<?php echo base_url('superadmin/delete_user/' . $u->id) . '?t=' . action_token(); ?>" class="btn btn-xs btn-danger" onclick="return confirm('Are you sure you want to delete user <?php echo htmlspecialchars($u->username); ?>?');" style="border-radius: 8px; font-weight: 700;">
                                                             <i class="fa-solid fa-trash"></i> Delete
                                                         </a>
                                                     <?php endif; ?>

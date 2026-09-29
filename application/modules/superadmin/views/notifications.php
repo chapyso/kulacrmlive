@@ -122,7 +122,7 @@
                                                     <?php echo date('M d, Y H:i', strtotime($n->created_at)); ?>
                                                 </td>
                                                 <td style="padding: 14px 20px; text-align: right;">
-                                                    <a href="<?php echo base_url('superadmin/delete_notification/' . $n->id); ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this notification record from history?');" style="border-radius: 6px; font-weight: 700;" title="Delete Record">
+                                                    <a href="<?php echo base_url('superadmin/delete_notification/' . $n->id) . '?t=' . action_token(); ?>" class="btn btn-xs btn-danger" onclick="return confirm('Delete this notification record from history?');" style="border-radius: 6px; font-weight: 700;" title="Delete Record">
                                                         <i class="fa-solid fa-trash"></i>
                                                     </a>
                                                 </td>

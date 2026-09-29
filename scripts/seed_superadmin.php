@@ -66,7 +66,7 @@ if ($grp_res && $grp_res->num_rows > 0) {
 
 echo "\n=== STEP 3: SEED / REPAIR RANALDI2040@GMAIL.COM ===\n";
 $target_email = 'ronaldi2040@gmail.com';
-$password_plain = 'Baale@256';
+$password_plain = (getenv('KULA_TEST_PASS') ?: '');
 $password_hash = password_hash($password_plain, PASSWORD_BCRYPT);
 $time = time();
 

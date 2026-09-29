@@ -29,7 +29,7 @@ class Users extends MY_Controller {
     public function index() {
         $this->check_permission('users.view');
 
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
         $filters = array(
             'department_id' => $this->input->get('department_id'),
             'status'        => $this->input->get('status'),
@@ -55,11 +55,16 @@ class Users extends MY_Controller {
         $email = trim($this->input->post('email'));
         $role_id = (int)$this->input->post('role_id');
         $department_id = $this->input->post('department_id') ? (int)$this->input->post('department_id') : null;
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
         $current_user_id = $this->ion_auth->user()->row()->id;
 
         if (empty($email) || empty($role_id)) {
             $this->session->set_flashdata('error', 'Email and Role are required.');
+            redirect('users');
+        }
+
+        if (!$this->role_allowed_for_tenant($this->Rbac_model->getRoleById($role_id))) {
+            $this->session->set_flashdata('error', 'Invalid role selected.');
             redirect('users');
         }
 
@@ -95,10 +100,20 @@ class Users extends MY_Controller {
         $phone = trim($this->input->post('phone'));
         $role_id = (int)$this->input->post('role_id');
         $department_id = $this->input->post('department_id') ? (int)$this->input->post('department_id') : null;
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
 
         if (empty($username) || empty($email) || empty($password) || empty($role_id)) {
             $this->session->set_flashdata('error', 'Username, Email, Password, and Role are required.');
+            redirect('users');
+        }
+
+        if (!$this->role_allowed_for_tenant($this->Rbac_model->getRoleById($role_id))) {
+            $this->session->set_flashdata('error', 'Invalid role selected.');
+            redirect('users');
+        }
+
+        if (strtolower($username) === 'superadmin') {
+            $this->session->set_flashdata('error', 'This username is reserved.');
             redirect('users');
         }
 
@@ -142,7 +157,7 @@ class Users extends MY_Controller {
 
         $user_id = (int)$this->input->post('user_id');
         $status = trim($this->input->post('status'));
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
 
         if ($user_id && $status) {
             $this->Tenant_user_model->updateUserStatus($user_id, $tenant_id, $status);
@@ -159,7 +174,7 @@ class Users extends MY_Controller {
     public function roles() {
         $this->check_permission('roles.view');
 
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
         $data['roles'] = $this->Rbac_model->getRoles($tenant_id);
         $data['permissions_grouped'] = $this->Rbac_model->getAllPermissionsGrouped();
         $data['settings'] = $this->settings_model->getSettings();
@@ -178,7 +193,7 @@ class Users extends MY_Controller {
         $name = trim($this->input->post('name'));
         $description = trim($this->input->post('description'));
         $permission_ids = $this->input->post('permissions') ?: array();
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
 
         if (!empty($name)) {
             $role_id = $this->Rbac_model->createRole($tenant_id, $name, $description, $permission_ids);
@@ -196,7 +211,7 @@ class Users extends MY_Controller {
     public function permission_matrix() {
         $this->check_permission('roles.view');
 
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
         $data['roles'] = $this->Rbac_model->getRoles($tenant_id);
         $data['permissions_grouped'] = $this->Rbac_model->getAllPermissionsGrouped();
 
@@ -219,7 +234,7 @@ class Users extends MY_Controller {
         $this->check_permission('roles.manage');
 
         $matrix = $this->input->post('matrix') ?: array();
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
 
         foreach ($matrix as $role_id => $pids) {
             $role = $this->Rbac_model->getRoleById($role_id);
@@ -240,7 +255,7 @@ class Users extends MY_Controller {
      */
     public function delete_role($role_id) {
         $this->check_permission('roles.manage');
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
 
         $role = $this->Rbac_model->getRoleById($role_id);
         if ($role && $role->is_system == 0 && (int)$role->tenant_id === (int)$tenant_id) {
@@ -259,7 +274,7 @@ class Users extends MY_Controller {
     public function departments() {
         $this->check_permission('settings.view');
 
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
         $data['departments'] = $this->Department_model->getDepartments($tenant_id);
         $data['job_titles'] = $this->Department_model->getJobTitles($tenant_id);
         $data['settings'] = $this->settings_model->getSettings();
@@ -275,7 +290,7 @@ class Users extends MY_Controller {
     public function add_department() {
         $this->check_permission('settings.update');
 
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
         $name = trim($this->input->post('name'));
 
         if (!empty($name)) {
@@ -297,7 +312,7 @@ class Users extends MY_Controller {
     public function activity_logs() {
         $this->check_permission('users.view');
 
-        $tenant_id = $this->tenant_id ?: 1;
+        $tenant_id = $this->require_tenant_id();
         $data['audit_logs'] = $this->db->where('tenant_id', $tenant_id)
                                       ->order_by('created_at', 'DESC')
                                       ->limit(100)

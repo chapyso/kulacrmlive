@@ -138,7 +138,7 @@
                                                         style="border-radius: 6px; font-weight: 700; margin-right: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;" title="Upgrade / Change Plan">
                                                         <i class="fa-solid fa-sliders" style="color: #6366f1;"></i> Upgrade Plan
                                                     </button>
-                                                    <a href="<?php echo base_url('superadmin/toggle_status/' . $s->id); ?>" class="btn btn-xs <?php echo ($s->status == 'active') ? 'btn-danger' : 'btn-success'; ?>" style="border-radius: 6px; font-weight: 700;">
+                                                    <a href="<?php echo base_url('superadmin/toggle_status/' . $s->id) . '?t=' . action_token(); ?>" class="btn btn-xs <?php echo ($s->status == 'active') ? 'btn-danger' : 'btn-success'; ?>" style="border-radius: 6px; font-weight: 700;">
                                                         <?php echo ($s->status == 'active') ? 'Suspend' : 'Activate'; ?>
                                                     </a>
                                                 </td>

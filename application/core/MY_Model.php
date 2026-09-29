@@ -64,7 +64,7 @@ class MY_Model extends CI_Model {
         }
         if (isset($CI->ion_auth) && $CI->ion_auth->logged_in()) {
             $user = $CI->ion_auth->user()->row();
-            $is_superadmin = ($user && (!empty($user->account_type) && $user->account_type === 'platform_admin' || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin'));
+            $is_superadmin = ($user && (!empty($user->account_type) && $user->account_type === 'platform_admin' || $user->email === 'ronaldi2040@gmail.com'));
             if ($is_superadmin && !isset($CI->is_impersonating)) {
                 return null;
             }
@@ -114,8 +114,8 @@ class MY_Model extends CI_Model {
     public function prepare_tenant_data($table, array $data): array {
         $tenant_id = $this->get_tenant_id();
         if (empty($tenant_id)) {
-            // Fail closed if tenant cannot be resolved
-            $tenant_id = 1;
+            // Fail closed: never write into another tenant when the tenant cannot be resolved
+            show_error('Tenant context could not be resolved for this write.', 403, 'Access Denied');
         }
 
         if ($this->db->field_exists('tenant_id', $table)) {
@@ -138,8 +138,12 @@ class MY_Model extends CI_Model {
      */
     public function updateData($table, $index, $identifier, $data) {
         $tenant_id = $this->get_tenant_id();
-        if ($this->db->field_exists('tenant_id', $table) && !empty($tenant_id)) {
-            $this->db->where('tenant_id', $tenant_id);
+        if ($this->db->field_exists('tenant_id', $table)) {
+            if (!empty($tenant_id)) {
+                $this->db->where('tenant_id', $tenant_id);
+            } elseif ($this->get_context() !== 'PLATFORM') {
+                $this->db->where('tenant_id', -1); // fail closed
+            }
         }
         $this->db->where($index, $identifier);
         $this->db->update($table, $data);
@@ -151,8 +155,12 @@ class MY_Model extends CI_Model {
      */
     public function deleteData($table, $index, $identifier) {
         $tenant_id = $this->get_tenant_id();
-        if ($this->db->field_exists('tenant_id', $table) && !empty($tenant_id)) {
-            $this->db->where('tenant_id', $tenant_id);
+        if ($this->db->field_exists('tenant_id', $table)) {
+            if (!empty($tenant_id)) {
+                $this->db->where('tenant_id', $tenant_id);
+            } elseif ($this->get_context() !== 'PLATFORM') {
+                $this->db->where('tenant_id', -1); // fail closed
+            }
         }
         $this->db->where($index, $identifier);
         $this->db->delete($table);

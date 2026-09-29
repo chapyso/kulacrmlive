@@ -9,7 +9,7 @@ $_SERVER['REQUEST_URI'] = '/superadmin/plans';
 require_once __DIR__ . '/../index.php';
 $CI =& get_instance();
 $CI->load->library('ion_auth');
-$CI->ion_auth->login('ronaldi2040@gmail.com', 'Baale@256');
+$CI->ion_auth->login('ronaldi2040@gmail.com', (getenv('KULA_TEST_PASS') ?: ''));
 
 ob_start();
 $CI->load->module('superadmin');

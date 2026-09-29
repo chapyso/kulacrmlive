@@ -24,6 +24,7 @@ class MY_Controller extends MX_Controller {
             $this->load->library('Ion_auth');
         }
 
+        $this->enforce_same_origin();
         $this->resolve_context();
         $this->check_application_guard();
         $this->init_language();
@@ -61,6 +62,29 @@ class MY_Controller extends MX_Controller {
 
         // 7. Remove PHP server signature
         header_remove('X-Powered-By');
+    }
+
+    /**
+     * Reject cross-site state-changing requests (Origin/Referer host must match this host).
+     * Bearer-token API calls are exempt; requests carrying neither header are allowed (non-browser clients).
+     */
+    protected function enforce_same_origin() {
+        $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET';
+        if (!in_array($method, array('POST', 'PUT', 'DELETE', 'PATCH'), true)) {
+            return;
+        }
+        if (strtolower((string)$this->uri->segment(1)) === 'api') {
+            return;
+        }
+        $source = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : (!empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '');
+        if ($source === '') {
+            return;
+        }
+        $src_host = strtolower((string)parse_url($source, PHP_URL_HOST) . (parse_url($source, PHP_URL_PORT) ? ':' . parse_url($source, PHP_URL_PORT) : ''));
+        $own_host = strtolower(preg_replace('/:(80|443)$/', '', (string)($_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? '')));
+        if ($src_host !== '' && $src_host !== $own_host) {
+            show_error('Cross-site request blocked.', 403, 'Security Guard');
+        }
     }
 
     /**
@@ -170,7 +194,7 @@ class MY_Controller extends MX_Controller {
                 return;
             }
 
-            $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+            $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || $this->ion_auth->in_group('superadmin')));
 
             if ($is_superadmin) {
                 if ($this->is_impersonating && $this->session->userdata('tenant_id')) {
@@ -199,6 +223,13 @@ class MY_Controller extends MX_Controller {
             } else {
                 // Regular Tenant User Context: Tenant ID is strictly bound to user's assigned tenant
                 $this->context = 'TENANT';
+                if (!$user || empty($user->tenant_id) || !$this->db->get_where('tenants', array('id' => (int)$user->tenant_id))->row()) {
+                    // Fail closed: a non-platform user must belong to an existing tenant
+                    $this->ion_auth->logout();
+                    $this->session->set_flashdata('message', 'Your account is not linked to an organization. Please contact support.');
+                    redirect('auth/login', 'refresh');
+                    return;
+                }
                 if ($user && !empty($user->tenant_id)) {
                     $tenant = $this->db->get_where('tenants', array('id' => (int)$user->tenant_id))->row();
                     if ($tenant) {
@@ -263,7 +294,7 @@ class MY_Controller extends MX_Controller {
         }
 
         $user = $this->ion_auth->user()->row();
-        $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+        $is_superadmin = ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || $this->ion_auth->in_group('superadmin')));
         $segment1 = strtolower((string)$this->uri->segment(1));
         $is_superadmin_route = ($segment1 === 'superadmin');
 
@@ -282,6 +313,23 @@ class MY_Controller extends MX_Controller {
     }
 
     /**
+     * Resolve the active tenant ID or abort with 403 (never fall back to another tenant)
+     */
+    protected function require_tenant_id() {
+        if (empty($this->tenant_id)) {
+            show_error('No tenant context available for this request.', 403, 'Access Denied');
+        }
+        return (int)$this->tenant_id;
+    }
+
+    /**
+     * Check that a role may be assigned within the active tenant (system role or own custom role)
+     */
+    protected function role_allowed_for_tenant($role) {
+        return $role && ((int)$role->is_system === 1 || (int)$role->tenant_id === (int)$this->tenant_id);
+    }
+
+    /**
      * Check if user is Super Admin
      */
     public function is_super_admin() {
@@ -289,7 +337,7 @@ class MY_Controller extends MX_Controller {
             return false;
         }
         $user = $this->ion_auth->user()->row();
-        return ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+        return ($user && ((!empty($user->account_type) && $user->account_type === 'platform_admin') || $user->email === 'ronaldi2040@gmail.com' || $this->ion_auth->in_group('superadmin')));
     }
 
     /**

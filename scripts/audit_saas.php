@@ -51,8 +51,8 @@ run_test("Super Admin Account Classification & Tenant Isolation", function() use
     if ($row['account_type'] !== 'platform_admin') return array('status' => false, 'detail' => "account_type is '{$row['account_type']}', expected 'platform_admin'");
     if (!is_null($row['tenant_id'])) return array('status' => false, 'detail' => "tenant_id is '{$row['tenant_id']}', expected NULL");
     
-    $pass_check = password_verify('Baale@256', $row['password']);
-    if (!$pass_check) return array('status' => false, 'detail' => 'Password Baale@256 verification failed');
+    $pass_check = password_verify((getenv('KULA_TEST_PASS') ?: ''), $row['password']);
+    if (!$pass_check) return array('status' => false, 'detail' => 'Configured test password verification failed');
 
     return array('status' => true, 'detail' => 'account_type=platform_admin, tenant_id=NULL, Bcrypt hash verified');
 });

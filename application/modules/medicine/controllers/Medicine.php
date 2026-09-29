@@ -58,7 +58,7 @@ class Medicine extends MY_Controller {
         if ((empty($id))) {
             $add_date = date('m/d/y');
         } else {
-            $add_date = $this->db->get_where('medicine', array('id' => $id))->row()->add_date;
+            $add_date = $this->db->get_where('medicine', array('id' => $id, 'tenant_id' => (int)$this->tenant_id))->row()->add_date;
         }
 
         $this->load->library('form_validation');

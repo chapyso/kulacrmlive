@@ -53,7 +53,7 @@ function verify_action_token()
 function generate_api_token(int $user_id, int $tenant_id, string $email, string $role = 'user', int $ttl_seconds = 2592000): string
 {
     $CI =& get_instance();
-    $secret = $CI->config->item('encryption_key') ?: 'kulacrm_api_secret_v1_key_2026';
+    $secret = $CI->config->item('encryption_key');
     $jti = bin2hex(random_bytes(16));
 
     $payload = array(
@@ -81,7 +81,7 @@ function verify_api_token(string $token): ?array
 {
     $CI =& get_instance();
     $CI->load->database();
-    $secret = $CI->config->item('encryption_key') ?: 'kulacrm_api_secret_v1_key_2026';
+    $secret = $CI->config->item('encryption_key');
 
     $parts = explode('.', $token);
     if (count($parts) !== 2) {

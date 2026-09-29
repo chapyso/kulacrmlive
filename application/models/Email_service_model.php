@@ -24,7 +24,7 @@ class Email_service_model extends CI_Model
             'smtp_host'   => $smtp ? $smtp->smtp_host : 'smtppro.zoho.com',
             'smtp_port'   => $smtp ? (int)$smtp->smtp_port : 465,
             'smtp_user'   => $smtp ? $smtp->mail_username : 'info@chapysocial.com',
-            'smtp_pass'   => $smtp ? $smtp->mail_password : 'Baale@256',
+            'smtp_pass'   => $smtp ? $smtp->mail_password : (getenv('SMTP_PASS') ?: ''),
             'smtp_crypto' => $smtp ? strtolower($smtp->smtp_encryption) : 'ssl',
             'mailtype'    => 'html',
             'charset'     => 'utf-8',

@@ -181,6 +181,7 @@ class Staff extends MY_Controller
     public function listStaffType()
     {
         $data['settings'] = $this->settings_model->getSettings();
+        $this->staff_model->scope_tenant('staff_type');
         $this->db->where('sft_status', 1);
         $data['types'] = $this->db->get('staff_type')->result();
         $this->load->view('home/dashboard', $data);
@@ -224,6 +225,7 @@ class Staff extends MY_Controller
     function editStaffTypeByJason()
     {
         $id = $this->input->get('sft_id');
+        $this->staff_model->scope_tenant('staff_type');
         $this->db->where('sft_id', $id);
         $data['types'] = $this->db->get('staff_type')->row();
         echo json_encode($data);

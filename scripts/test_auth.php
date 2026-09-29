@@ -11,7 +11,7 @@ $CI =& get_instance();
 $CI->load->library('ion_auth');
 
 echo "=== TESTING SUPER ADMIN AUTHENTICATION ===\n";
-$login = $CI->ion_auth->login('ronaldi2040@gmail.com', 'Baale@256');
+$login = $CI->ion_auth->login('ronaldi2040@gmail.com', (getenv('KULA_TEST_PASS') ?: ''));
 echo "Login Status: " . ($login ? "SUCCESS [PASS]" : "FAILED") . "\n";
 
 if ($login) {

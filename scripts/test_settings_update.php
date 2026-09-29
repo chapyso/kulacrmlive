@@ -23,7 +23,7 @@ $_POST['overdue_payment_days'] = '10';
 require_once __DIR__ . '/../index.php';
 $CI =& get_instance();
 $CI->load->library('ion_auth');
-$CI->ion_auth->login('ronaldi2040@gmail.com', 'Baale@256');
+$CI->ion_auth->login('ronaldi2040@gmail.com', (getenv('KULA_TEST_PASS') ?: ''));
 
 $CI->load->module('settings');
 $CI->settings->update();

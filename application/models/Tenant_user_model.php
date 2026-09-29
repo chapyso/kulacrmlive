@@ -168,13 +168,19 @@ class Tenant_user_model extends MY_Model {
             return false;
         }
 
+        // Object-level check: the target must belong to this tenant and must not be a platform admin
+        $target = $this->db->get_where('users', array('id' => (int)$user_id, 'tenant_id' => (int)$tenant_id))->row();
+        if (!$target || (isset($target->account_type) && $target->account_type === 'platform_admin') || $target->email === 'ronaldi2040@gmail.com') {
+            return false;
+        }
+
         $this->db->where('user_id', (int)$user_id)
                  ->where('tenant_id', (int)$tenant_id)
                  ->update('tenant_users', array('status' => $status));
 
         // Update ion_auth users table active flag
         $ion_active = ($status === 'active') ? 1 : 0;
-        $this->db->where('id', (int)$user_id)->update('users', array('active' => $ion_active));
+        $this->db->where('id', (int)$user_id)->where('tenant_id', (int)$tenant_id)->update('users', array('active' => $ion_active));
         return true;
     }
 }

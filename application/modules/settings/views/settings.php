@@ -1,6 +1,6 @@
 <?php 
 $user = $this->ion_auth->user()->row();
-$is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin')) || ($this->uri->segment(1) === 'superadmin');
+$is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com')) || ($this->uri->segment(1) === 'superadmin');
 ?>
 <!--sidebar end-->
 <!--main content start-->

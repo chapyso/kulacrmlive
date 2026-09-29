@@ -21,6 +21,17 @@ class Superadmin extends MY_Controller {
         if (!$this->is_super_admin()) {
             redirect(tenant_url('dashboard'));
         }
+
+        // CSRF guard for state-changing actions reachable via links (token in ?t=) or forms (action_token)
+        $guarded = array('toggle_status', 'delete_plan', 'delete_tenant', 'impersonate', 'delete_user', 'delete_currency',
+            'delete_notification', 'toggle_currency', 'set_default_currency', 'delete_cookie_inventory_item');
+        if (in_array($this->router->fetch_method(), $guarded, true)) {
+            $expected = (string)$this->session->userdata('action_token');
+            $got = (string)$this->input->get('t');
+            if ($expected === '' || (!hash_equals($expected, $got) && !verify_action_token())) {
+                show_error('Invalid or expired security token. Go back, refresh the page and try again.', 403, 'CSRF Protection Guard');
+            }
+        }
     }
 
     public function index() {
@@ -310,10 +321,21 @@ class Superadmin extends MY_Controller {
         $tenant = $this->db->get_where('tenants', array('id' => $id))->row();
         if ($tenant) {
             $name = $tenant->name;
-            $this->db->where('tenant_id', $id)->delete('users');
-            $this->db->where('tenant_id', $id)->delete('subscriptions');
-            $this->db->where('tenant_id', $id)->delete('settings');
+            if ($id === 1) {
+                $this->session->set_flashdata('feedback', 'Error: The default platform tenant cannot be deleted.');
+                redirect('superadmin/tenants');
+                return;
+            }
+            // Remove every tenant-owned row so no orphaned business data survives
+            $this->db->trans_start();
+            foreach ($this->db->list_tables() as $table) {
+                if ($table !== 'tenants' && $this->db->field_exists('tenant_id', $table)) {
+                    $this->db->where('tenant_id', $id)->delete($table);
+                }
+            }
             $this->db->where('id', $id)->delete('tenants');
+            $this->db->trans_complete();
+            $this->log_audit('TENANT_DELETE', $id, array('name' => $name));
 
             $this->session->set_flashdata('feedback', "Tenant '{$name}' and all associated data deleted successfully.");
         } else {
@@ -432,7 +454,7 @@ class Superadmin extends MY_Controller {
               `smtp_host` VARCHAR(255) DEFAULT 'smtppro.zoho.com',
               `smtp_port` INT DEFAULT 465,
               `mail_username` VARCHAR(255) DEFAULT 'info@chapysocial.com',
-              `mail_password` VARCHAR(255) DEFAULT 'Baale@256',
+              `mail_password` VARCHAR(255) DEFAULT '',
               `smtp_encryption` VARCHAR(50) DEFAULT 'ssl',
               `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
               `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -449,7 +471,7 @@ class Superadmin extends MY_Controller {
                 'smtp_host' => 'smtppro.zoho.com',
                 'smtp_port' => 465,
                 'mail_username' => 'info@chapysocial.com',
-                'mail_password' => 'Baale@256',
+                'mail_password' => '',
                 'smtp_encryption' => 'ssl'
             );
         }
@@ -478,7 +500,7 @@ class Superadmin extends MY_Controller {
             'smtp_host' => $smtp_host ?: 'smtppro.zoho.com',
             'smtp_port' => $smtp_port ? (int)$smtp_port : 465,
             'mail_username' => $mail_username ?: 'info@chapysocial.com',
-            'mail_password' => $mail_password ?: 'Baale@256',
+            'mail_password' => $mail_password ?: (getenv('SMTP_PASS') ?: ''),
             'smtp_encryption' => $smtp_encryption ?: 'ssl',
             'updated_at' => date('Y-m-d H:i:s')
         );
@@ -503,7 +525,7 @@ class Superadmin extends MY_Controller {
             'smtp_host'   => $smtp ? $smtp->smtp_host : 'smtppro.zoho.com',
             'smtp_port'   => $smtp ? (int)$smtp->smtp_port : 465,
             'smtp_user'   => $smtp ? $smtp->mail_username : 'info@chapysocial.com',
-            'smtp_pass'   => $smtp ? $smtp->mail_password : 'Baale@256',
+            'smtp_pass'   => $smtp ? $smtp->mail_password : (getenv('SMTP_PASS') ?: ''),
             'smtp_crypto' => $smtp ? strtolower($smtp->smtp_encryption) : 'ssl',
             'mailtype'    => 'html',
             'charset'     => 'utf-8',

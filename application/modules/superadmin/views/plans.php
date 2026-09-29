@@ -73,7 +73,7 @@
                                 <button type="button" class="btn btn-default" data-toggle="modal" data-target="#editPlanModal<?php echo $p->id; ?>" style="flex: 1; border-radius: 10px; font-weight: 700; font-size: 12px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;">
                                     <i class="fa-solid fa-pen-to-square" style="color: #6366f1;"></i> Edit
                                 </button>
-                                <a href="<?php echo base_url('superadmin/delete_plan/' . $p->id); ?>" data-confirm-msg="Are you sure you want to delete the <?php echo htmlspecialchars($p->name); ?> subscription plan?" class="btn btn-danger kula-delete-btn" style="border-radius: 10px; font-weight: 700; font-size: 12px; padding: 6px 12px;" title="Delete Plan">
+                                <a href="<?php echo base_url('superadmin/delete_plan/' . $p->id) . '?t=' . action_token(); ?>" data-confirm-msg="Are you sure you want to delete the <?php echo htmlspecialchars($p->name); ?> subscription plan?" class="btn btn-danger kula-delete-btn" style="border-radius: 10px; font-weight: 700; font-size: 12px; padding: 6px 12px;" title="Delete Plan">
                                     <i class="fa-solid fa-trash"></i>
                                 </a>
                             </div>

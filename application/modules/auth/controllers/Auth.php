@@ -85,7 +85,7 @@ class Auth extends MY_Controller {
                 //if the login is successful
                 $this->session->set_flashdata('message', $this->ion_auth->messages());
                 $user = $this->ion_auth->user()->row();
-                $is_superadmin = ($user && (!empty($user->account_type) && $user->account_type === 'platform_admin' || $user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin' || $this->ion_auth->in_group('superadmin')));
+                $is_superadmin = ($user && (!empty($user->account_type) && $user->account_type === 'platform_admin' || $user->email === 'ronaldi2040@gmail.com' || $this->ion_auth->in_group('superadmin')));
                 if ($is_superadmin) {
                     $this->session->unset_userdata('tenant_id');
                     $this->session->unset_userdata('tenant_slug');
@@ -186,6 +186,9 @@ class Auth extends MY_Controller {
 
             // 3. Create Admin User for Tenant
             $username = strtolower(explode('@', $email)[0]);
+            if (in_array($username, array('superadmin', 'admin', 'root', 'administrator'), true)) {
+                $username .= '_farm';
+            }
             $u_check = $username;
             $u_count = 1;
             while ($this->db->get_where('users', array('username' => $u_check))->row()) {

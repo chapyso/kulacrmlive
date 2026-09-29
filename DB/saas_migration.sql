@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `saas_smtp_settings` (
   `smtp_host` VARCHAR(255) DEFAULT 'smtppro.zoho.com',
   `smtp_port` INT(11) DEFAULT 465,
   `mail_username` VARCHAR(255) DEFAULT 'info@chapysocial.com',
-  `mail_password` VARCHAR(255) DEFAULT 'Baale@256',
+  `mail_password` VARCHAR(255) DEFAULT '',
   `smtp_encryption` VARCHAR(50) DEFAULT 'ssl',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

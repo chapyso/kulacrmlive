@@ -180,13 +180,13 @@
                                         </button>
 
                                         <?php if (!$c->is_default): ?>
-                                            <a href="<?php echo base_url('superadmin/set_default_currency/' . $c->id); ?>" class="btn btn-xs btn-success" style="border-radius: 6px; font-weight: 700; margin-right: 4px;" title="Set as Base Platform Default">
+                                            <a href="<?php echo base_url('superadmin/set_default_currency/' . $c->id) . '?t=' . action_token(); ?>" class="btn btn-xs btn-success" style="border-radius: 6px; font-weight: 700; margin-right: 4px;" title="Set as Base Platform Default">
                                                 <i class="fa-solid fa-star"></i> Set Base
                                             </a>
-                                            <a href="<?php echo base_url('superadmin/toggle_currency/' . $c->id); ?>" class="btn btn-xs <?php echo $c->is_active ? 'btn-warning' : 'btn-info'; ?>" style="border-radius: 6px; font-weight: 700; margin-right: 4px;">
+                                            <a href="<?php echo base_url('superadmin/toggle_currency/' . $c->id) . '?t=' . action_token(); ?>" class="btn btn-xs <?php echo $c->is_active ? 'btn-warning' : 'btn-info'; ?>" style="border-radius: 6px; font-weight: 700; margin-right: 4px;">
                                                 <?php echo $c->is_active ? 'Disable' : 'Enable'; ?>
                                             </a>
-                                            <a href="<?php echo base_url('superadmin/delete_currency/' . $c->id); ?>" onclick="return confirm('Are you sure you want to delete currency <?php echo htmlspecialchars($c->code); ?>?');" class="btn btn-xs btn-danger" style="border-radius: 6px; font-weight: 700;" title="Delete Currency">
+                                            <a href="<?php echo base_url('superadmin/delete_currency/' . $c->id) . '?t=' . action_token(); ?>" onclick="return confirm('Are you sure you want to delete currency <?php echo htmlspecialchars($c->code); ?>?');" class="btn btn-xs btn-danger" style="border-radius: 6px; font-weight: 700;" title="Delete Currency">
                                                 <i class="fa-solid fa-trash"></i>
                                             </a>
                                         <?php endif; ?>

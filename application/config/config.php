@@ -144,11 +144,15 @@ $config['cache_query_string'] = FALSE;
 | be logged out. Run rotation during a maintenance window.
 */
 $_env_key = getenv('ENCRYPTION_KEY');
-$config['encryption_key'] = ($_env_key !== FALSE && $_env_key !== '')
-    ? $_env_key
-    : (defined('ENVIRONMENT') && ENVIRONMENT === 'production' 
-        ? hex2bin('7b91d2c9e4a3b8109a25c7e812d45a0b9381c0d4f29e18b6a74c3d2e1f09a87b') 
-        : 'wakeupict');
+if ($_env_key !== FALSE && $_env_key !== '') {
+    $config['encryption_key'] = $_env_key;
+} elseif (defined('ENVIRONMENT') && ENVIRONMENT === 'production') {
+    // Fail closed: never run production with a key that is committed to the repository
+    header('HTTP/1.1 503 Service Unavailable');
+    exit('Server misconfigured: the ENCRYPTION_KEY environment variable must be set in production.');
+} else {
+    $config['encryption_key'] = 'wakeupict'; // development only
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -158,7 +162,7 @@ $config['encryption_key'] = ($_env_key !== FALSE && $_env_key !== '')
 $config['sess_driver'] = 'files';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_samesite'] = 'Lax';
-$config['sess_expiration'] = 7200;
+$config['sess_expiration'] = 1800; // 30 min of inactivity
 $config['sess_save_path'] = APPPATH.'cache/sessions/';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;

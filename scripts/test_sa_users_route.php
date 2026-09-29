@@ -11,7 +11,7 @@ $CI =& get_instance();
 $CI->load->library('ion_auth');
 
 // Log in as Super Admin
-$CI->ion_auth->login('ronaldi2040@gmail.com', 'Baale@256');
+$CI->ion_auth->login('ronaldi2040@gmail.com', (getenv('KULA_TEST_PASS') ?: ''));
 
 ob_start();
 $CI->load->module('superadmin');

@@ -310,7 +310,7 @@
                                                 <button type="button" class="btn btn-xs btn-info" onclick='openEditInventoryModal(<?php echo json_encode($item); ?>)' title="Edit Cookie" style="border-radius: 6px; margin-right: 4px;">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
-                                                <a href="<?php echo base_url('superadmin/delete_cookie_inventory_item/' . $item->id); ?>" onclick="return confirm('Delete this cookie from the inventory record?');" class="btn btn-xs btn-danger" title="Delete Cookie" style="border-radius: 6px;">
+                                                <a href="<?php echo base_url('superadmin/delete_cookie_inventory_item/' . $item->id) . '?t=' . action_token(); ?>" onclick="return confirm('Delete this cookie from the inventory record?');" class="btn btn-xs btn-danger" title="Delete Cookie" style="border-radius: 6px;">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </a>
                                             </td>

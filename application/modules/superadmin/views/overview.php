@@ -123,13 +123,13 @@
                                                         style="border-radius: 6px; font-weight: 700; margin-right: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;" title="Edit Tenant Details">
                                                         <i class="fa-solid fa-pen-to-square" style="color: #6366f1;"></i> Edit
                                                     </button>
-                                                    <a href="<?php echo base_url('superadmin/impersonate/' . $t->id); ?>" class="btn btn-xs btn-primary" style="border-radius: 6px; font-weight: 700; background: #6366f1; border-color: #6366f1; margin-right: 4px;" title="Impersonate Tenant Workspace">
+                                                    <a href="<?php echo base_url('superadmin/impersonate/' . $t->id) . '?t=' . action_token(); ?>" class="btn btn-xs btn-primary" style="border-radius: 6px; font-weight: 700; background: #6366f1; border-color: #6366f1; margin-right: 4px;" title="Impersonate Tenant Workspace">
                                                         <i class="fa-solid fa-user-secret"></i> Impersonate &rarr;
                                                     </a>
-                                                    <a href="<?php echo base_url('superadmin/toggle_status/' . $t->id); ?>" class="btn btn-xs <?php echo ($t->status == 'active') ? 'btn-warning' : 'btn-success'; ?>" style="border-radius: 6px; font-weight: 700; margin-right: 4px;">
+                                                    <a href="<?php echo base_url('superadmin/toggle_status/' . $t->id) . '?t=' . action_token(); ?>" class="btn btn-xs <?php echo ($t->status == 'active') ? 'btn-warning' : 'btn-success'; ?>" style="border-radius: 6px; font-weight: 700; margin-right: 4px;">
                                                         <?php echo ($t->status == 'active') ? 'Suspend' : 'Activate'; ?>
                                                     </a>
-                                                    <a href="<?php echo base_url('superadmin/delete_tenant/' . $t->id); ?>" data-confirm-msg="Are you sure you want to permanently delete tenant <?php echo htmlspecialchars($t->name); ?> and all associated users/data?" class="btn btn-xs btn-danger kula-delete-btn" style="border-radius: 6px; font-weight: 700;" title="Delete Tenant">
+                                                    <a href="<?php echo base_url('superadmin/delete_tenant/' . $t->id) . '?t=' . action_token(); ?>" data-confirm-msg="Are you sure you want to permanently delete tenant <?php echo htmlspecialchars($t->name); ?> and all associated users/data?" class="btn btn-xs btn-danger kula-delete-btn" style="border-radius: 6px; font-weight: 700;" title="Delete Tenant">
                                                         <i class="fa-solid fa-trash"></i> Delete
                                                     </a>
                                                 </td>

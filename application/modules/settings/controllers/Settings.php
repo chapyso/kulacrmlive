@@ -35,7 +35,7 @@ class Settings extends MY_Controller
     public function index()
     {
         $user = $this->ion_auth->user()->row();
-        if ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin')) {
+        if ($user && ($user->email === 'ronaldi2040@gmail.com')) {
             redirect('superadmin/settings');
         }
 
@@ -81,7 +81,7 @@ class Settings extends MY_Controller
         }
 
         $user = $this->ion_auth->user()->row();
-        $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin')) || $this->ion_auth->in_group('superadmin');
+        $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com')) || $this->ion_auth->in_group('superadmin');
 
         $this->load->library('form_validation');
         $this->form_validation->set_error_delimiters('<div class="alert alert-danger" style="border-radius: 10px; font-weight: 600; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> ', '</div>');
@@ -117,7 +117,7 @@ class Settings extends MY_Controller
             $data = array();
             $data['settings'] = $this->settings_model->getSettings();
             $user = $this->ion_auth->user()->row();
-            if ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin')) {
+            if ($user && ($user->email === 'ronaldi2040@gmail.com')) {
                 $this->load->view('superadmin/header', $data);
             } else {
                 $this->load->view('home/dashboard', $data);
@@ -126,7 +126,7 @@ class Settings extends MY_Controller
             $this->load->view('home/footer');
         } else {
             $user = $this->ion_auth->user()->row();
-            $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin')) || $this->ion_auth->in_group('superadmin');
+            $is_superadmin = ($user && ($user->email === 'ronaldi2040@gmail.com')) || $this->ion_auth->in_group('superadmin');
 
             $data = array(
                 'title' => $title,
@@ -319,7 +319,7 @@ class Settings extends MY_Controller
             $user = $this->ion_auth->user()->row();
             if (!empty($referer) && strpos($referer, base_url()) !== false) {
                 redirect($referer);
-            } else if ($user && ($user->email === 'ronaldi2040@gmail.com' || strtolower($user->username) === 'superadmin')) {
+            } else if ($user && ($user->email === 'ronaldi2040@gmail.com')) {
                 redirect('superadmin/settings');
             } else {
                 redirect(tenant_url('settings'));
