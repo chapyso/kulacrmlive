@@ -192,7 +192,7 @@ class Settings extends MY_Controller
                 $config = array(
                     'file_name'     => $new_file_name,
                     'upload_path'   => $upload_dir,
-                    'allowed_types' => 'gif|jpg|png|jpeg|webp|svg|ico',
+                    'allowed_types' => 'gif|jpg|png|jpeg|webp|ico',
                     'overwrite'     => FALSE,
                     'max_size'      => 102400, // 100 MB max limit
                 );
@@ -220,7 +220,7 @@ class Settings extends MY_Controller
                 $config_dark = array(
                     'file_name'     => $new_file_name,
                     'upload_path'   => $upload_dir,
-                    'allowed_types' => 'gif|jpg|png|jpeg|webp|svg|ico',
+                    'allowed_types' => 'gif|jpg|png|jpeg|webp|ico',
                     'overwrite'     => FALSE,
                     'max_size'      => 102400, // 100 MB max limit
                 );
@@ -248,7 +248,7 @@ class Settings extends MY_Controller
                 $config_fav = array(
                     'file_name'     => $new_file_name,
                     'upload_path'   => $upload_dir,
-                    'allowed_types' => 'gif|jpg|png|jpeg|webp|svg|ico',
+                    'allowed_types' => 'gif|jpg|png|jpeg|webp|ico',
                     'overwrite'     => FALSE,
                     'max_size'      => 102400, // 100 MB max limit
                 );

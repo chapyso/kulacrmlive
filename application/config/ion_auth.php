@@ -87,7 +87,7 @@ $config['admin_email']                = "admin@example.com"; // Admin Email, adm
 $config['default_group']              = 'members';           // Default group, use name
 $config['admin_group']                = 'admin';             // Default administrators group, use name
 $config['identity']                   = 'email';             // A database column which is used to login with
-$config['min_password_length']        = 8;                   // Minimum Required Length of Password (Security Standard)
+$config['min_password_length']        = 10;                  // Minimum Required Length of Password
 $config['max_password_length']        = 40;                  // Maximum Allowed Length of Password
 $config['email_activation']           = FALSE;               // Email Activation for registration
 $config['manual_activation']          = FALSE;               // Manual Activation for registration
@@ -97,7 +97,7 @@ $config['user_extend_on_login']       = FALSE;               // Extend the users
 $config['track_login_attempts']       = TRUE;                // Track the number of failed login attempts for each user or ip.
 $config['track_login_ip_address']     = TRUE;                // Track login attempts by IP Address, if FALSE will track based on identity. (Default: TRUE)
 $config['maximum_login_attempts']     = 5;                   // The maximum number of failed login attempts.
-$config['lockout_time']               = 60;                  // The number of seconds to lockout an account due to exceeded attempts (1 minute)
+$config['lockout_time']               = 900;                 // 15 minutes lockout after exceeding attempts
 $config['forgot_password_expiration'] = 0;                   // The number of milliseconds after which a forgot password request will expire. If set to 0, forgot password requests will not expire.
 
 /*

@@ -68,7 +68,7 @@ class Client extends MY_Controller
         $new_file_name = $base . ($ext ? '.' . preg_replace('/[^A-Za-z0-9]/', '', $ext) : '');
         $config = array(
             'file_name' => $new_file_name,
-            'upload_path' => "./uploads/",
+            'upload_path' => $this->get_tenant_upload_path('clients'),
             'allowed_types' => "gif|jpg|png|jpeg|pdf",
             'overwrite' => False,
             'max_size' => "20480000", // Can be set to particular file size , here it is 2 MB(2048 Kb)
@@ -83,7 +83,7 @@ class Client extends MY_Controller
 
             if ($this->upload->do_upload('c_img_url')) {
                 $path = $this->upload->data();
-                $img_url = "uploads/" . $path['file_name'];
+                $img_url = $this->get_tenant_upload_relative_path($path['file_name'], 'clients');
                 $data = array();
                 $data = array(
                     'c_img_url' => $img_url,
@@ -121,7 +121,7 @@ class Client extends MY_Controller
 
             if ($this->upload->do_upload('c_img_url')) {
                 $path = $this->upload->data();
-                $img_url = "uploads/" . $path['file_name'];
+                $img_url = $this->get_tenant_upload_relative_path($path['file_name'], 'clients');
                 $data = array();
                 $data = array(
                     'c_img_url' => $img_url,
