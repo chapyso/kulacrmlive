@@ -456,42 +456,53 @@ class Ai_provider {
     }
 
     /**
-     * Intent-Aware Natural Language Data Reporting Engine
+     * Intent-Aware Natural Language Data & Conversational Engine
      */
     public function generate_offline_response($user_prompt, $context_data = array(), $intent_info = array()) {
         $intent = $intent_info['intent'] ?? 'UNKNOWN';
         $p = strtolower(trim($user_prompt));
         $p_clean = trim(preg_replace('/[^a-z\s]/', '', $p));
 
-        // 1. Greetings
-        if ($intent === 'GREETING' || in_array($p_clean, array('hey', 'hello', 'hi', 'hey there', 'hello there', 'hi there', 'good morning', 'good afternoon', 'good evening', 'greetings', 'habari', 'jambo', 'mambo', 'oli otya', 'gyebale', 'ki kati'))) {
+        // 1. Connectivity, Ping & Status Checks
+        if (preg_match('/(connected|still connected|are you there|are you online|can you hear me|status check|ping|test connection|are you working|is this working|still here|you alive|you awake)/i', $p)) {
+            $responses = array(
+                "Yes, I am connected and ready to help! What can I assist you with today?",
+                "Yes! I'm online and connected. How can I help you?",
+                "I'm right here and actively connected! Let me know what you need.",
+                "Connection is active and ready! How can I assist you today?"
+            );
+            return $responses[array_rand($responses)];
+        }
+
+        // 2. Greetings
+        if ($intent === 'GREETING' || in_array($p_clean, array('hey', 'hello', 'hi', 'hey there', 'hello there', 'hi there', 'good morning', 'good afternoon', 'good evening', 'greetings', 'habari', 'jambo', 'mambo', 'oli otya', 'gyebale', 'ki kati', 'kikati', 'yo', 'sup'))) {
             $greetings = array(
-                "Hello! 👋 How can I assist you with your farm operations today?",
-                "Hey there! What would you like to review in KulaCRM today?",
-                "Good day! I'm ready to help with your livestock, feeds, vaccines, or financial records.",
-                "Hi! How can I assist you with your farm today?"
+                "Hello! 👋 How can I help you today?",
+                "Hey there! What can I assist you with today?",
+                "Good day! I'm ready to help you with any questions, farm records, or calculations.",
+                "Hi! How can I assist you today?"
             );
             return $greetings[array_rand($greetings)];
         }
 
-        // 2. Casual Chat & Polite Remarks
+        // 3. Casual Chat & Polite Remarks
         if ($intent === 'CASUAL_CONVERSATION' || preg_match('/(how are you|how do you do|whats up|thank|thanks|bye|goodbye|who are you|your name|oli otya|asante|webale)/i', $p)) {
             if (preg_match('/(how are you|how do you do|whats up)/i', $p)) {
-                return "I'm doing well, thank you! How can I assist you with your farm today?";
+                return "I'm doing great, thank you! How can I assist you today?";
             }
             if (preg_match('/(thank|thanks|webale|asante)/i', $p)) {
-                return "You're very welcome! Let me know if you need any other insights for your farm.";
+                return "You're very welcome! Let me know if there's anything else I can help you with.";
             }
             if (preg_match('/(bye|goodbye|see you|kwaheri)/i', $p)) {
-                return "Goodbye! Have a great and productive day on the farm. 👋";
+                return "Goodbye! Have a wonderful and productive day! 👋";
             }
             if (preg_match('/(who are you|your name)/i', $p)) {
-                return "I am **KulaAI**, your natural conversational AI assistant deeply integrated with KulaCRM!";
+                return "I am **KulaAI**, your intelligent conversational AI assistant built into KulaCRM!";
             }
-            return "Got it! Let me know what you'd like to check next in KulaCRM.";
+            return "Got it! How can I assist you next?";
         }
 
-        // 3. Business Plan & Comprehensive Strategic Planning Requests
+        // 4. Business Plan & Strategic Planning Requests
         if ($intent === 'BUSINESS_PLAN' || preg_match('/(business plan|layer plan|broiler plan|financial projections|roi projection|write a plan|create a plan)/i', $p)) {
             return "### 📊 Comprehensive Business Plan & Financial Projections\n"
                 . "**Enterprise:** 1,000 Layer Poultry Farm  \n"
@@ -532,43 +543,40 @@ class Ai_provider {
                 . "* **Estimated ROI:** **49.4% over 18-month cycle**.";
         }
 
-        // 4. System Help & Guidance
+        // 5. System Help & Guidance
         if ($intent === 'SYSTEM_HELP' || preg_match('/(help|what can you do|how to use|features)/i', $p)) {
-            return "I can help you inspect and manage your farm operations in KulaCRM! Here are a few things you can ask me:\n\n"
+            return "I am **KulaAI**, your versatile AI Assistant! Here are a few ways I can help:\n\n"
+                . "- 💬 **General Questions & Agribusiness:** Ask any general, agribusiness, or technical question.\n"
                 . "- 🐄 **Livestock & Inventory:** *'How many goats do I have?'* or *'What are the mortality rates?'*\n"
-                . "- 💉 **Health & Vaccines:** *'Which vaccinations are due this week across all sheds?'*\n"
+                . "- 💉 **Health & Vaccines:** *'Which vaccinations are due this week?'*\n"
                 . "- 🌾 **Feed & Supplies:** *'Which food stock will run out first?'*\n"
                 . "- 💰 **Finances & Debtors:** *'Which clients owe us money?'* or *'How much did we spend this month?'*\n"
-                . "- 📊 **Analysis & Strategy:** *'Write a business plan for 1,000 layers'* or *'Give me an executive report'*\n\n"
-                . "What would you like to start with?";
+                . "- 📊 **Reports & Strategy:** *'Write a business plan for 1,000 layers'* or *'Generate executive report'*\n\n"
+                . "How can I assist you right now?";
         }
 
-        // 5. Farm Data & Dashboard Reporting Engine
+        // 6. Farm Data & Specific Reporting Engine
         $fs = $context_data['get_farm_summary'] ?? ($context_data['farm_summary'] ?? null);
         $bs = $context_data['get_batch_summary'] ?? ($context_data['batch_summary'] ?? null);
         $fin = $context_data['get_financial_summary'] ?? ($context_data['financial_summary'] ?? null);
         $clients = $context_data['get_client_balances'] ?? ($context_data['client_balances'] ?? null);
         $vacs = $context_data['get_upcoming_vaccinations'] ?? ($context_data['upcoming_vaccinations'] ?? null);
 
-        // Fetch tools dynamically if missing from context
-        if (empty($fs) && isset($this->CI->ai_tool_service)) {
-            $fs = $this->CI->ai_tool_service->get_farm_summary();
-        }
-        if (empty($bs) && isset($this->CI->ai_tool_service)) {
-            $bs = $this->CI->ai_tool_service->get_batch_summary();
-        }
-        if (empty($fin) && isset($this->CI->ai_tool_service)) {
-            $fin = $this->CI->ai_tool_service->get_financial_summary();
-        }
-        if (empty($clients) && isset($this->CI->ai_tool_service)) {
-            $clients = $this->CI->ai_tool_service->get_client_balances();
-        }
-        if (empty($vacs) && isset($this->CI->ai_tool_service)) {
-            $vacs = $this->CI->ai_tool_service->get_upcoming_vaccinations();
+        // Fetch tools dynamically if needed for farm data queries
+        $is_farm_query = ($intent === 'FINANCIAL_QUERY' || $intent === 'MORTALITY_QUERY' || $intent === 'VACCINATION_QUERY' || 
+                          $intent === 'FARM_DATA_QUERY' || $intent === 'LIVESTOCK_QUERY' || $intent === 'EXPENSE_QUERY' || 
+                          $intent === 'SALES_QUERY' || $intent === 'REPORT_REQUEST');
+
+        if ($is_farm_query && isset($this->CI->ai_tool_service)) {
+            if (empty($fs)) $fs = $this->CI->ai_tool_service->get_farm_summary();
+            if (empty($bs)) $bs = $this->CI->ai_tool_service->get_batch_summary();
+            if (empty($fin)) $fin = $this->CI->ai_tool_service->get_financial_summary();
+            if (empty($clients)) $clients = $this->CI->ai_tool_service->get_client_balances();
+            if (empty($vacs)) $vacs = $this->CI->ai_tool_service->get_upcoming_vaccinations();
         }
 
         // A. Client Balances / Debtors Query
-        if ($intent === 'FINANCIAL_QUERY' || strpos($p, 'owe') !== false || strpos($p, 'debt') !== false || strpos($p, 'client') !== false || strpos($p, 'balance') !== false || strpos($p, 'outstanding') !== false) {
+        if ($intent === 'FINANCIAL_QUERY' || strpos($p, 'owe') !== false || strpos($p, 'debt') !== false || strpos($p, 'debtor') !== false || strpos($p, 'outstanding') !== false) {
             $output = "### 💳 KulaCRM Client Balances & Outstanding Debtors Report\n\n";
             if (!empty($clients) && is_array($clients)) {
                 $total_outstanding = 0;
@@ -596,7 +604,7 @@ class Ai_provider {
         }
 
         // B. Mortality & Death Queries
-        if ($intent === 'MORTALITY_QUERY' || strpos($p, 'mortality') !== false || strpos($p, 'death') !== false || strpos($p, 'died') !== false || strpos($p, 'dead') !== false) {
+        if ($intent === 'MORTALITY_QUERY' || strpos($p, 'mortality') !== false || strpos($p, 'deaths') !== false || strpos($p, 'died') !== false || strpos($p, 'dead') !== false) {
             $output = "### 📉 KulaCRM Livestock Mortality & Shed Health Breakdown\n\n";
             if (!empty($bs) && is_array($bs)) {
                 usort($bs, function($a, $b) {
@@ -653,8 +661,8 @@ class Ai_provider {
             }
         }
 
-        // D. Livestock Counts / Inventory
-        if ($intent === 'FARM_DATA_QUERY' || $intent === 'LIVESTOCK_QUERY' || strpos($p, 'how many') !== false || strpos($p, 'count') !== false || strpos($p, 'total') !== false || strpos($p, 'livestock') !== false) {
+        // D. Livestock Counts / Inventory Queries
+        if ($intent === 'FARM_DATA_QUERY' || $intent === 'LIVESTOCK_QUERY' || (strpos($p, 'how many') !== false && (strpos($p, 'animal') !== false || strpos($p, 'goat') !== false || strpos($p, 'cow') !== false || strpos($p, 'chicken') !== false || strpos($p, 'pig') !== false || strpos($p, 'batch') !== false || strpos($p, 'shed') !== false))) {
             $total_ls = number_format($fs['total_livestock'] ?? 0);
             $sheds = $fs['total_sheds'] ?? 0;
             $batches = $fs['total_batches'] ?? 0;
@@ -662,7 +670,7 @@ class Ai_provider {
             $m_rate = $fs['mortality_rate'] ?? '0%';
             $sales = number_format($fs['total_sales'] ?? 0);
 
-            return "### 🐄 KulaCRM Live Farm Inventory & Production Summary\n\n"
+            return "### 🐄 KulaCRM Farm Inventory & Production Summary\n\n"
                 . "- **Active Animals:** **{$total_ls}** animals\n"
                 . "- **Active Sheds:** **{$sheds}** sheds\n"
                 . "- **Active Batches:** **{$batches}** batches\n"
@@ -671,7 +679,7 @@ class Ai_provider {
         }
 
         // E. Financial Summary
-        if ($intent === 'EXPENSE_QUERY' || $intent === 'SALES_QUERY' || strpos($p, 'spend') !== false || strpos($p, 'expense') !== false || strpos($p, 'revenue') !== false || strpos($p, 'profit') !== false) {
+        if ($intent === 'EXPENSE_QUERY' || $intent === 'SALES_QUERY' || (strpos($p, 'financial') !== false && strpos($p, 'summary') !== false)) {
             $income = number_format($fin['total_income'] ?? 0);
             $expenses = number_format($fin['total_expenses'] ?? 0);
             $net = number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0));
@@ -682,25 +690,30 @@ class Ai_provider {
                 . "- **Net Operational Margin:** **UGX {$net}**";
         }
 
-        // Default Fallback: Comprehensive Live Dashboard Report (NEVER generic!)
-        $total_ls = number_format($fs['total_livestock'] ?? 0);
-        $sheds = $fs['total_sheds'] ?? 0;
-        $batches = $fs['total_batches'] ?? 0;
-        $deaths = $fs['total_deaths'] ?? 0;
-        $m_rate = $fs['mortality_rate'] ?? '0%';
-        $income = number_format($fin['total_income'] ?? 0);
-        $expenses = number_format($fin['total_expenses'] ?? 0);
+        // F. Explicit Report or Dashboard Query
+        if ($intent === 'REPORT_REQUEST' || preg_match('/(executive dashboard|full report|farm report|overview report|executive summary|dashboard summary)/i', $p)) {
+            $total_ls = number_format($fs['total_livestock'] ?? 0);
+            $sheds = $fs['total_sheds'] ?? 0;
+            $batches = $fs['total_batches'] ?? 0;
+            $deaths = $fs['total_deaths'] ?? 0;
+            $m_rate = $fs['mortality_rate'] ?? '0%';
+            $income = number_format($fin['total_income'] ?? 0);
+            $expenses = number_format($fin['total_expenses'] ?? 0);
 
-        return "### 📊 KulaCRM Live Executive Dashboard Report\n"
-            . "**Generated:** " . date('F j, Y \a\t H:i:s') . "\n\n"
-            . "---\n\n"
-            . "### 1. Livestock & Production Summary\n"
-            . "- **Active Stock:** **{$total_ls}** animals across **{$sheds}** sheds and **{$batches}** batches\n"
-            . "- **Mortality Status:** {$deaths} deaths recorded (**{$m_rate}** mortality rate)\n\n"
-            . "### 2. Financial Overview\n"
-            . "- **Total Revenue Recorded:** UGX {$income}\n"
-            . "- **Total Expenses Recorded:** UGX {$expenses}\n"
-            . "- **Net Profit Margin:** UGX " . number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0)) . "\n\n"
-            . "Feel free to ask for specific shed breakdowns, vaccination routines, client debtors, or financial reports!";
+            return "### 📊 KulaCRM Live Executive Dashboard Report\n"
+                . "**Generated:** " . date('F j, Y \a\t H:i:s') . "\n\n"
+                . "---\n\n"
+                . "### 1. Livestock & Production Summary\n"
+                . "- **Active Stock:** **{$total_ls}** animals across **{$sheds}** sheds and **{$batches}** batches\n"
+                . "- **Mortality Status:** {$deaths} deaths recorded (**{$m_rate}** mortality rate)\n\n"
+                . "### 2. Financial Overview\n"
+                . "- **Total Revenue Recorded:** UGX {$income}\n"
+                . "- **Total Expenses Recorded:** UGX {$expenses}\n"
+                . "- **Net Profit Margin:** UGX " . number_format(($fin['total_income'] ?? 0) - ($fin['total_expenses'] ?? 0)) . "\n\n"
+                . "Feel free to ask for specific shed breakdowns, vaccination routines, client debtors, or financial reports!";
+        }
+
+        // Generic Open-ended Fallback: Conversational and helpful
+        return "I am here and ready to assist you! You can ask me any general question, request agribusiness advice or business plans, or ask for specific records from KulaCRM (like livestock counts, vaccine schedules, client balances, feeds, or financial summaries). How can I help you today?";
     }
 }

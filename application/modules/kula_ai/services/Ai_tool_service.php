@@ -28,44 +28,49 @@ class Ai_tool_service {
         if (isset($CI->session) && $CI->session->userdata('tenant_id')) {
             return (int)$CI->session->userdata('tenant_id');
         }
-        return 1;
+        return null; // fail closed: never fall back to another tenant
     }
 
     /**
      * Dispatch tool call based on tool name
      */
     public function execute_tool($tool_name, $params = array()) {
-        switch ($tool_name) {
-            case 'get_tenant_profile':
-                return $this->get_tenant_profile();
-            case 'get_farm_summary':
-                return $this->get_farm_summary();
-            case 'get_batch_summary':
-                return $this->get_batch_summary($params['batch_id'] ?? null);
-            case 'get_batch_mortality':
-                return $this->get_batch_mortality();
-            case 'get_food_stock':
-            case 'get_inventory_forecast_data':
-                return $this->get_inventory_forecast_data();
-            case 'get_upcoming_vaccinations':
-                return $this->get_upcoming_vaccinations();
-            case 'get_financial_summary':
-                return $this->get_financial_summary();
-            case 'get_client_balances':
-            case 'get_overdue_accounts':
-                return $this->get_client_balances();
-            case 'get_supplier_balances':
-                return $this->get_supplier_balances();
-            case 'get_expenses':
-                return $this->get_expenses();
-            case 'get_vision_sessions':
-            case 'get_latest_vision_counts':
-                return $this->get_vision_sessions();
-            case 'get_latest_vision_reconciliation':
-                return $this->get_latest_vision_reconciliation();
-            default:
-                return $this->get_farm_summary();
+        $registry = $this->get_tool_registry();
+        if (!isset($registry[$tool_name])) {
+            return array('error' => "Unknown tool '{$tool_name}'.");
         }
+        if ($this->get_tenant_id() === null) {
+            return array('error' => 'No tenant context available.');
+        }
+        $tool = $registry[$tool_name];
+        // Enforce the same server-side permission the UI uses
+        if (!empty($tool['permission']) && method_exists($this->CI, 'has_permission') && !$this->CI->has_permission($tool['permission'])) {
+            return array('error' => "You do not have permission to access this data ({$tool['permission']}).");
+        }
+        return call_user_func_array(array($this, $tool['handler']), !empty($tool['args']) ? array_map(function ($a) use ($params) {
+            return $params[$a] ?? null;
+        }, $tool['args']) : array());
+    }
+
+    /**
+     * Central registry of read-only tools. Each entry is self-describing so an LLM planner
+     * can choose tools, and so new modules can be added in one place.
+     * name => description, handler, permission (RBAC), args (optional parameter names)
+     */
+    public function get_tool_registry() {
+        return array(
+            'get_farm_summary' => array('description' => 'High-level overview: totals of animals/stock, sheds, activity and key counts.', 'handler' => 'get_farm_summary', 'permission' => 'livestock.view'),
+            'get_batch_summary' => array('description' => 'Per-batch/group summary (counts, age, status). Optional batch_id.', 'handler' => 'get_batch_summary', 'permission' => 'livestock.view', 'args' => array('batch_id')),
+            'get_batch_mortality' => array('description' => 'Deaths and mortality rates by batch/group.', 'handler' => 'get_batch_mortality', 'permission' => 'livestock.view'),
+            'get_inventory_forecast_data' => array('description' => 'Feed/food/inventory levels and days of stock remaining.', 'handler' => 'get_inventory_forecast_data', 'permission' => 'food.view'),
+            'get_upcoming_vaccinations' => array('description' => 'Upcoming and overdue vaccinations and health schedules.', 'handler' => 'get_upcoming_vaccinations', 'permission' => 'vaccine.view'),
+            'get_financial_summary' => array('description' => 'Revenue, expenses, profit, sales and purchase totals.', 'handler' => 'get_financial_summary', 'permission' => 'reports.view'),
+            'get_client_balances' => array('description' => 'Customers who owe money (debtors), overdue accounts.', 'handler' => 'get_client_balances', 'permission' => 'client.view'),
+            'get_supplier_balances' => array('description' => 'Amounts owed to suppliers.', 'handler' => 'get_supplier_balances', 'permission' => 'supplier.view'),
+            'get_expenses' => array('description' => 'Expense records and totals by category.', 'handler' => 'get_expenses', 'permission' => 'expense.view'),
+            'get_vision_sessions' => array('description' => 'Recent camera/vision counting sessions and counts.', 'handler' => 'get_vision_sessions', 'permission' => 'livestock.view'),
+            'get_latest_vision_reconciliation' => array('description' => 'Latest reconciliation of vision counts vs recorded stock.', 'handler' => 'get_latest_vision_reconciliation', 'permission' => 'livestock.view'),
+        );
     }
 
     /**

@@ -130,16 +130,13 @@ class Kula_ai extends MY_Controller {
             return;
         }
 
-        // Parse optional chat history for context memory
-        $chat_history_raw = $this->input->post('history');
-        $chat_history = array();
-        if (!empty($chat_history_raw)) {
-            if (is_string($chat_history_raw)) {
-                $chat_history = json_decode($chat_history_raw, true) ?? array();
-            } elseif (is_array($chat_history_raw)) {
-                $chat_history = $chat_history_raw;
-            }
+        // Conversation memory is kept server-side (a client cannot forge earlier assistant turns)
+        $hist_key = 'kula_ai_history_' . (int)$this->tenant_id;
+        if ($this->input->post('reset_history')) {
+            $this->session->unset_userdata($hist_key);
         }
+        $chat_history = $this->session->userdata($hist_key);
+        $chat_history = is_array($chat_history) ? array_slice($chat_history, -10) : array();
 
         try {
             $gate = $this->check_plan_ai_access();
@@ -154,6 +151,20 @@ class Kula_ai extends MY_Controller {
 
             // 1. Classify User Intent & Required KulaCRM Tools
             $intent_info = $this->ai_intent_service->classify_intent($prompt, $chat_history);
+            $registry    = $this->ai_tool_service->get_tool_registry();
+            if (!isset($this->ai_planner_service)) {
+                require_once APPPATH . 'modules/kula_ai/services/Ai_planner_service.php';
+                $this->ai_planner_service = new Ai_planner_service();
+            }
+            $plan = $this->ai_planner_service->plan($prompt, $registry, $this->ai_provider, $chat_history);
+            if ($plan !== null) {
+                // Model-chosen tools override the keyword classifier (language / domain independent)
+                $intent_info['tools']         = $plan['tools'];
+                $intent_info['requires_data'] = $plan['needs_data'];
+                if (!$plan['needs_data'] && in_array($intent_info['intent'], array('FARM_DATA_QUERY', 'FOLLOW_UP'), true)) {
+                    $intent_info['response_type'] = 'conversational';
+                }
+            }
             $tools_used  = $intent_info['tools'] ?? array();
             $context_data= array();
 
@@ -170,22 +181,46 @@ class Kula_ai extends MY_Controller {
             }
 
             // 3. Dynamic System Prompt tailored to Intent & Active Tenant Profile
-            $farm_name = $tenant_profile['farm_name'] ?? 'KulaCRM Farm';
-            $user_name = $tenant_profile['user_name'] ?? 'Farm Manager';
+            $farm_name = $tenant_profile['farm_name'] ?? 'your business';
+            $user_name = $tenant_profile['user_name'] ?? 'User';
             $currency  = $tenant_profile['currency'] ?? 'UGX';
 
-            $system_prompt = "You are KulaAI, a highly intelligent, versatile AI Assistant and Livestock Agribusiness Expert built into KulaCRM.\n\n"
-                . "ACTIVE TENANT PROFILE:\n"
-                . "- Farm / Business Name: {$farm_name}\n"
-                . "- Active User: {$user_name}\n"
-                . "- System Currency: {$currency}\n\n"
-                . "DYNAMIC RESPONSE GUIDELINES:\n"
-                . "1. PERSONALIZED & NATURAL: Address the user as {$user_name} when appropriate and reference {$farm_name} naturally when discussing farm data.\n"
-                . "2. CONVERSATIONAL FIRST: Match your response style directly to the user's intent (" . ($intent_info['intent'] ?? 'GENERAL') . ").\n"
-                . "3. GREETINGS & CASUAL TALK: Respond warmly, naturally, and concisely. Do NOT generate action steps or rigid templates for simple greetings.\n"
-                . "4. REAL KULACRM DATA: Rely strictly on the provided live KulaCRM database context. Report exact numbers accurately. Do NOT invent farm data.\n"
-                . "5. BUSINESS PLANS & GENERAL KNOWLEDGE: Provide comprehensive agribusiness plans and definitions directly without forcing database templates.\n"
-                . "6. CLEAN FORMATTING: Use clean GitHub Markdown. Never include internal signature lines.";
+            // Per-tenant persona (assistant name, business type, terminology, extra notes)
+            $persona = array('assistant_name' => 'KulaAI', 'business_type' => 'livestock farm', 'terminology' => '', 'persona_notes' => '');
+            if ($this->db->table_exists('ai_tenant_profile')) {
+                $row = $this->db->get_where('ai_tenant_profile', array('tenant_id' => (int)$this->tenant_id))->row_array();
+                if ($row) {
+                    foreach ($persona as $k => $v) {
+                        if (isset($row[$k]) && $row[$k] !== '') $persona[$k] = $row[$k];
+                    }
+                }
+            }
+
+            $system_prompt = "You are {$persona['assistant_name']}, a helpful, versatile AI assistant built into KulaCRM, currently serving a {$persona['business_type']}.
+
+"
+                . "ACTIVE TENANT PROFILE:
+"
+                . "- Business Name: {$farm_name}
+"
+                . "- Active User: {$user_name}
+"
+                . "- System Currency: {$currency}
+"
+                . (!empty($persona['terminology']) ? "- Preferred terminology: {$persona['terminology']}
+" : '')
+                . "
+RESPONSE GUIDELINES:
+"
+                . "1. Reply in the language the user writes in. Match your style to the intent (" . ($intent_info['intent'] ?? 'GENERAL') . ").
+"
+                . "2. Answer greetings, casual talk, general knowledge, math, writing and planning requests directly and concisely; do not dump unrequested reports.
+"
+                . "3. For questions about the user's own business data, rely strictly on the provided live KulaCRM context and report exact numbers. If the data is missing or an access error is shown, say so; never invent figures.
+"
+                . "4. Use clean GitHub Markdown and never include internal signature lines."
+                . (!empty($persona['persona_notes']) ? "
+5. Additional instructions from the business owner: {$persona['persona_notes']}" : '');
 
             // 4. Generate Response via Active Provider (or Intent-Aware Offline Engine)
             $result = $this->ai_provider->generate($system_prompt, $prompt, $context_data, $chat_history, $intent_info);
@@ -195,6 +230,10 @@ class Kula_ai extends MY_Controller {
                 $result['status'] = true;
                 $result['provider'] = 'KulaAI Intent Engine (Offline)';
             }
+
+            $chat_history[] = array('role' => 'user', 'content' => mb_substr($prompt, 0, 2000));
+            $chat_history[] = array('role' => 'assistant', 'content' => mb_substr((string)$result['response'], 0, 2000));
+            $this->session->set_userdata($hist_key, array_slice($chat_history, -10));
 
             // 5. Audit Log Interaction
             if (isset($this->kula_ai_model)) {
@@ -216,6 +255,7 @@ class Kula_ai extends MY_Controller {
                 'created_at'    => date('H:i:s')
             ));
         } catch (\Throwable $e) {
+            log_message('error', 'KulaAI chat failure: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
             $fallback_intent = array('intent' => 'UNKNOWN', 'response_type' => 'conversational');
             $fallback_response = $this->ai_provider->generate_offline_response($prompt, array(), $fallback_intent);
             echo json_encode(array(

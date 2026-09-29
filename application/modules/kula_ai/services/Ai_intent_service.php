@@ -295,11 +295,13 @@ class Ai_intent_service {
             'how are you', 'how are you doing', 'how do you do', 'whats up', "what's up",
             'thank you', 'thanks', 'thanks a lot', 'thank you very much', 'thx', 'webale nnyo', 'asante', 'asante sana',
             'okay', 'ok', 'cool', 'awesome', 'great', 'perfect', 'got it', 'understood', 'kale', 'sawa',
-            'who are you', 'what is your name', 'nice to meet you', 'bye', 'goodbye', 'see you', 'kwaheri'
+            'who are you', 'what is your name', 'nice to meet you', 'bye', 'goodbye', 'see you', 'kwaheri',
+            'are you still connected', 'are you connected', 'are you there', 'are you online', 'can you hear me',
+            'are you working', 'is this working', 'test', 'ping', 'connection test', 'status check', 'are you active'
         );
         $p_strip = trim(preg_replace('/[^a-z\s\']/ ', '', $p));
         foreach ($casual as $phrase) {
-            if ($p_strip === $phrase || strpos($p_strip, $phrase) === 0) {
+            if ($p_strip === $phrase || strpos($p_strip, $phrase) === 0 || preg_match('/\b' . preg_quote($phrase, '/') . '\b/i', $p)) {
                 return true;
             }
         }
