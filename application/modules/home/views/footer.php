@@ -226,7 +226,7 @@ $(document).ready(function() {
             background: isDark ? '#0f172a' : '#ffffff',
             color: isDark ? '#f8fafc' : '#0f172a'
         }).then(function(result) {
-            if (result.isConfirmed) {
+            if ((result.isConfirmed || result.value === true)) {
                 if (link && link !== '#' && link !== 'javascript:void(0);') {
                     window.location.href = link;
                 } else {
@@ -268,7 +268,7 @@ $(document).ready(function() {
             background: isDark ? '#0f172a' : '#ffffff',
             color: isDark ? '#f8fafc' : '#0f172a'
         }).then(function(result) {
-            if (result.isConfirmed) {
+            if ((result.isConfirmed || result.value === true)) {
                 $(form).data('swal-passed', true);
                 form.submit();
             }
