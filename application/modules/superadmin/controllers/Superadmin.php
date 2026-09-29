@@ -321,20 +321,30 @@ class Superadmin extends MY_Controller {
         $tenant = $this->db->get_where('tenants', array('id' => $id))->row();
         if ($tenant) {
             $name = $tenant->name;
-            if ($id === 1) {
-                $this->session->set_flashdata('feedback', 'Error: The default platform tenant cannot be deleted.');
-                redirect('superadmin/tenants');
-                return;
-            }
-            // Remove every tenant-owned row so no orphaned business data survives
+            // Remove every tenant-owned row so no orphaned business data survives.
+            // Platform admin accounts (and the admin performing the delete) are never removed.
+            $current_user_id = (int)$this->ion_auth->get_user_id();
             $this->db->trans_start();
             foreach ($this->db->list_tables() as $table) {
-                if ($table !== 'tenants' && $this->db->field_exists('tenant_id', $table)) {
-                    $this->db->where('tenant_id', $id)->delete($table);
+                if ($table === 'tenants' || !$this->db->field_exists('tenant_id', $table)) {
+                    continue;
                 }
+                $this->db->where('tenant_id', $id);
+                if ($table === 'users') {
+                    $this->db->where('id !=', $current_user_id);
+                    if ($this->db->field_exists('account_type', 'users')) {
+                        $this->db->where('account_type !=', 'platform_admin');
+                    }
+                }
+                $this->db->delete($table);
             }
             $this->db->where('id', $id)->delete('tenants');
             $this->db->trans_complete();
+            if ($this->db->trans_status() === FALSE) {
+                $this->session->set_flashdata('feedback', "Error: Tenant '{$name}' could not be deleted (database error). Nothing was changed.");
+                redirect('superadmin/tenants');
+                return;
+            }
             $this->log_audit('TENANT_DELETE', $id, array('name' => $name));
 
             $this->session->set_flashdata('feedback', "Tenant '{$name}' and all associated data deleted successfully.");
