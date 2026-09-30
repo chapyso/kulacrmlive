@@ -159,6 +159,11 @@
             display: block;
         }
         #camera_canvas { display: none; }
+        #camera_overlay_canvas {
+            position: absolute;
+            pointer-events: none;
+            z-index: 12;
+        }
 
         .hud-overlay-top {
             position: absolute;
@@ -859,6 +864,7 @@
 
         <video id="camera_video" autoplay playsinline muted></video>
         <canvas id="camera_canvas"></canvas>
+        <canvas id="camera_overlay_canvas"></canvas>
 
         <div class="camera-offline-msg" id="camera_offline_msg">
             <i class="fa-solid fa-camera-rotate" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
@@ -1302,13 +1308,34 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.clearRect(0, 0, width, height);
         }
 
-        renderCanvasOverlay(canvasElem, customBbox, tagLabel) {
+        renderCanvasOverlay(canvasElem, customBbox, tagLabel, videoElem) {
             if (!canvasElem) return;
 
-            // Get exact bounding rect from video container
+            // Size the overlay to the video element it sits on
             const container = canvasElem.parentElement;
-            const width  = (container ? container.clientWidth : 0) || canvasElem.clientWidth || window.innerWidth || 640;
-            const height = (container ? container.clientHeight : 0) || canvasElem.clientHeight || 420;
+            let width, height;
+            if (videoElem && videoElem.clientWidth) {
+                width  = videoElem.clientWidth;
+                height = videoElem.clientHeight;
+                canvasElem.style.left   = videoElem.offsetLeft + 'px';
+                canvasElem.style.top    = videoElem.offsetTop + 'px';
+                canvasElem.style.width  = width + 'px';
+                canvasElem.style.height = height + 'px';
+            } else {
+                width  = (container ? container.clientWidth : 0) || canvasElem.clientWidth || window.innerWidth || 640;
+                height = (container ? container.clientHeight : 0) || canvasElem.clientHeight || 420;
+            }
+
+            // Boxes are normalized to the full camera frame; the video uses object-fit: cover,
+            // so map through the same crop/scale the browser applies.
+            const vw = videoElem && videoElem.videoWidth, vh = videoElem && videoElem.videoHeight;
+            let scale = 1, offX = 0, offY = 0, mapped = false;
+            if (vw && vh) {
+                scale = Math.max(width / vw, height / vh);
+                offX  = (width - vw * scale) / 2;
+                offY  = (height - vh * scale) / 2;
+                mapped = true;
+            }
 
             canvasElem.width  = width;
             canvasElem.height = height;
@@ -1328,23 +1355,26 @@ document.addEventListener('DOMContentLoaded', function() {
             if (boxes.length === 0) return;
 
             boxes.forEach((b, idx) => {
-                const bx = (b.x !== undefined ? b.x : 0.2) * width;
-                const by = (b.y !== undefined ? b.y : 0.15) * height;
-                const bw = (b.width || b.w || 0.4) * width;
-                const bh = (b.height || b.h || 0.5) * height;
+                const nx = (b.x !== undefined ? b.x : 0.2), ny = (b.y !== undefined ? b.y : 0.15);
+                const nw = (b.width || b.w || 0.4),         nh = (b.height || b.h || 0.5);
+                const bx = mapped ? offX + nx * vw * scale : nx * width;
+                const by = mapped ? offY + ny * vh * scale : ny * height;
+                const bw = mapped ? nw * vw * scale : nw * width;
+                const bh = mapped ? nh * vh * scale : nh * height;
                 const labelText = b.label || tagLabel || 'LIVESTOCK';
+                const col = b.color || '#10b981';
 
                 // Glowing Outer Bounding Box
-                ctx.strokeStyle = '#10b981';
+                ctx.strokeStyle = col;
                 ctx.lineWidth = 3.5;
-                ctx.shadowColor = '#10b981';
+                ctx.shadowColor = col;
                 ctx.shadowBlur = 14;
                 ctx.strokeRect(bx, by, bw, bh);
                 ctx.shadowBlur = 0;
 
                 // High-Tech Corner Accents
                 const cLen = 16;
-                ctx.strokeStyle = '#34d399';
+                ctx.strokeStyle = col;
                 ctx.lineWidth = 5;
                 // Top-Left
                 ctx.beginPath(); ctx.moveTo(bx, by + cLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cLen, by); ctx.stroke();
@@ -1356,8 +1386,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 ctx.beginPath(); ctx.moveTo(bx + bw - cLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cLen); ctx.stroke();
 
                 // Tracking Tag Pill
-                ctx.fillStyle = '#10b981';
-                const pillW = Math.max(110, ctx.measureText(labelText).width + 24);
+                ctx.fillStyle = col;
+                ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
+                const pillW = Math.max(70, ctx.measureText(labelText).width + 24);
                 const pillY = Math.max(4, by - 28);
                 if (ctx.roundRect) {
                     ctx.beginPath();
@@ -1398,6 +1429,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const canvasElem = document.getElementById('camera_canvas');
     const mCanvasElem = document.getElementById('m_camera_canvas');
     const mOverlayCanvas = document.getElementById('m_overlay_canvas');
+    const deskOverlayCanvas = document.getElementById('camera_overlay_canvas');
+
+    // Draw boxes (animals green, people blue) on whichever viewfinder is visible
+    function drawSceneOverlays(boxes) {
+        visionTracker.renderCanvasOverlay(deskOverlayCanvas, boxes && boxes.length ? boxes : null, null, videoElem);
+        visionTracker.renderCanvasOverlay(mOverlayCanvas, boxes && boxes.length ? boxes : null, null, mVideoElem);
+    }
+
+    // Live plain-language readout ("3 animals, 1 person in view")
+    function showSceneBanner(text, hasSubjects) {
+        const banner = document.getElementById('hud_detection_banner');
+        if (banner) {
+            banner.textContent = text;
+            banner.style.display = 'block';
+            banner.style.borderColor = hasSubjects ? 'rgba(16, 185, 129, 0.6)' : 'rgba(148, 163, 184, 0.5)';
+        }
+        setTxt('m_status_text', text);
+    }
 
     // Shed change handler
     function onShedChange(shedId) {
@@ -1587,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTxt('diag_last_error', lastErrorTrace);
                 setTxt('diag_db_status', 'FAILED');
                 setTxt('m_last_scan_text', '⚠️ ' + lastErrorTrace);
-                visionTracker.clearCanvas(mOverlayCanvas);
+                visionTracker.clearCanvas(mOverlayCanvas); visionTracker.clearCanvas(deskOverlayCanvas);
                 return;
             }
 
@@ -1607,6 +1656,12 @@ document.addEventListener('DOMContentLoaded', function() {
             setTxt('diag_unknown_count', unknown);
             setTxt('diag_expected_count', expected);
 
+            setTxt('stat_expected', expected);
+            setTxt('stat_confirmed', confirmed);
+            setTxt('stat_review', review);
+            setTxt('stat_unknown', unknown);
+            setTxt('stat_active_tracks', data.frame_animal_count || 0);
+
             setTxt('m_count_detected', totalDetected);
             setTxt('m_stat_total', totalDetected);
             setTxt('m_stat_identified', confirmed);
@@ -1618,8 +1673,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // CRITICAL: IF NO ANIMAL WAS DETECTED IN THIS FRAME
             if (!data.animal_detected) {
-                visionTracker.clearCanvas(mOverlayCanvas);
-                setTxt('m_status_text', 'AI READY - NO ANIMAL');
+                drawSceneOverlays(data.people_boxes || []);
+                showSceneBanner(data.scene_text || 'Nothing recognised in view', (data.people_count || 0) > 0);
+                setTxt('m_status_text', data.scene_text || 'AI READY - NO ANIMAL');
                 const pill = document.getElementById('m_status_pill');
                 if (pill) pill.style.background = 'rgba(234, 179, 8, 0.2)';
                 setTxt('m_last_scan_text', 'No animal detected (' + nowStr + ')');
@@ -1644,7 +1700,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 : (data.bounding_box ? [data.bounding_box] : null);
 
             const tagLabel = detectedTag || (data.animal_type ? data.animal_type.toUpperCase() : 'LIVESTOCK');
-            visionTracker.renderCanvasOverlay(mOverlayCanvas, boxesToRender, tagLabel);
+            drawSceneOverlays((boxesToRender || []).concat(data.people_boxes || []));
+            showSceneBanner((data.scene_text || 'Animal detected') + (data.new_in_frame ? ' · +' + data.new_in_frame + ' new' : ''), true);
 
             if (data.requires_human_confirmation || data.identification_status === 'needs_review') {
                 isScanning = false;
@@ -1666,7 +1723,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTxt('diag_last_error', lastErrorTrace);
             setTxt('diag_http_status', 'ERR');
             setTxt('m_last_scan_text', '⚠️ API ERROR: ' + lastErrorTrace);
-            visionTracker.clearCanvas(mOverlayCanvas);
+            visionTracker.clearCanvas(mOverlayCanvas); visionTracker.clearCanvas(deskOverlayCanvas);
         });
     }
 
@@ -1806,7 +1863,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!activeSessionId) return;
             isScanning = false;
             if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-            visionTracker.clearCanvas(mOverlayCanvas);
+            visionTracker.clearCanvas(mOverlayCanvas); visionTracker.clearCanvas(deskOverlayCanvas);
 
             const payload = new FormData();
             payload.append('session_id', activeSessionId);

@@ -183,6 +183,20 @@ class Ai_vision_service {
     }
 
     /**
+     * Plain-language summary of what the camera sees, e.g. "3 animals, 1 person".
+     */
+    protected function describe_scene($animals, $people) {
+        $parts = array();
+        if ($animals > 0) {
+            $parts[] = $animals . ($animals === 1 ? ' animal' : ' animals');
+        }
+        if ($people > 0) {
+            $parts[] = $people . ($people === 1 ? ' person' : ' people');
+        }
+        return empty($parts) ? 'Nothing recognised in view' : implode(', ', $parts) . ' in view';
+    }
+
+    /**
      * Animals registered so far in a session (not rejected). Each record is one physical
      * animal seen in the session; ear tags are optional.
      */
@@ -262,6 +276,7 @@ class Ai_vision_service {
             . "RETURN STRICT JSON WITH THIS EXACT SCHEMA:\n"
             . "{\n"
             . '  "animal_count": int,' . "\n"
+            . '  "people": [ {"box": {"x": float_0_to_1, "y": float_0_to_1, "width": float_0_to_1, "height": float_0_to_1}, "confidence": float_0_to_100} ],' . "\n"
             . '  "animals": [ {' . "\n"
             . '    "box": {"x": float_0_to_1, "y": float_0_to_1, "width": float_0_to_1, "height": float_0_to_1},' . "\n"
             . '    "animal_type": "goat|cattle|poultry|pig|sheep|other",' . "\n"
@@ -272,7 +287,8 @@ class Ai_vision_service {
             . "  } ]\n"
             . "}\n\n"
             . "RULES:\n"
-            . "1. Only real livestock. If the frame has no livestock (empty pen, floor, wall, person, blur), return animal_count=0 and animals=[]. Never invent animals.\n"
+            . "1. animals: only real livestock or other animals. If the frame has none (empty pen, floor, wall, person, blur), return animal_count=0 and animals=[]. Never invent animals. A human is NEVER an animal.\n"
+            . "1b. people: list every real human visible (face, head, body or limbs), one box each. Return [] if nobody is visible. People are reported for awareness only and are not livestock.\n"
             . "2. List EVERY distinct animal visible, including ones with no ear tag and ones partly hidden (list an animal if at least half of it is visible). Each physical animal appears exactly once.\n"
             . "3. Each box tightly surrounds one animal (normalized 0..1). Never draw one box around a group.\n"
             . "4. ear_tag: fill only if the characters are clearly readable, otherwise null. Never guess a tag.\n"
@@ -303,6 +319,28 @@ class Ai_vision_service {
                 'raw'    => $vision_res['response']
             );
         }
+
+        // People in frame (reported, never counted as livestock)
+        $people_boxes = array();
+        if (!empty($parsed['people']) && is_array($parsed['people'])) {
+            foreach ($parsed['people'] as $pp) {
+                if (!is_array($pp) || empty($pp['box']) || !is_array($pp['box']) || !isset($pp['box']['x'], $pp['box']['y'])) {
+                    continue;
+                }
+                if ((float)($pp['confidence'] ?? 0) < 50) {
+                    continue;
+                }
+                $people_boxes[] = array(
+                    'x'      => max(0.0, min(1.0, (float)$pp['box']['x'])),
+                    'y'      => max(0.0, min(1.0, (float)$pp['box']['y'])),
+                    'width'  => max(0.05, min(1.0, (float)($pp['box']['width'] ?? $pp['box']['w'] ?? 0.3))),
+                    'height' => max(0.05, min(1.0, (float)($pp['box']['height'] ?? $pp['box']['h'] ?? 0.3))),
+                    'label'  => 'PERSON',
+                    'color'  => '#3b82f6'
+                );
+            }
+        }
+        $people_count = count($people_boxes);
 
         // Normalize detections; drop weak or invalid ones
         $detections = array();
@@ -335,6 +373,10 @@ class Ai_vision_service {
                 'status'           => true,
                 'animal_detected'  => false,
                 'message'          => 'No animal detected in camera frame. Point camera directly at livestock.',
+                'scene_text'       => $this->describe_scene(0, $people_count),
+                'people_count'     => $people_count,
+                'frame_animal_count' => 0,
+                'people_boxes'     => $people_boxes,
                 'bounding_boxes'   => array(),
                 'bounding_box'     => null,
                 'current_counts'   => array(
@@ -467,6 +509,9 @@ class Ai_vision_service {
             'already_counted'             => ($new_count === 0),
             'identification_status'       => 'confirmed',
             'frame_animal_count'          => $frame_count,
+            'people_count'                => $people_count,
+            'people_boxes'                => $people_boxes,
+            'scene_text'                  => $this->describe_scene($frame_count, $people_count),
             'new_in_frame'                => $new_count,
             'tag_number'                  => $first_tag,
             'livestock_id'                => null,
