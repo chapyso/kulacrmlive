@@ -359,63 +359,7 @@
                     <div class="phone-device">
                         <div class="phone-screen">
                             <div class="phone-notch"></div>
-                            <div class="phone-status-bar">
-                                <span>09:41</span>
-                                <div style="display: flex; gap: 4px;">
-                                    <i class="fas fa-signal"></i>
-                                    <i class="fas fa-wifi"></i>
-                                    <i class="fas fa-battery-full"></i>
-                                </div>
-                            </div>
-
-                            <div class="mobile-app-header">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <img src="<?php echo !empty($dark_logo_url) ? $dark_logo_url : base_url('dark mode logo.png'); ?>" alt="KulaCRM App" style="height: 22px; width: auto;">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 10px; font-size: 12px;">
-                                    <i class="far fa-bell"></i>
-                                    <div style="width: 22px; height: 22px; border-radius: 50%; background: var(--bright-lime); color: var(--dark-green); font-weight: 800; font-size: 9px; display: flex; align-items: center; justify-content: center;">FM</div>
-                                </div>
-                            </div>
-
-                            <div class="mobile-app-body">
-                                <div style="background: var(--white); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color);">
-                                    <div style="font-size: 12px; font-weight: 700; color: var(--primary-forest);">Good morning, Farm Manager 👋</div>
-                                    <div style="font-size: 10px; color: var(--text-muted);">Livestock operations summary</div>
-                                </div>
-
-                                <div class="mobile-app-actions">
-                                    <div class="mobile-action-btn">
-                                        <i class="fas fa-plus"></i>
-                                        <span>Livestock</span>
-                                    </div>
-                                    <div class="mobile-action-btn">
-                                        <i class="fas fa-cart-plus"></i>
-                                        <span>Sale</span>
-                                    </div>
-                                    <div class="mobile-action-btn">
-                                        <i class="fas fa-wheat-awn"></i>
-                                        <span>Feed</span>
-                                    </div>
-                                    <div class="mobile-action-btn">
-                                        <i class="fas fa-receipt"></i>
-                                        <span>Expense</span>
-                                    </div>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <div style="background: var(--white); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);">
-                                        <div style="font-size: 9px; color: var(--text-muted);">Total Livestock</div>
-                                        <div style="font-size: 14px; font-weight: 800; color: var(--primary-forest);">1,248</div>
-                                        <div style="font-size: 8px; color: var(--lime-green); font-weight: 600;">+32 this week</div>
-                                    </div>
-                                    <div style="background: var(--white); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);">
-                                        <div style="font-size: 9px; color: var(--text-muted);">Sheds</div>
-                                        <div style="font-size: 14px; font-weight: 800; color: var(--primary-forest);">18</div>
-                                        <div style="font-size: 8px; color: var(--text-muted);">Active sheds</div>
-                                    </div>
-                                </div>
-                            </div>
+                            <img src="<?php echo base_url('common/img/tenant-mobile-dashboard.jpg'); ?>" alt="KulaCRM farm dashboard on a phone: today's summary, KulaAI assistant, purchases and expenses" width="562" height="1218" loading="lazy" style="display:block;width:100%;height:auto;">
                         </div>
                     </div>
                 </div>
