@@ -18,6 +18,7 @@ class Expense extends MY_Controller
         $language = (!empty($settings) && !empty($settings->language)) ? $settings->language : 'english';
         $this->lang->load('system_syntax', $language);
         $this->load->model('report/report_model');
+        $this->load->model('expense/expense_model');
         $data['settings'] = $this->settings_model->getSettings();
         if (!$this->ion_auth->logged_in()) {
             redirect('auth/login', 'refresh');

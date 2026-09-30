@@ -864,7 +864,7 @@ class Ai_vision_service {
         $this->CI->db->where('vr.actual_livestock_id IS NOT NULL');
         $this->CI->db->group_by('vr.actual_livestock_id');
         $this->CI->db->having('attempts >= 3');
-        $this->CI->db->order_by('(correct / attempts)', 'ASC');
+        $this->CI->db->order_by('(SUM(CASE WHEN vr.verification_result = "CORRECT" THEN 1 ELSE 0 END) / COUNT(*))', 'ASC', FALSE);
         $this->CI->db->limit($limit);
         $rows = $this->CI->db->get()->result_array();
 

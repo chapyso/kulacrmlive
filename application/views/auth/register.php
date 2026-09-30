@@ -365,7 +365,7 @@
                                    placeholder="Min. 8 characters"
                                    class="custom-input w-full pl-11 pr-12 py-3.5 rounded-xl text-sm font-medium text-white placeholder-gray-500">
                             <button type="button" 
-                                    id="togglePassword"
+                                    id="togglePassword" aria-label="Show or hide password"
                                     class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors focus:outline-none">
                                 <i class="fas fa-eye text-sm" id="togglePasswordIcon"></i>
                             </button>

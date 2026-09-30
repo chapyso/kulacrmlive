@@ -384,7 +384,7 @@
 
                             <!-- Language Change Button & Dropdown -->
                             <div class="relative inline-block text-left" id="loginLangContainer">
-                                <button type="button" id="loginLangBtn" onclick="toggleLoginLangDropdown()" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-white glass-panel border border-white/20 hover:border-brand-500/50 hover:bg-white/10 transition-all shadow-md backdrop-blur-lg">
+                                <button type="button" id="loginLangBtn" aria-label="Change language" onclick="toggleLoginLangDropdown()" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-white glass-panel border border-white/20 hover:border-brand-500/50 hover:bg-white/10 transition-all shadow-md backdrop-blur-lg">
                                     <i class="fa-solid fa-globe text-brand-300 text-xs"></i>
                                     <span><?php echo $active_lang_info['flag'] . ' ' . $active_lang_info['native']; ?></span>
                                     <i class="fa-solid fa-chevron-down text-[9px] opacity-70 ml-0.5"></i>
@@ -482,7 +482,7 @@
                                     <i class="fa-solid fa-lock"></i>
                                 </div>
                                 <button type="button" 
-                                        id="togglePasswordBtn" 
+                                        id="togglePasswordBtn" aria-label="Show or hide password" 
                                         class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1.5 rounded-lg transition-colors"
                                         title="Show/Hide Password">
                                     <i class="fa-solid fa-eye" id="eyeIcon"></i>
@@ -624,7 +624,7 @@
                         <p class="text-xs text-gray-400">Softchap Publishing Assistance</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeSupportModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center transition-colors text-sm">
+                <button type="button" aria-label="Close" onclick="closeSupportModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center transition-colors text-sm">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>

@@ -13,7 +13,7 @@
 </IfModule>
 
 # Block access to sensitive system files, git, sql dumps, environment files
-<FilesMatch "^\.|\.(sql|env|json|bak|config|log|md|sh|lock)$">
+<FilesMatch "^\.|^(Dockerfile|docker-compose.*|Makefile)$|\.(sql|env|json|bak|config|log|md|sh|lock|yml|yaml|dist|ini)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
@@ -22,6 +22,17 @@
         Deny from all
     </IfModule>
 </FilesMatch>
+
+# The PWA manifest must stay public (it is matched by the .json rule above)
+<Files "manifest.json">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>
 
 # Disable Directory Browsing
 Options -Indexes

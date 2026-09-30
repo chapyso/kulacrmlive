@@ -1074,7 +1074,7 @@
             <i class="fa-solid fa-house"></i>
             <span>Home</span>
         </a>
-        <a href="<?= base_url('livestock') ?>" class="kv-nav-item">
+        <a href="<?= base_url('livestock/addLivestock') ?>" class="kv-nav-item">
             <i class="fa-solid fa-cow"></i>
             <span>Livestock</span>
         </a>

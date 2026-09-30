@@ -50,7 +50,7 @@
     $(document).ready(function() {
         // Date picker
         $('.datepicker').datepicker({
-            dateFormat: '<?php if ($settings->date_format == "d-m-Y") {
+            dateFormat: '<?php if (isset($settings->date_format) && $settings->date_format == "d-m-Y") {
                                 echo "dd-mm-yy";
                             } else {
                                 echo "mm-dd-yy";

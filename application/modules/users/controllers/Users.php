@@ -373,11 +373,9 @@ class Users extends MY_Controller {
         $this->check_permission('users.view');
 
         $tenant_id = $this->require_tenant_id();
-        $data['audit_logs'] = $this->db->where('tenant_id', $tenant_id)
-                                      ->order_by('created_at', 'DESC')
-                                      ->limit(100)
-                                      ->get('audit_logs')
-                                      ->result();
+        $data['audit_logs'] = $this->db->table_exists('audit_logs')
+            ? $this->db->where('tenant_id', $tenant_id)->order_by('created_at', 'DESC')->limit(100)->get('audit_logs')->result()
+            : array();
         $data['login_history'] = $this->db->where('tenant_id', $tenant_id)
                                           ->order_by('login_at', 'DESC')
                                           ->limit(100)

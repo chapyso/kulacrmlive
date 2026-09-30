@@ -36,7 +36,13 @@ class Api extends CI_Controller {
      * Enforce strict CORS and security headers
      */
     private function enforce_cors_and_headers(): void {
-        header('Access-Control-Allow-Origin: *');
+        // Only trusted origins may call the API from a browser (CORS_ALLOWED_ORIGINS overrides the default)
+        $allowed = array_filter(array_map('trim', explode(',', getenv('CORS_ALLOWED_ORIGINS') ?: 'https://kulacrm.com,https://www.kulacrm.com')));
+        $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+        if ($origin !== '' && in_array($origin, $allowed, true)) {
+            header('Access-Control-Allow-Origin: ' . $origin);
+            header('Vary: Origin');
+        }
         header('Access-Control-Allow-Headers: Content-Type, Authorization, X-API-Key, X-Requested-With');
         header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
         header('Content-Type: application/json; charset=utf-8');

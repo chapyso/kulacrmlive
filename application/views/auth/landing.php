@@ -1014,7 +1014,7 @@
                         <span style="font-size: 12px; color: var(--text-muted);">Softchap Publishing Assistance</span>
                     </div>
                 </div>
-                <button type="button" onclick="closeSupportModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;">
+                <button type="button" aria-label="Close" onclick="closeSupportModal()" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
