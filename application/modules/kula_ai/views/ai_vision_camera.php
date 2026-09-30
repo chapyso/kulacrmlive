@@ -1832,7 +1832,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const payload = new FormData();
         payload.append('session_id', activeSessionId);
         payload.append('record_id', pendingRecordId);
-        payload.append('livestock_id', 1);
 
         fetch(`<?= base_url('kula_ai/confirm_vision_match') ?>`, { method: 'POST', body: payload })
         .then(res => res.json())

@@ -287,6 +287,7 @@ function openSessionDetails(sessionId) {
                 <div style="margin-top: 15px; font-size: 13px; color: #475569;">
                     ${r.summary_text}
                 </div>
+                ${(r.unseen_animals && r.unseen_animals.length) ? `<div style="margin-top:15px; font-size:13px;"><strong>Registered animals not identified (${r.unseen_animals.length}):</strong><br>${r.unseen_animals.map(n => String(n).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))).join(', ')}</div>` : ''}
                 ${recordsHtml}
             `;
         });

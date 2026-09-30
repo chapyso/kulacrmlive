@@ -79,7 +79,6 @@
                                             <th class="text-right"><?php echo lang('quantity'); ?> </th>
                                             <th class="text-right"><?php echo lang('discount'); ?> </th>
                                             <th class="text-right"><?php echo lang('total'); ?> </th>
-                                            <th class="hidden-print">Animals</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -96,7 +95,6 @@
                                                 <td class="text-right"><?= $summary_id->purv_quantity; ?></td>
                                                 <td class="text-right"><?= $settings->currency; ?><?= number_format($summary_id->purv_discount, 2, '.', ','); ?></td>
                                                 <td class="text-right"><?= $settings->currency; ?><?= number_format($summary_id->purv_total, 2, '.', ','); ?></td>
-                                                <td class="hidden-print"><a class="button button-info" href="<?= base_url('purchase/nameAnimals?purv_id=' . (int) $summary_id->purv_id); ?>"><i class="fa-solid fa-tag"></i> Name</a></td>
                                             </tr>
                                         <?php } ?>
                                     </tbody>

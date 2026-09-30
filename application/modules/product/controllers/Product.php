@@ -504,6 +504,7 @@ class Product extends MY_Controller
         $data['livestocks'] = $this->livestock_model->getLivestock();
         $data['livestock_types'] = $this->livestock_model->getLivestockType();
         $data['reproductions'] = $this->product_model->getLivestockReproduction();
+        $data['motherOptions'] = $this->animal_model->getActiveAnimals();
         $this->load->view('home/dashboard', $data); // just the header file
         $this->load->view('list_livestock_reproduction', $data);
         $this->load->view('home/footer'); // just the header file
@@ -547,6 +548,12 @@ class Product extends MY_Controller
                 'lrp_created_by' => $this->ion_auth->user()->row()->user_id
             );
             $livestockReproductionId = $this->product_model->insertData('livestock_reproduction', $data);
+            // Register the newborns as (unnamed) animals linked to their mother, shed and batch
+            $this->animal_model->createBorn(
+                $livestockReproductionId, $lrp_ls_id, $lrp_lst_id, $lrp_birth_quantity,
+                $this->animal_model->resolveAnimalText($this->input->post('lrp_mother')),
+                $lrp_assign_sh_id, $lrp_assign_batch_id
+            );
 
             // Livestock Assigned Shed Table
 
@@ -651,6 +658,7 @@ class Product extends MY_Controller
         );
 
         $this->product_model->updateData('livestock_reproduction', 'lrp_id', $lrp_id, $deleteReproductionData);
+        $this->animal_model->archiveByReproductionId($lrp_id);
 
         // From Assign Table
         // Summary Table

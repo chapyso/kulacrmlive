@@ -368,7 +368,7 @@
                         <select name="prs_animal_id" id="animalEdit" class="form-control js-example-basic-single" style="width: 100%;">
                             <option value="0">-- Whole batch / no specific animal --</option>
                             <?php foreach ($animals as $an) { ?>
-                                <option value="<?= (int) $an->an_id; ?>"><?= html_escape($an->an_name . ' (' . $an->ls_name . ($an->lst_title ? ' - ' . $an->lst_title : '') . ')'); ?></option>
+                                <option value="<?= (int) $an->an_id; ?>" data-shed="<?= (int) $an->an_shed_id; ?>" data-batch="<?= (int) $an->an_batch_id; ?>"><?= html_escape(Animal_model::label($an) . ' (' . $an->ls_name . ($an->lst_title ? ' - ' . $an->lst_title : '') . ')'); ?></option>
                             <?php } ?>
                         </select>
                     </div>
@@ -408,7 +408,7 @@
             var quantity = $(this).attr('data-quantity');
             var date = $(this).attr('data-date');
             var description = $(this).attr('data-description');
-            $('#animalEdit').val($(this).attr('data-animal-id') || '0').trigger('change');
+            filterAnimalOptions('animalEdit', shed_id, $(this).attr('data-batch-id'), $(this).attr('data-animal-id') || '0');
             $('#myModal').modal('show');
             $("#productionId").val(iid);
             $("#productAssignId").val(product_assign_id);
@@ -450,4 +450,21 @@
         toastr.error('<?= html_escape($this->session->flashdata('error')); ?>');
         <?php endif; ?>
     });
+</script>
+<script>
+    // Animal picker: show animals in this shed/batch (plus any not yet placed in a batch)
+    function filterAnimalOptions(selectId, shedId, batchId, selected) {
+        var $sel = $('#' + selectId);
+        if (!$sel.data('all')) {
+            $sel.data('all', $sel.find('option').map(function() {
+                return {value: this.value, text: $(this).text(), shed: $(this).data('shed'), batch: $(this).data('batch')};
+            }).get());
+        }
+        var html = '';
+        $.each($sel.data('all'), function(i, o) {
+            var keep = o.value === '0' || String(o.value) === String(selected) || !o.batch || (String(o.shed) === String(shedId) && String(o.batch) === String(batchId));
+            if (keep) html += '<option value="' + o.value + '" data-shed="' + (o.shed || 0) + '" data-batch="' + (o.batch || 0) + '">' + $('<div>').text(o.text).html() + '</option>';
+        });
+        $sel.html(html).val(String(selected || '0')).trigger('change');
+    }
 </script>

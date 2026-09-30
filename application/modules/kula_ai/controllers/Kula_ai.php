@@ -972,7 +972,7 @@ RESPONSE GUIDELINES:
         $livestock_id = (int)$this->input->post('livestock_id');
         $tag_number   = trim($this->input->post('tag_number') ?? '');
 
-        if (empty($session_id) || empty($record_id) || empty($livestock_id)) {
+        if (empty($session_id) || empty($record_id)) {
             echo json_encode(array('status' => false, 'error' => 'Missing required parameter details.'));
             return;
         }

@@ -23,7 +23,6 @@ class Purchase extends MY_Controller
         $this->load->model('sale/sale_model');
         $this->load->model('product/product_model');
         $this->load->model('livestock/livestock_model');
-        $this->load->model('livestock/animal_model');
         $this->load->model('shed/shed_model');
         $this->load->model('staff/staff_model');
         $this->load->model('payments/payments_model');
@@ -87,59 +86,6 @@ class Purchase extends MY_Controller
         $this->load->view('home/footer'); // just the header file
     }
 
-
-    // Name each animal of a purchased livestock line
-    public function nameAnimals()
-    {
-        $purv_id = (int) $this->input->get('purv_id');
-        $purv = $this->purchase_model->getLivestockPurchaseValueById($purv_id);
-        if (!$purv || (int) $purv->purv_status !== 1) {
-            show_404();
-        }
-        $this->animal_model->syncPurchaseLine($purv);
-        $data['settings'] = $this->settings_model->getSettings();
-        $data['purv'] = $purv;
-        $data['purchase'] = $this->purchase_model->getLivestockPurchaseById($purv->purv_purs_id);
-        $data['livestock'] = $this->livestock_model->getLivestockById($purv->purv_ls_id);
-        $data['livestock_type'] = $this->livestock_model->getLivestockTypeById($purv->purv_lst_id);
-        $data['animals'] = $this->animal_model->getAnimalsByPurchaseValueId($purv_id);
-        $this->load->view('home/dashboard', $data);
-        $this->load->view('name_animals', $data);
-        $this->load->view('home/footer');
-    }
-
-    public function saveAnimalNames()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !verify_action_token()) {
-            show_error('Invalid request.', 400);
-        }
-        $purv_id = (int) $this->input->post('purv_id');
-        $purv = $this->purchase_model->getLivestockPurchaseValueById($purv_id);
-        if (!$purv) {
-            show_404();
-        }
-        $names = (array) $this->input->post('an_name');
-        $user_id = $this->ion_auth->user()->row()->user_id;
-        $valid = array();
-        foreach ($this->animal_model->getAnimalsByPurchaseValueId($purv_id) as $a) {
-            $valid[$a->an_id] = true;
-        }
-        $this->db->trans_start();
-        foreach ($names as $an_id => $name) {
-            $name = trim(strip_tags($name));
-            if (!isset($valid[(int) $an_id]) || $name === '') {
-                continue;
-            }
-            $this->animal_model->updateData('livestock_animal', 'an_id', (int) $an_id, array(
-                'an_name' => mb_substr($name, 0, 100),
-                'an_updated_at' => get_current_time(),
-                'an_updated_by' => $user_id
-            ));
-        }
-        $this->db->trans_complete();
-        $this->session->set_flashdata('success', 'Animal names saved successfully.');
-        redirect('purchase/nameAnimals?purv_id=' . $purv_id);
-    }
 
     public function addNewPurchase()
     {
@@ -328,7 +274,6 @@ class Purchase extends MY_Controller
             );
             $this->purchase_model->insertPurchase('livestock_purchase_value', $ValueData);
         }
-        $this->animal_model->relinkPurchase($purs_id);
 
 
         // If there is any previous payment on this purchase then payments will be deleted. You can add new payment
@@ -397,7 +342,6 @@ class Purchase extends MY_Controller
             'sp_updated_by' => $this->ion_auth->user()->row()->user_id
         );
         $this->purchase_model->updateData('supplier_payment', 'sp_purs_id', $purs_id, $deletePayments);
-        $this->animal_model->archiveByPurchaseSummaryId($purs_id);
 
         $this->db->trans_complete();
         $this->session->set_flashdata('success', 'Purchase deleted successfully.');
