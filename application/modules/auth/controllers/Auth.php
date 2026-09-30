@@ -64,6 +64,28 @@ class Auth extends MY_Controller {
     }
 
     //log the user in
+    /**
+     * Email the account owner once per hour when their account is locked out by repeated failures.
+     * The visitor's response is unchanged, so this cannot be used to discover which accounts exist.
+     */
+    private function send_lockout_alert($identity) {
+        $identity = trim($identity);
+        if ($identity === '') {
+            return;
+        }
+        $user = $this->db->where('email', $identity)->or_where('username', $identity)->get('users')->row();
+        if (!$user || empty($user->email) || empty($user->tenant_id)) {
+            return;
+        }
+        $this->load->library('Tenant_notifier');
+        if ($this->tenant_notifier->recently_logged((int)$user->tenant_id, 'lockout_alert', 1, (int)$user->id, true)) {
+            return;
+        }
+        $this->load->model('email_service_model');
+        $sent = $this->email_service_model->send_lockout_alert_email($user->email, $user->first_name ?: $user->username, $this->input->ip_address());
+        $this->tenant_notifier->log((int)$user->tenant_id, (int)$user->id, 'lockout_alert', $user->email, 'Security alert: repeated failed sign-in attempts', $sent ? 'sent' : 'failed');
+    }
+
     function login() {
         $this->data['title'] = "Login";
 
@@ -74,6 +96,7 @@ class Auth extends MY_Controller {
         if ($this->form_validation->run() == true) {
             // Check for brute-force rate-limiting lockout
             if ($this->ion_auth->is_max_login_attempts_exceeded($this->input->post('identity'))) {
+                $this->send_lockout_alert((string)$this->input->post('identity'));
                 $this->session->set_flashdata('message', 'Security Alert: Too many failed login attempts. Please wait 1 minute before trying again.');
                 redirect('auth/login');
             }

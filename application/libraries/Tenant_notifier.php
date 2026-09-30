@@ -97,11 +97,17 @@ class Tenant_notifier {
         return $result;
     }
 
-    public function recently_logged($tenant_id, $category, $hours) {
+    public function recently_logged($tenant_id, $category, $hours, $user_id = null, $any_status = false) {
         if (!$this->CI->db->table_exists('email_log')) {
             return false;
         }
-        return $this->CI->db->where('tenant_id', (int)$tenant_id)->where('category', $category)->where('status', 'sent')
+        if ($user_id !== null) {
+            $this->CI->db->where('user_id', (int)$user_id);
+        }
+        if (!$any_status) {
+            $this->CI->db->where('status', 'sent');
+        }
+        return $this->CI->db->where('tenant_id', (int)$tenant_id)->where('category', $category)
             ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-' . (int)$hours . ' hours')))
             ->count_all_results('email_log') > 0;
     }
@@ -153,7 +159,7 @@ class Tenant_notifier {
         return true;
     }
 
-    protected function log($tenant_id, $user_id, $category, $recipient, $subject, $status) {
+    public function log($tenant_id, $user_id, $category, $recipient, $subject, $status) {
         if ($this->CI->db->table_exists('email_log')) {
             $this->CI->db->insert('email_log', array(
                 'tenant_id' => $tenant_id, 'user_id' => $user_id, 'category' => $category,

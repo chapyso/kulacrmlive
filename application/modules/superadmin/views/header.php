@@ -264,6 +264,11 @@
                         <div class="kula-menu-icon"><i class="fa-solid fa-bullhorn" style="color: #f43f5e;"></i></div>
                         <span class="kula-menu-text">Tenant Notifications</span>
                     </a>
+
+                    <a href="<?php echo base_url('superadmin/email_log'); ?>" class="kula-menu-item" data-tooltip="Email Delivery Log">
+                        <div class="kula-menu-icon"><i class="fa-solid fa-envelope-circle-check" style="color: #6366f1;"></i></div>
+                        <span class="kula-menu-text">Email Delivery Log</span>
+                    </a>
                 </div>
 
                 <!-- SECTION 2: SAAS MANAGEMENT -->

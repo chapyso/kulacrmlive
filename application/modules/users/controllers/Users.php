@@ -84,6 +84,15 @@ class Users extends MY_Controller {
 
         $this->log_audit('USER_INVITE', $tenant_id, array('email' => $email, 'role_id' => $role_id));
 
+        // Email the invitation to the invitee (tenant name as sender, logged against this tenant)
+        $this->load->model('Email_service_model');
+        $this->load->library('Tenant_notifier');
+        $inviter = $this->ion_auth->user()->row();
+        $inviter_name = trim(($inviter->first_name ?? '') . ' ' . ($inviter->last_name ?? '')) ?: ($inviter->username ?? 'A colleague');
+        $tenant_name = !empty($this->tenant_data->name) ? $this->tenant_data->name : 'your organization';
+        $sent = $this->Email_service_model->send_invitation_email($email, $tenant_name, $inviter_name, $invite_url, date('Y-m-d H:i:s', strtotime('+48 hours')));
+        $this->tenant_notifier->log($tenant_id, null, 'invitation', $email, 'Invitation to ' . $tenant_name, $sent ? 'sent' : 'failed');
+
         $this->session->set_flashdata('success', 'Invitation generated successfully! Share link: ' . $invite_url);
         redirect('users');
     }

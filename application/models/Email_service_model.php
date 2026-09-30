@@ -74,6 +74,32 @@ class Email_service_model extends CI_Model
     }
 
     /**
+     * Invitation to join a tenant (sent to a person who has no account yet)
+     */
+    public function send_invitation_email($to_email, $tenant_name, $inviter_name, $accept_url, $expires_at)
+    {
+        $subject = 'You have been invited to ' . $tenant_name . ' on KulaCRM';
+        $body = '<h3 style="margin:0 0 8px 0;">You have been invited</h3>'
+            . '<p>' . html_escape($inviter_name) . ' invited you to join <strong>' . html_escape($tenant_name) . '</strong> on KulaCRM.</p>'
+            . '<p><a href="' . html_escape($accept_url) . '" style="background:#047857;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;">Accept invitation</a></p>'
+            . '<p style="font-size:13px;color:#64748b;">This link expires on ' . html_escape(date('j M Y H:i', strtotime($expires_at))) . '. If you did not expect this, ignore this email.</p>';
+        return $this->send_generic($to_email, $subject, $body, $tenant_name);
+    }
+
+    /**
+     * Security alert after repeated failed sign-ins on an account
+     */
+    public function send_lockout_alert_email($to_email, $user_name, $ip_address)
+    {
+        $subject = 'Security alert: repeated failed sign-in attempts';
+        $body = '<h3 style="margin:0 0 8px 0;color:#991b1b;">Repeated failed sign-ins</h3>'
+            . '<p>Hi ' . html_escape($user_name) . ', there were several failed attempts to sign in to your KulaCRM account. Sign-in is paused for a few minutes.</p>'
+            . '<p style="font-size:13px;color:#64748b;">Attempt came from IP address ' . html_escape($ip_address) . '.</p>'
+            . '<p>If this was not you, <a href="' . base_url('auth/forgot_password') . '">reset your password</a> now.</p>';
+        return $this->send_generic($to_email, $subject, $body, 'KulaCRM');
+    }
+
+    /**
      * Generic notification email: platform SMTP, tenant name shown as the sender name.
      * Callers (Tenant_notifier) are responsible for choosing tenant-scoped recipients.
      */
@@ -112,7 +138,7 @@ class Email_service_model extends CI_Model
                 <p style="margin: 0 0 8px 0; font-weight: 700; color: #065f46;">Your Workspace Details:</p>
                 <p style="margin: 0 0 4px 0;"><strong>Login URL:</strong> <a href="' . $login_url . '" style="color: #047857;">' . $login_url . '</a></p>
                 <p style="margin: 0 0 4px 0;"><strong>Admin Username:</strong> ' . html_escape($username) . '</p>
-                ' . ($password ? '<p style="margin: 0;"><strong>Temporary Password:</strong> ' . html_escape($password) . '</p>' : '') . '
+                <p style="margin: 0;">For your security we never email passwords. <a href="' . base_url('auth/forgot_password') . '">Set or reset your password here</a>.</p>
             </div>
 
             <div style="text-align: center; margin: 28px 0;">
@@ -284,7 +310,7 @@ class Email_service_model extends CI_Model
                 <p style="margin: 0 0 8px 0; font-weight: 700; color: #065f46;">Account Access Details:</p>
                 <p style="margin: 0 0 4px 0;"><strong>Email / Username:</strong> ' . html_escape($to_email) . '</p>
                 <p style="margin: 0 0 4px 0;"><strong>Login Page:</strong> <a href="' . $login_url . '" style="color: #047857;">' . $login_url . '</a></p>
-                ' . ($password ? '<p style="margin: 0;"><strong>Temporary Password:</strong> ' . html_escape($password) . '</p>' : '') . '
+                <p style="margin: 0;">For your security we never email passwords. <a href="' . base_url('auth/forgot_password') . '">Set or reset your password here</a>.</p>
             </div>
 
             <div style="text-align: center; margin: 28px 0;">

@@ -723,6 +723,42 @@ class Superadmin extends MY_Controller {
         redirect('superadmin/currency');
     }
 
+    /**
+     * Platform view of every notification email attempt, with tenant filter
+     */
+    public function email_log() {
+        $data = array();
+        $data['settings'] = $this->settings_model->getSettings();
+        $data['tenants'] = $this->db->select('id, name')->order_by('name', 'ASC')->get('tenants')->result();
+        $data['f_tenant'] = $this->input->get('tenant_id');
+        $data['f_status'] = $this->input->get('status');
+        $data['f_category'] = $this->input->get('category');
+        $data['logs'] = array();
+
+        if ($this->db->table_exists('email_log')) {
+            $this->db->select('email_log.*, tenants.name AS tenant_name');
+            $this->db->from('email_log');
+            $this->db->join('tenants', 'tenants.id = email_log.tenant_id', 'left');
+            if ($data['f_tenant'] !== null && $data['f_tenant'] !== '') {
+                $this->db->where('email_log.tenant_id', (int)$data['f_tenant']);
+            }
+            if (in_array($data['f_status'], array('sent', 'failed'), true)) {
+                $this->db->where('email_log.status', $data['f_status']);
+            }
+            if (!empty($data['f_category'])) {
+                $this->db->where('email_log.category', $data['f_category']);
+            }
+            $data['logs'] = $this->db->order_by('email_log.id', 'DESC')->limit(300)->get()->result();
+            $data['categories'] = array_column($this->db->query('SELECT DISTINCT category FROM email_log ORDER BY category')->result_array(), 'category');
+        } else {
+            $data['categories'] = array();
+        }
+
+        $this->load->view('superadmin/header', $data);
+        $this->load->view('superadmin/email_log', $data);
+        $this->load->view('home/footer');
+    }
+
     public function notifications() {
         $data = array();
         $data['settings'] = $this->settings_model->getSettings();
