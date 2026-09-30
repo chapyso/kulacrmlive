@@ -1572,18 +1572,130 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             isScanning = true;
-
-            // Start sampling loop (1 frame every 1 second)
-            if (scanIntervalTimer) clearInterval(scanIntervalTimer);
-            scanIntervalTimer = setInterval(captureAndProcessFrame, 1000);
-
-            // Trigger immediate first scan after 500ms
-            setTimeout(captureAndProcessFrame, 500);
+            startCounting();
         })
         .catch(err => {
             console.error('Camera Access Error:', err);
             alert('Camera access denied or unavailable: ' + err.message);
         });
+    }
+
+    /* ==========================================================================
+       ON-DEVICE HEAD COUNTING (detector + tracker, like a traffic counter)
+       Every animal gets a persistent ID and is counted once. Falls back to the
+       cloud frame-by-frame analysis if the on-device model cannot load.
+       ========================================================================== */
+    const HC_BASE = `<?= base_url('common') ?>`;
+    let headCounter = null;
+    let localMode = false;
+    let lastSyncAt = 0, lastSyncKey = '';
+
+    function loadScriptOnce(src) {
+        return new Promise((resolve, reject) => {
+            if (document.querySelector('script[data-hc="' + src + '"]')) return resolve();
+            const el = document.createElement('script');
+            el.src = src; el.async = false; el.setAttribute('data-hc', src);
+            el.onload = resolve; el.onerror = () => reject(new Error('Could not load ' + src));
+            document.head.appendChild(el);
+        });
+    }
+
+    function ensureHeadCounter() {
+        if (headCounter && headCounter.model) return Promise.resolve(headCounter);
+        return loadScriptOnce(HC_BASE + '/vendor/tfjs/tf.min.js')
+            .then(() => loadScriptOnce(HC_BASE + '/vendor/tfjs/coco-ssd.min.js'))
+            .then(() => loadScriptOnce(HC_BASE + '/js/kula_head_counter.js'))
+            .then(() => {
+                headCounter = new window.KulaHead.KulaHeadCounter({ intervalMs: 120 });
+                return headCounter.load();
+            });
+    }
+
+    function currentVideo() {
+        const m = document.getElementById('m_camera_video'), d = document.getElementById('camera_video');
+        return (m && m.videoWidth > 0) ? m : ((d && d.videoWidth > 0) ? d : (m || d));
+    }
+
+    function startCounting() {
+        if (scanIntervalTimer) { clearInterval(scanIntervalTimer); scanIntervalTimer = null; }
+        setTxt('m_status_text', 'LOADING ON-DEVICE COUNTER...');
+        showSceneBanner('Loading the on-device counter (first time takes a few seconds)...', false);
+        ensureHeadCounter().then(hc => {
+            hc.stop();
+            hc.reset();
+            localMode = true;
+            lastSyncKey = '';
+            setTxt('diag_cam_state', 'CONNECTED');
+            setTxt('diag_session_state', 'ACTIVE');
+            setTxt('diag_capture_state', 'ON-DEVICE');
+            hc.start(currentVideo, onLocalFrame);
+            syncTracksNow(true);
+        }).catch(err => {
+            console.warn('On-device counter unavailable, using cloud analysis:', err);
+            localMode = false;
+            showSceneBanner('On-device counter unavailable - using cloud analysis.', false);
+            scanIntervalTimer = setInterval(captureAndProcessFrame, 1000);
+            setTimeout(captureAndProcessFrame, 500);
+        });
+    }
+
+    function stopLocalCounting() {
+        if (headCounter) headCounter.stop();
+    }
+
+    function onLocalFrame(f) {
+        const st = f.stats;
+        const boxes = f.tracks.map(t => {
+            const col = TRACKING_PALETTE[(t.id - 1) % TRACKING_PALETTE.length].hex;
+            return { x: t.box[0] / f.frameW, y: t.box[1] / f.frameH, width: t.box[2] / f.frameW, height: t.box[3] / f.frameH,
+                     label: '#' + t.id, color: col };
+        }).concat(f.people.map(p => ({ x: p.box[0] / f.frameW, y: p.box[1] / f.frameH, width: p.box[2] / f.frameW, height: p.box[3] / f.frameH,
+                     label: 'PERSON', color: '#3b82f6' })));
+        drawSceneOverlays(boxes);
+
+        setTxt('stat_confirmed', st.unique);
+        setTxt('stat_review', 0);
+        setTxt('stat_unknown', 0);
+        setTxt('stat_active_tracks', st.inView);
+        setTxt('stat_reacquired', st.reacquired);
+        setTxt('diag_confirmed_count', st.unique);
+        setTxt('m_count_detected', st.unique);
+        setTxt('m_stat_total', st.unique);
+        setTxt('m_stat_identified', st.unique);
+        setTxt('m_stat_identified_pct', '100%');
+        setTxt('m_stat_unidentified', 0);
+        setTxt('m_stat_unidentified_pct', '0%');
+        setTxt('m_last_scan_text', st.inView + ' in view · peak ' + st.peak + ' · ' + f.fps + ' fps');
+        showSceneBanner(st.inView + ' animal' + (st.inView === 1 ? '' : 's') + ' in view · ' + st.unique + ' counted' +
+            (f.people.length ? ' · ' + f.people.length + ' person' + (f.people.length === 1 ? '' : 's') : ''), st.inView > 0);
+
+        const now = Date.now();
+        if (now - lastSyncAt > 2000) syncTracksNow(false);
+    }
+
+    function syncTracksNow(force) {
+        if (!activeSessionId || !headCounter) return Promise.resolve();
+        const counted = headCounter.tracker.countedTracks().map(t => ({
+            id: t.id, type: window.KulaHead.KulaHeadTracker.className(t), score: t.score,
+            box: t.box.map(Math.round), hits: t.hits, reacquired: t.reacquiredCount
+        }));
+        const key = counted.map(t => t.id).sort((a, b) => a - b).join(',');
+        if (!force && key === lastSyncKey && Date.now() - lastSyncAt < 10000) { lastSyncAt = Date.now(); return Promise.resolve(); }
+        lastSyncAt = Date.now(); lastSyncKey = key;
+
+        const payload = new FormData();
+        payload.append('session_id', activeSessionId);
+        payload.append('tracks', JSON.stringify(counted));
+        return fetch(`<?= base_url('kula_ai/sync_vision_tracks') ?>`, { method: 'POST', body: payload })
+            .then(r => r.json())
+            .then(d => {
+                if (d && d.status && d.current_counts) {
+                    setTxt('stat_expected', d.current_counts.expected);
+                    setTxt('diag_expected_count', d.current_counts.expected);
+                    setTxt('diag_db_status', 'SAVED');
+                }
+            })
+            .catch(e => { setTxt('diag_last_error', e.message || 'sync failed'); });
     }
 
     let framesCapturedCount = 0;
@@ -1729,6 +1841,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Capture & Send Frame
     function captureAndProcessFrame() {
+        if (localMode) return; // the on-device counter is already counting every frame
         if (!isScanning || !activeSessionId) return;
         if (isProcessingFrame) return;
 
@@ -1861,13 +1974,14 @@ document.addEventListener('DOMContentLoaded', function() {
         btnStopSession.addEventListener('click', function() {
             if (!activeSessionId) return;
             isScanning = false;
+            stopLocalCounting();
             if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
             visionTracker.clearCanvas(mOverlayCanvas); visionTracker.clearCanvas(deskOverlayCanvas);
 
             const payload = new FormData();
             payload.append('session_id', activeSessionId);
 
-            fetch(`<?= base_url('kula_ai/complete_vision_session') ?>`, { method: 'POST', body: payload })
+            syncTracksNow(true).then(() => fetch(`<?= base_url('kula_ai/complete_vision_session') ?>`, { method: 'POST', body: payload }))
             .then(res => res.json())
             .then(data => {
                 if (!data.status) return;

@@ -456,7 +456,7 @@
                     <div class="form-group">
                         <label>Animal (optional)</label>
                         <select name="prs_animal_id" id="animalAdd" class="form-control js-example-basic-single" style="width: 100%;">
-                            <option value="0">-- Whole batch / no specific animal --</option>
+                            <option value="0">All animals (whole batch, no specific animal)</option>
                             <?php foreach ($animals as $an) { ?>
                                 <option value="<?= (int) $an->an_id; ?>" data-shed="<?= (int) $an->an_shed_id; ?>" data-batch="<?= (int) $an->an_batch_id; ?>"><?= html_escape(Animal_model::label($an) . ' (' . $an->ls_name . ($an->lst_title ? ' - ' . $an->lst_title : '') . ')'); ?></option>
                             <?php } ?>
@@ -792,7 +792,7 @@
     });
 </script>
 <script>
-    // Animal picker: show animals in this shed/batch (plus any not yet placed in a batch)
+    // Animal picker: "All animals" (default), then the animals in this shed/batch, then every other animal
     function filterAnimalOptions(selectId, shedId, batchId, selected) {
         var $sel = $('#' + selectId);
         if (!$sel.data('all')) {
@@ -800,11 +800,16 @@
                 return {value: this.value, text: $(this).text(), shed: $(this).data('shed'), batch: $(this).data('batch')};
             }).get());
         }
-        var html = '';
+        var esc = function(t) { return $('<div>').text(t).html(); };
+        var head = '', inBatch = '', others = '';
         $.each($sel.data('all'), function(i, o) {
-            var keep = o.value === '0' || String(o.value) === String(selected) || !o.batch || (String(o.shed) === String(shedId) && String(o.batch) === String(batchId));
-            if (keep) html += '<option value="' + o.value + '" data-shed="' + (o.shed || 0) + '" data-batch="' + (o.batch || 0) + '">' + $('<div>').text(o.text).html() + '</option>';
+            if (o.value === '0') { head = '<option value="0">' + esc(o.text) + '</option>'; return; }
+            var opt = '<option value="' + o.value + '" data-shed="' + (o.shed || 0) + '" data-batch="' + (o.batch || 0) + '">' + esc(o.text) + '</option>';
+            if (o.batch && String(o.shed) === String(shedId) && String(o.batch) === String(batchId)) inBatch += opt; else others += opt;
         });
+        var html = head;
+        if (inBatch) html += '<optgroup label="Animals in this batch">' + inBatch + '</optgroup>';
+        if (others) html += '<optgroup label="Other animals">' + others + '</optgroup>';
         $sel.html(html).val(String(selected || '0')).trigger('change');
     }
 </script>
