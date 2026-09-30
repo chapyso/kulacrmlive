@@ -197,11 +197,35 @@ class Ai_vision_service {
     }
 
     /**
+     * Look up a registered animal (Animals registry) by the ear tag the camera read.
+     * Returns the animal row (with an_name) or null.
+     */
+    protected function registry_animal_by_tag($tag) {
+        if ($tag === null || trim((string)$tag) === '') {
+            return null;
+        }
+        if (!isset($this->CI->animal_model)) {
+            $this->CI->load->model('livestock/animal_model');
+        }
+        return $this->CI->animal_model->findByTag(trim((string)$tag));
+    }
+
+    protected function registry_animal_by_id($an_id) {
+        if (empty($an_id)) {
+            return null;
+        }
+        if (!isset($this->CI->animal_model)) {
+            $this->CI->load->model('livestock/animal_model');
+        }
+        return $this->CI->animal_model->getAnimalById((int)$an_id);
+    }
+
+    /**
      * Animals registered so far in a session (not rejected). Each record is one physical
      * animal seen in the session; ear tags are optional.
      */
     protected function load_session_animals($session_id, $tenant_id) {
-        $this->CI->db->select('id, tag_number, identification_status, is_counted, visual_features_json, candidate_matches_json');
+        $this->CI->db->select('id, tag_number, livestock_id, identification_status, is_counted, visual_features_json, candidate_matches_json');
         $this->CI->db->where('session_id', $session_id);
         $this->CI->db->where('tenant_id', $tenant_id);
         $this->CI->db->where('identification_status !=', 'rejected');
@@ -214,6 +238,7 @@ class Ai_vision_service {
             $animals[(int)$r->id] = array(
                 'id'          => (int)$r->id,
                 'tag'         => $r->tag_number,
+                'animal_id'   => $r->livestock_id ? (int)$r->livestock_id : null,
                 'status'      => $r->identification_status,
                 'animal_type' => is_array($meta) ? ($meta['animal_type'] ?? null) : null,
                 'last_box'    => is_array($meta) ? ($meta['last_box'] ?? null) : null,
@@ -439,14 +464,23 @@ class Ai_vision_service {
                 if ($d['tag'] !== null && empty($known[$match_id]['tag'])) {
                     $upd['tag_number'] = $d['tag'];
                 }
+                if ($d['tag'] !== null && empty($known[$match_id]['animal_id'])) {
+                    $reg = $this->registry_animal_by_tag($d['tag']);
+                    if ($reg) {
+                        $upd['livestock_id'] = (int)$reg->an_id;
+                        $known[$match_id]['animal_id'] = (int)$reg->an_id;
+                        $this->CI->animal_model->markSeen($reg->an_id);
+                    }
+                }
                 $this->CI->db->where('id', $match_id)->where('tenant_id', $tenant_id)->update('ai_vision_session_records', $upd);
                 $record_id = $match_id;
             } else {
                 $status = ($d['confidence'] >= 60) ? 'confirmed' : 'unknown';
+                $reg = $this->registry_animal_by_tag($d['tag']);
                 $this->CI->db->insert('ai_vision_session_records', array(
                     'tenant_id'              => $tenant_id,
                     'session_id'             => $session_id,
-                    'livestock_id'           => null,
+                    'livestock_id'           => $reg ? (int)$reg->an_id : null,
                     'tag_number'             => $d['tag'],
                     'identification_method'  => $d['tag'] !== null ? 'ear_tag' : 'visual_features',
                     'identification_status'  => $status,
@@ -460,15 +494,25 @@ class Ai_vision_service {
                     'created_at'             => $now
                 ));
                 $record_id = $this->CI->db->insert_id();
+                if ($reg) {
+                    $this->CI->animal_model->markSeen($reg->an_id);
+                }
                 $known[$record_id] = array(
-                    'id' => $record_id, 'tag' => $d['tag'], 'status' => $status,
+                    'id' => $record_id, 'tag' => $d['tag'], 'status' => $status, 'animal_id' => $reg ? (int)$reg->an_id : null,
                     'animal_type' => $d['animal_type'], 'last_box' => $d['box'], 'features' => $d['features']
                 );
                 $claimed[$record_id] = true;
                 $new_count++;
             }
 
-            $out_boxes[] = array_merge($d['box'], array('label' => '#' . $record_id . ($d['tag'] !== null ? ' ' . $d['tag'] : '')));
+            $label = '#' . $record_id . ($d['tag'] !== null ? ' ' . $d['tag'] : '');
+            if (!empty($known[$record_id]['animal_id'])) {
+                $reg_row = $this->registry_animal_by_id($known[$record_id]['animal_id']);
+                if ($reg_row) {
+                    $label = Animal_model::label($reg_row);
+                }
+            }
+            $out_boxes[] = array_merge($d['box'], array('label' => $label));
             $confs[]     = $d['confidence'];
             if ($first_tag === null && $d['tag'] !== null) {
                 $first_tag = $d['tag'];
@@ -536,7 +580,7 @@ class Ai_vision_service {
     /**
      * User Action: Human Confirmation of Candidate Match
      */
-    public function confirm_match($session_id, $record_id, $livestock_id, $tag_number = null) {
+    public function confirm_match($session_id, $record_id, $livestock_id = null, $tag_number = null) {
         $tenant_id = $this->get_tenant_id();
 
         $record = $this->CI->db->get_where('ai_vision_session_records', array('id' => $record_id, 'tenant_id' => $tenant_id))->row();
@@ -544,8 +588,14 @@ class Ai_vision_service {
             return array('status' => false, 'error' => 'Record not found.');
         }
 
+        // livestock_id is a registry animal (Animals page). Ignore ids that are not this farm's animals.
+        $livestock_id = $this->registry_animal_by_id($livestock_id) ? (int)$livestock_id : 0;
+        if (!$livestock_id && !empty($record->livestock_id)) {
+            $livestock_id = (int)$record->livestock_id;
+        }
+
         // Check if livestock already counted in session
-        $existing = $this->CI->db->get_where('ai_vision_session_records', array(
+        $existing = !$livestock_id ? null : $this->CI->db->get_where('ai_vision_session_records', array(
             'session_id'            => $session_id,
             'tenant_id'             => $tenant_id,
             'livestock_id'          => $livestock_id,
@@ -558,7 +608,7 @@ class Ai_vision_service {
         }
 
         $update_data = array(
-            'livestock_id'          => (int)$livestock_id,
+            'livestock_id'          => $livestock_id ?: null,
             'tag_number'            => !empty($tag_number) ? $tag_number : $record->tag_number,
             'identification_method' => 'human_confirmed',
             'identification_status' => 'confirmed',
@@ -586,6 +636,123 @@ class Ai_vision_service {
         $this->CI->db->update('ai_vision_counting_sessions');
 
         return array('status' => true, 'message' => 'Animal identity confirmed and counted.');
+    }
+
+    /**
+     * Save the on-device head counter's result. The browser tracks every animal with a persistent
+     * ID and sends the full list of animals counted so far; each becomes one session record
+     * (identification_method 'visual_tracking'). Animals dropped from the list are un-counted.
+     * Session tallies are recomputed from the records so they never drift.
+     */
+    public function sync_tracks($session_id, $tracks, $in_view = 0) {
+        $tenant_id = $this->get_tenant_id();
+        $session   = $this->get_session($session_id);
+        if (!$session) {
+            return array('status' => false, 'error' => 'Session not found.');
+        }
+        if (!is_array($tracks)) {
+            $tracks = array();
+        }
+        $tracks = array_slice($tracks, 0, 1000);
+        $now = date('Y-m-d H:i:s');
+
+        $this->CI->db->trans_start();
+        $this->CI->db->query('SELECT id FROM ai_vision_counting_sessions WHERE id = ? AND tenant_id = ? FOR UPDATE', array((int)$session_id, (int)$tenant_id));
+
+        $rows = $this->CI->db->select('id, candidate_matches_json, identification_status, review_status')
+            ->where('session_id', (int)$session_id)->where('tenant_id', (int)$tenant_id)
+            ->where('identification_method', 'visual_tracking')
+            ->get('ai_vision_session_records')->result();
+        $by_track = array();
+        foreach ($rows as $r) {
+            $meta = json_decode($r->candidate_matches_json, true);
+            if (is_array($meta) && isset($meta['track_id'])) {
+                $by_track[(int)$meta['track_id']] = $r;
+            }
+        }
+
+        $seen = array();
+        foreach ($tracks as $t) {
+            if (!is_array($t) || empty($t['id'])) {
+                continue;
+            }
+            $tid = (int)$t['id'];
+            $seen[$tid] = true;
+            $type = isset($t['type']) ? substr(preg_replace('/[^a-z ]/i', '', (string)$t['type']), 0, 30) : null;
+            $meta = json_encode(array(
+                'track_id'    => $tid,
+                'animal_type' => $type,
+                'last_box'    => isset($t['box']) && is_array($t['box']) ? array_map('floatval', array_slice($t['box'], 0, 4)) : null,
+                'hits'        => (int)($t['hits'] ?? 0),
+                'reacquired'  => (int)($t['reacquired'] ?? 0)
+            ));
+            $conf = max(0, min(100, round((float)($t['score'] ?? 0) * 100, 2)));
+            if (isset($by_track[$tid])) {
+                $row = $by_track[$tid];
+                if ($row->identification_status === 'rejected' && $row->review_status !== 'dropped') {
+                    continue; // a person rejected this one; keep it rejected
+                }
+                $this->CI->db->where('id', $row->id)->where('tenant_id', $tenant_id)->update('ai_vision_session_records', array(
+                    'identification_status'  => 'confirmed',
+                    'review_status'          => 'approved',
+                    'is_counted'             => 1,
+                    'confidence'             => $conf,
+                    'candidate_matches_json' => $meta,
+                    'last_detected_at'       => $now
+                ));
+            } else {
+                $this->CI->db->insert('ai_vision_session_records', array(
+                    'tenant_id'              => $tenant_id,
+                    'session_id'             => (int)$session_id,
+                    'livestock_id'           => null,
+                    'tag_number'             => null,
+                    'identification_method'  => 'visual_tracking',
+                    'identification_status'  => 'confirmed',
+                    'confidence'             => $conf,
+                    'candidate_matches_json' => $meta,
+                    'first_detected_at'      => $now,
+                    'last_detected_at'       => $now,
+                    'is_counted'             => 1,
+                    'review_status'          => 'approved',
+                    'created_at'             => $now
+                ));
+            }
+        }
+        foreach ($by_track as $tid => $row) {
+            if (!isset($seen[$tid]) && $row->identification_status === 'confirmed') {
+                $this->CI->db->where('id', $row->id)->where('tenant_id', $tenant_id)->update('ai_vision_session_records', array(
+                    'identification_status' => 'rejected', 'review_status' => 'dropped', 'is_counted' => 0
+                ));
+            }
+        }
+
+        $tally = $this->CI->db->query(
+            "SELECT SUM(identification_status = 'confirmed' AND is_counted = 1) AS confirmed,
+                    SUM(identification_status = 'needs_review') AS needs_review,
+                    SUM(identification_status = 'unknown') AS unknown
+             FROM ai_vision_session_records WHERE session_id = ? AND tenant_id = ?",
+            array((int)$session_id, (int)$tenant_id)
+        )->row();
+        $confirmed = (int)($tally->confirmed ?? 0);
+        $expected  = (int)$session->expected_count;
+        $this->CI->db->where('id', (int)$session_id)->where('tenant_id', $tenant_id)->update('ai_vision_counting_sessions', array(
+            'confirmed_count'    => $confirmed,
+            'needs_review_count' => (int)($tally->needs_review ?? 0),
+            'unknown_count'      => (int)($tally->unknown ?? 0),
+            'difference_count'   => $expected - $confirmed
+        ));
+        $this->CI->db->trans_complete();
+
+        return array(
+            'status'         => true,
+            'current_counts' => array(
+                'confirmed'    => $confirmed,
+                'needs_review' => (int)($tally->needs_review ?? 0),
+                'unknown'      => (int)($tally->unknown ?? 0),
+                'expected'     => $expected,
+                'difference'   => $expected - $confirmed
+            )
+        );
     }
 
     /**
@@ -721,7 +888,36 @@ class Ai_vision_service {
             $summary_text = "ℹ️ **SURPLUS DETECTED**: AI Vision confirmed " . $confirmed . " animals, which exceeds KulaCRM expected record (" . $expected . ") by " . $surplus . " animals. Potential unassigned livestock or batch mismatch.";
         }
 
+        // 5. Registered animals (Animals page) expected here vs. those the camera identified
+        if (!isset($this->CI->animal_model)) {
+            $this->CI->load->model('livestock/animal_model');
+        }
+        $identified_ids = array();
+        foreach ($records as $rec) {
+            if (!empty($rec->livestock_id) && $rec->identification_status === 'confirmed') {
+                $identified_ids[(int)$rec->livestock_id] = true;
+            }
+        }
+        $roster = $this->CI->animal_model->getByShedBatch($session->shed_id, $session->batch_id);
+        $unseen = array();
+        foreach ($roster as $an) {
+            if (!isset($identified_ids[(int)$an->an_id])) {
+                $unseen[] = Animal_model::label($an);
+            }
+        }
+        $roster_total = count($roster);
+        if ($roster_total > 0) {
+            if (!empty($identified_ids)) {
+                $explanation[] = count($identified_ids) . ' of ' . $roster_total . ' registered animals in this shed/batch were identified by ear tag.';
+            } else {
+                $unseen = array(); // heads were counted, not identified individually, so nobody can be named as "missing"
+                $explanation[] = 'The Animals registry lists ' . $roster_total . ' animals in this shed/batch; the camera counted ' . $confirmed . '.';
+            }
+        }
+
         return array(
+            'roster_total'    => $roster_total,
+            'unseen_animals'  => array_slice($unseen, 0, 100),
             'session_code'    => $session->session_code,
             'shed_name'       => $session->shed_name,
             'batch_code'      => $session->batch_code,

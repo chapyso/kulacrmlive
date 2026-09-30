@@ -279,6 +279,7 @@
                              <a href="<?php echo base_url('livestock/addLivestock'); ?>"><?php echo lang('livestock'); ?> <?php echo lang('list'); ?></a>
                              <a href="<?php echo base_url('livestock/addLivestockType'); ?>"><?php echo lang('livestock_variant'); ?> <?php echo lang('list'); ?></a>
                              <a href="<?php echo base_url('product/listLivestockReproduction'); ?>"><?php echo lang('reproduction'); ?> <?php echo lang('list'); ?></a>
+                             <a href="<?php echo base_url('livestock/animals'); ?>">Animals (names &amp; tags)</a>
                          </div>
                      </div>
                      <?php } ?>

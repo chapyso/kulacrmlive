@@ -19,6 +19,7 @@ class Product extends MY_Controller
         $this->load->model('report/report_model');
         $this->load->model('food/food_model');
         $this->load->model('livestock/livestock_model');
+        $this->load->model('livestock/animal_model');
         $this->load->library('upload');
         $this->load->model('settings/settings_model');
         $settings = $this->settings_model->getSettings();
@@ -42,6 +43,7 @@ class Product extends MY_Controller
         $data['sheds'] = $this->shed_model->getShed();
         $data['batches'] = $this->shed_model->getBatch();
         $data['assignedProducts'] = $this->product_model->getProductAssign();
+        $data['animals'] = $this->animal_model->getActiveAnimals();
         $this->load->view('home/dashboard', $data); // just the header file
         $this->load->view('list_products', $data);
         $this->load->view('home/footer'); // just the header file
@@ -234,6 +236,7 @@ class Product extends MY_Controller
         $data['units'] = $this->settings_model->getUnit();
         $data['sheds'] = $this->shed_model->getShed();
         $data['batches'] = $this->shed_model->getBatch();
+        $data['animals'] = $this->animal_model->getActiveAnimals();
         $this->load->view('home/dashboard', $data); // just the header file
         $this->load->view('view_product_wise_production', $data);
         $this->load->view('home/footer'); // just the header file
@@ -274,6 +277,7 @@ class Product extends MY_Controller
             'prs_shed_id' => $prs_shed_id,
             'prs_batch_id' => $prs_batch_id,
             'prs_production_quantity' => $prs_production_quantity,
+            'prs_animal_id' => $this->animal_model->validAnimalId($this->input->post('prs_animal_id')),
             'prs_description' => $prs_description,
             'prs_date' => $prs_date,
             'prs_status' => 1,
@@ -296,6 +300,7 @@ class Product extends MY_Controller
         $prs_date = date("Y-m-d", strtotime($date));
         $updateData = array(
             'prs_production_quantity' => $prs_production_quantity,
+            'prs_animal_id' => $this->animal_model->validAnimalId($this->input->post('prs_animal_id')),
             'prs_description' => $prs_description,
             'prs_date' => $prs_date,
             'prs_updated_at' => get_current_time(),
@@ -314,6 +319,7 @@ class Product extends MY_Controller
 
         $data['productAssignedById'] = $this->product_model->getProductAssignById($pra_id);
         $data['productById'] = $this->product_model->getProductById($data['productAssignedById']->pra_pr_id);
+        $data['animals'] = $this->animal_model->getActiveAnimals();
 
         $this->load->view('home/dashboard', $data); // just the header file
         $this->load->view('view_assigned_shed_batch_wise_production', $data);
@@ -498,6 +504,7 @@ class Product extends MY_Controller
         $data['livestocks'] = $this->livestock_model->getLivestock();
         $data['livestock_types'] = $this->livestock_model->getLivestockType();
         $data['reproductions'] = $this->product_model->getLivestockReproduction();
+        $data['motherOptions'] = $this->animal_model->getActiveAnimals();
         $this->load->view('home/dashboard', $data); // just the header file
         $this->load->view('list_livestock_reproduction', $data);
         $this->load->view('home/footer'); // just the header file
@@ -541,6 +548,12 @@ class Product extends MY_Controller
                 'lrp_created_by' => $this->ion_auth->user()->row()->user_id
             );
             $livestockReproductionId = $this->product_model->insertData('livestock_reproduction', $data);
+            // Register the newborns as (unnamed) animals linked to their mother, shed and batch
+            $this->animal_model->createBorn(
+                $livestockReproductionId, $lrp_ls_id, $lrp_lst_id, $lrp_birth_quantity,
+                $this->animal_model->resolveAnimalText($this->input->post('lrp_mother')),
+                $lrp_assign_sh_id, $lrp_assign_batch_id
+            );
 
             // Livestock Assigned Shed Table
 
@@ -645,6 +658,7 @@ class Product extends MY_Controller
         );
 
         $this->product_model->updateData('livestock_reproduction', 'lrp_id', $lrp_id, $deleteReproductionData);
+        $this->animal_model->archiveByReproductionId($lrp_id);
 
         // From Assign Table
         // Summary Table

@@ -37,7 +37,7 @@ class Kula_ai extends MY_Controller {
 
         // Plan gate: each endpoint belongs to one plan feature (chat keeps its own friendly in-chat message)
         $vision_methods = array('vision', 'vision_history', 'get_shed_batches', 'start_vision_session', 'process_vision_frame',
-            'confirm_vision_match', 'reject_vision_match', 'complete_vision_session', 'get_session_details', 'validation',
+            'confirm_vision_match', 'reject_vision_match', 'sync_vision_tracks', 'complete_vision_session', 'get_session_details', 'validation',
             'accuracy_dashboard', 'start_validation_session', 'record_validation_attempt', 'get_validation_analytics');
         $document_methods = array('analyze_document', 'approve_import', 'upload_document', 'confirm_import');
         $kula_method = $this->router->fetch_method();
@@ -962,6 +962,20 @@ RESPONSE GUIDELINES:
     }
 
     /**
+     * AJAX API: Save the on-device head counter's tracked animals for a session
+     */
+    public function sync_vision_tracks() {
+        header('Content-Type: application/json');
+        $session_id = (int)$this->input->post('session_id');
+        $tracks     = json_decode((string)$this->input->post('tracks'), true);
+        if (empty($session_id) || !is_array($tracks)) {
+            echo json_encode(array('status' => false, 'error' => 'Missing session or track data.'));
+            return;
+        }
+        echo json_encode($this->ai_vision_service->sync_tracks($session_id, $tracks));
+    }
+
+    /**
      * AJAX API: Human Confirmation of Candidate Match
      */
     public function confirm_vision_match() {
@@ -972,7 +986,7 @@ RESPONSE GUIDELINES:
         $livestock_id = (int)$this->input->post('livestock_id');
         $tag_number   = trim($this->input->post('tag_number') ?? '');
 
-        if (empty($session_id) || empty($record_id) || empty($livestock_id)) {
+        if (empty($session_id) || empty($record_id)) {
             echo json_encode(array('status' => false, 'error' => 'Missing required parameter details.'));
             return;
         }

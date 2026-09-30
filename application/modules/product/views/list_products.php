@@ -454,6 +454,15 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label>Animal (optional)</label>
+                        <select name="prs_animal_id" id="animalAdd" class="form-control js-example-basic-single" style="width: 100%;">
+                            <option value="0">All animals (whole batch, no specific animal)</option>
+                            <?php foreach ($animals as $an) { ?>
+                                <option value="<?= (int) $an->an_id; ?>" data-shed="<?= (int) $an->an_shed_id; ?>" data-batch="<?= (int) $an->an_batch_id; ?>"><?= html_escape(Animal_model::label($an) . ' (' . $an->ls_name . ($an->lst_title ? ' - ' . $an->lst_title : '') . ')'); ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="exampleInputEmail1"><?= lang('production_date'); ?><span class="text-danger">*</span></label>
                         <input type="text" class="form-control datepicker" name="prs_date" id="" value='<?= get_current_date(); ?>' placeholder="" required>
                     </div>
@@ -624,6 +633,7 @@
             var batch_value = $(this).attr('data-batch-value');
             var unit = $(this).attr('data-unit');
             $('#myModal3').modal('show');
+            filterAnimalOptions('animalAdd', shed_id, batch_id, '0');
             $("#productAssignId").val(iid);
             $("#productId").val(product_id);
             $("#productName").val(product_name);
@@ -780,4 +790,26 @@
         toastr.error('<?= html_escape($this->session->flashdata('error')); ?>');
         <?php endif; ?>
     });
+</script>
+<script>
+    // Animal picker: "All animals" (default), then the animals in this shed/batch, then every other animal
+    function filterAnimalOptions(selectId, shedId, batchId, selected) {
+        var $sel = $('#' + selectId);
+        if (!$sel.data('all')) {
+            $sel.data('all', $sel.find('option').map(function() {
+                return {value: this.value, text: $(this).text(), shed: $(this).data('shed'), batch: $(this).data('batch')};
+            }).get());
+        }
+        var esc = function(t) { return $('<div>').text(t).html(); };
+        var head = '', inBatch = '', others = '';
+        $.each($sel.data('all'), function(i, o) {
+            if (o.value === '0') { head = '<option value="0">' + esc(o.text) + '</option>'; return; }
+            var opt = '<option value="' + o.value + '" data-shed="' + (o.shed || 0) + '" data-batch="' + (o.batch || 0) + '">' + esc(o.text) + '</option>';
+            if (o.batch && String(o.shed) === String(shedId) && String(o.batch) === String(batchId)) inBatch += opt; else others += opt;
+        });
+        var html = head;
+        if (inBatch) html += '<optgroup label="Animals in this batch">' + inBatch + '</optgroup>';
+        if (others) html += '<optgroup label="Other animals">' + others + '</optgroup>';
+        $sel.html(html).val(String(selected || '0')).trigger('change');
+    }
 </script>

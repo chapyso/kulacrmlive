@@ -158,11 +158,14 @@
                                     <th><?= lang('shed'); ?> </th>
                                     <th><?= lang('batch'); ?> </th>
                                     <th><?= lang('production_quantity'); ?> </th>
+                                    <th>Animal</th>
                                     <th><?= lang('note'); ?> </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
+                                $animalNames = array();
+                                foreach ($animals as $an) { $animalNames[$an->an_id] = $an->an_name; }
                                 $serial = 0;
                                 foreach ($stockProductions as $productions) {
                                     $serial++;
@@ -173,6 +176,7 @@
                                         <td><?= $this->shed_model->getShedById($productions->prs_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($productions->prs_shed_id)->sh_title ?> </td>
                                         <td><?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_title ?> </td>
                                         <td> <?= $productions->prs_production_quantity; ?></td>
+                                        <td> <?= !empty($productions->prs_animal_id) && isset($animalNames[$productions->prs_animal_id]) ? html_escape($animalNames[$productions->prs_animal_id]) : '-'; ?></td>
                                         <td> <?= $productions->prs_description; ?></td>
                                     </tr>
                                 <?php } ?>

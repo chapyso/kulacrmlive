@@ -176,6 +176,15 @@
                         <!-- /.New Batch -->
                     </fieldset>
                     <div class="form-group">
+                        <label>Mother (optional)</label>
+                        <input type="text" class="form-control" name="lrp_mother" list="reproMotherList" placeholder="e.g. Jana - the calves will be linked to her">
+                        <datalist id="reproMotherList">
+                            <?php foreach ($motherOptions as $m) { if ($m->an_sex === 'M') continue; ?>
+                                <option value="<?= html_escape(Animal_model::label($m)); ?>"><?= html_escape($m->ls_name); ?></option>
+                            <?php } ?>
+                        </datalist>
+                    </div>
+                    <div class="form-group">
                         <label for="exampleInputEmail1"><?php echo lang('description'); ?></label>
                         <textarea name="lrp_description" class="form-control" id="" rows="5" placeholder="Enter Description" style="height: auto !important;"></textarea>
                     </div>
