@@ -6891,3 +6891,125 @@ html.dark-theme header.header.white-bg {
     .kula-hero-card .hero-actions-right { flex-wrap: wrap !important; max-width: 100% !important; min-width: 0 !important; justify-content: flex-start !important; }
     .kula-hero-card .hero-actions-right > * { flex: 0 1 auto !important; min-width: 0 !important; }
 }
+
+/* =====================================================================
+   Legacy nested-panel pages -> ONE flat card
+   Old template: section.panel > header.panel-heading > .panel > .adv-table > .clearfix > .col-md-12 > section.panel > .panel-body
+   (up to six stacked borders/shadows). Recognised structurally, so every such page is fixed at once.
+   ===================================================================== */
+.wrapper > section.panel:has(> header.panel-heading) {
+    background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); margin-bottom: 20px; overflow: visible;
+}
+.wrapper > section.panel:has(> header.panel-heading) > header.panel-heading {
+    background: transparent !important; border: 0 !important; border-bottom: 1px solid #eef2f7 !important; border-radius: 16px 16px 0 0;
+    padding: 18px 24px !important; font-size: 18px; font-weight: 800; color: #0f172a !important; text-transform: none; letter-spacing: -0.2px;
+}
+.wrapper > section.panel:has(> header.panel-heading) > header.panel-heading i { color: #047857; margin-right: 8px; }
+/* wrapper layers: no border/shadow/background/padding of their own */
+.wrapper > section.panel:has(> header.panel-heading) > .panel,
+.wrapper > section.panel:has(> header.panel-heading) .adv-table > .clearfix,
+.wrapper > section.panel:has(> header.panel-heading) .adv-table > .clearfix > .col-md-12,
+.wrapper > section.panel:has(> header.panel-heading) .adv-table > .clearfix > .col-md-12 > section.panel,
+.wrapper > section.panel:has(> header.panel-heading) .adv-table > .clearfix > .col-md-12 > section.panel > .panel-body {
+    background: transparent !important; border: 0 !important; box-shadow: none !important; margin: 0 !important; padding: 0 !important;
+}
+.wrapper > section.panel:has(> header.panel-heading) .adv-table > .clearfix > .col-md-12 { float: none; width: 100%; }
+/* exactly one layer carries the content padding */
+.wrapper > section.panel:has(> header.panel-heading) .adv-table,
+.wrapper > section.panel:has(> header.panel-heading) > .panel-body,
+.wrapper > section.panel:has(> header.panel-heading) > .panel > .panel-body {
+    background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 22px 24px !important; margin: 0 !important;
+}
+/* inline `form { border; padding; background }` blocks used by the old add pages */
+.wrapper > section.panel:has(> header.panel-heading) form {
+    border: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important;
+}
+/* controls and tables inside these pages */
+.wrapper > section.panel:has(> header.panel-heading) .form-control:not(textarea) { border-radius: 10px; height: 42px; box-shadow: none; border: 1px solid #cbd5e1; background-color: #fff; }
+.wrapper > section.panel:has(> header.panel-heading) textarea.form-control { border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: none; }
+.wrapper > section.panel:has(> header.panel-heading) label { font-weight: 700; font-size: 12px; color: #334155; }
+.wrapper > section.panel:has(> header.panel-heading) .select2-container--default .select2-selection--single { height: 42px; border-radius: 10px; border: 1px solid #cbd5e1; background-color: #fff !important; }
+.wrapper > section.panel:has(> header.panel-heading) .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 40px; padding-left: 12px; background-color: transparent !important; color: #0f172a; }
+.wrapper > section.panel:has(> header.panel-heading) .select2-container--default .select2-selection--single .select2-selection__arrow { height: 40px; }
+.wrapper > section.panel:has(> header.panel-heading) table.table { border: 0; margin-bottom: 0; }
+.wrapper > section.panel:has(> header.panel-heading) table.table > thead > tr > th,
+.wrapper > section.panel:has(> header.panel-heading) table.table > thead > th {
+    background: #f8fafc; border: 0 !important; border-bottom: 1px solid #e2e8f0 !important; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: #64748b; padding: 12px 14px;
+}
+.wrapper > section.panel:has(> header.panel-heading) table.table > tbody > tr > td { border-top: 0 !important; border-bottom: 1px solid #f1f5f9; padding: 13px 14px; vertical-align: middle; }
+.wrapper > section.panel:has(> header.panel-heading) table.table > tbody > tr:last-child > td { border-bottom: 0; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) { background: #111a2e; border-color: #1e293b; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) > header.panel-heading { color: #f1f5f9 !important; border-bottom-color: #1e293b !important; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) label { color: #cbd5e1; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) .form-control,
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) .select2-container--default .select2-selection--single { background-color: #0b1220 !important; color: #f1f5f9; border-color: #1e293b; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) .select2-selection__rendered { color: #f1f5f9 !important; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) table.table > thead > tr > th { background: #0b1220; color: #94a3b8; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) table.table > tbody > tr > td { border-bottom-color: #1e293b; }
+@media (max-width: 768px) {
+    .wrapper > section.panel:has(> header.panel-heading) > header.panel-heading { padding: 14px 16px !important; font-size: 16px; }
+    .wrapper > section.panel:has(> header.panel-heading) .adv-table,
+    .wrapper > section.panel:has(> header.panel-heading) > .panel-body,
+    .wrapper > section.panel:has(> header.panel-heading) > .panel > .panel-body { padding: 16px !important; }
+}
+
+/* =====================================================================
+   Add / Edit pages built from the shared "entry bar + items table + summary" template
+   (Add & Edit: purchase, sale, product sale, food purchase, vaccine purchase ...). Same look as the redesigned
+   Add New Purchase page, applied structurally so no per-page markup is needed.
+   ===================================================================== */
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px !important; margin: 0 0 20px !important; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) > .col-md-3 { display: none; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) > .col-md-9 { float: none; width: 100%; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) > .col-md-9::before { content: "Add item"; flex: 0 0 100%; font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #64748b; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) > .col-md-9 > .form-group[class*="col-sm-"] { float: none; width: auto; flex: 1 1 150px; min-width: 130px; padding: 0; margin: 0; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) > .col-md-9 > .row { float: none; flex: 0 0 auto; margin: 0; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) > .col-md-9 > .row > .col-md-12 { padding: 0; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) .save-btn { margin: 0 !important; height: 42px; border-radius: 10px; font-weight: 800; padding: 0 22px; }
+/* items table + order summary */
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 22px; margin: 0 !important; align-items: start; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row::before, .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row::after { display: none; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-9, .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 { float: none; width: auto; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-9 { padding: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-9::before { content: "Items"; display: block; padding: 14px 16px 0; font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #64748b; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-9 .row-top-margin { margin: 8px 0 0 !important; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-9 .col-md-12 { padding: 0; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) table.table-bordered > thead > tr > th, .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) table.table-bordered > thead > th,
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) table.table-bordered > tbody > tr > td { border-left: 0 !important; border-right: 0 !important; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px !important; position: sticky; top: 84px; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3::before { content: "Order summary"; display: block; margin-bottom: 12px; font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #64748b; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 .form-group { margin-bottom: 14px; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 .row { margin-left: -6px; margin-right: -6px; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 .row > [class*="col-"] { padding-left: 6px; padding-right: 6px; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) .button.bg-primary-light { display: flex !important; align-items: center; gap: 8px; background: #ecfdf5 !important; border: 1px solid #a7f3d0 !important; color: #065f46 !important; border-radius: 10px; padding: 10px 12px; margin: 4px 0 10px; font-weight: 700; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) .button.bg-primary-light label { margin: 0; color: inherit; cursor: pointer; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) #modal_body { border: 1px solid #a7f3d0 !important; border-radius: 12px; background: #f0fdf9; padding: 14px !important; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) label.note, .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) .col-md-12.note { float: none; width: 100%; padding: 0; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 button[name="submit"] { margin-top: 6px !important; width: 100% !important; padding: 14px !important; border: 0 !important; border-radius: 12px !important; background: #047857 !important; color: #fff !important; font-weight: 800; font-size: 15px; }
+.wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 button[name="submit"]:hover { background: #065f46 !important; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]), body.dark-theme .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-9, body.dark-theme .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 { background: #111a2e; border-color: #1e293b; }
+@media (max-width: 991px) {
+    .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row { grid-template-columns: 1fr; }
+    .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-3 { position: static; }
+    .wrapper > section.panel:has(> header.panel-heading) form:has(table.data-table) > .row > .col-md-9 { overflow-x: auto; }
+    .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .form-group[class*="col-sm-"]) > .col-md-9 > .form-group[class*="col-sm-"] { flex: 1 1 45%; }
+}
+
+/* Same entry bar for the variant whose fields sit one row deeper (sales templates) */
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px !important; margin: 0 0 20px !important; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-3 { display: none; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 { float: none; width: 100%; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9::before { content: "Add item"; font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #64748b; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 > .row { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 !important; align-items: flex-end; float: none; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 > .row::before, .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 > .row::after { display: none; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 > .row > .form-group[class*="col-sm-"] { float: none; width: auto; flex: 1 1 150px; min-width: 130px; padding: 0; margin: 0; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 > .row > .col-md-12 { padding: 0; width: auto; float: none; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) .save-btn { margin: 0 !important; height: 42px; border-radius: 10px; font-weight: 800; padding: 0 22px; }
+body.dark-theme .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) { background: #111a2e; border-color: #1e293b; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) { display: flex; align-items: flex-end; gap: 12px; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"])::before, .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"])::after { display: none; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 { flex: 1 1 auto; width: auto; min-width: 0; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-1, .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-2 { flex: 0 0 auto; float: none; width: auto; margin-top: 0 !important; padding: 0; }
+.wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-2:empty { display: none; }
+@media (max-width: 991px) { .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) { flex-wrap: wrap; } .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 { flex-basis: 100%; } }
