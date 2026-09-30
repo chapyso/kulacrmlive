@@ -240,6 +240,13 @@ class Auth extends MY_Controller {
                 'group_id' => 1
             ));
 
+            // The first user of a new organization is its Owner (all permissions)
+            $owner_role = $this->db->get_where('roles', array('slug' => 'owner', 'is_system' => 1))->row();
+            if ($owner_role) {
+                $this->load->model('Rbac_model');
+                $this->Rbac_model->assignRole($user_id, (int)$owner_role->id);
+            }
+
             // Seed default settings for the new tenant
             $default_settings = $this->db->get_where('settings', array('tenant_id' => 1))->row_array();
             if ($default_settings) {

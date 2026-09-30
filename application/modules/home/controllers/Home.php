@@ -124,7 +124,7 @@ class Home extends MY_Controller
 
     public function permission()
     {
-        $this->load->view('permission');
+        $this->render_access_denied();
     }
 
     public function switch_language($lang = 'english')

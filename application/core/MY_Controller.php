@@ -484,8 +484,41 @@ class MY_Controller extends MX_Controller {
                 echo json_encode(array('status' => false, 'error' => "Access Denied: You do not possess the required permission ('$permission_name')."));
                 exit;
             } else {
-                show_error("Access Denied: You do not possess the required permission ('$permission_name') to perform this action.", 403, "Permission Denied Guard");
+                $this->render_access_denied($permission_name);
             }
         }
+    }
+
+    /**
+     * Human-readable permission name, e.g. "livestock.view" -> "View livestock"
+     */
+    public function permission_label($permission_name) {
+        $parts = explode('.', (string)$permission_name, 2);
+        if (count($parts) < 2) {
+            return ucfirst(str_replace('_', ' ', (string)$permission_name));
+        }
+        $actions = array(
+            'view' => 'View', 'create' => 'Create', 'update' => 'Edit', 'delete' => 'Delete', 'export' => 'Export',
+            'approve' => 'Approve', 'manage' => 'Manage', 'invite' => 'Invite', 'purchase' => 'Purchase', 'payment' => 'Record payments for',
+            'transfer' => 'Transfer', 'death' => 'Record deaths in', 'distribute' => 'Distribute', 'schedule' => 'Schedule', 'payroll' => 'Run payroll for',
+        );
+        $action = isset($actions[$parts[1]]) ? $actions[$parts[1]] : ucfirst($parts[1]);
+        return $action . ' ' . str_replace('_', ' ', $parts[0]);
+    }
+
+    /**
+     * Render the branded 403 page and stop
+     */
+    protected function render_access_denied($permission_name = null) {
+        if (!headers_sent()) {
+            set_status_header(403);
+        }
+        $logged_in = $this->ion_auth && $this->ion_auth->logged_in();
+        echo $this->load->view('home/access_denied', array(
+            'permission_label' => $permission_name ? $this->permission_label($permission_name) : null,
+            'dashboard_url'    => $logged_in ? tenant_url('dashboard') : base_url('auth/login'),
+            'is_logged_in'     => $logged_in,
+        ), true);
+        exit;
     }
 }

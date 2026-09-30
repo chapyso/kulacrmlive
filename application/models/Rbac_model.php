@@ -32,8 +32,9 @@ class Rbac_model extends MY_Model {
             }
         }
 
-        // Check if user has Owner system role (role_id = 1 or slug = 'owner')
-        if ($this->hasRole($user_id, 'owner') || $this->hasRole($user_id, 'admin')) {
+        // Owner system role, or a tenant admin (ion_auth "admin" group) that predates RBAC and has no role assigned yet
+        $legacy_admin = empty($this->getUserRoles($user_id)) && isset($CI->ion_auth) && $CI->ion_auth->in_group('admin', (int)$user_id);
+        if ($this->hasRole($user_id, 'owner') || $this->hasRole($user_id, 'admin') || $legacy_admin) {
             $all = $this->getAllPermissionNames();
             self::$permissions_cache[$user_id] = $all;
             if (isset($CI->session) && $CI->session->userdata('user_id') == $user_id) {
