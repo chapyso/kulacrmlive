@@ -20,13 +20,23 @@
             </div>
         <?php endif; ?>
 
+        <?php
+        $sa_active = 0; $sa_susp = 0;
+        foreach ($tenants as $sa_t) { if ($sa_t->status === 'active') { $sa_active++; } else { $sa_susp++; } }
+        $this->load->view('superadmin/_table_tools', array(
+            'tt_stats' => array('Tenants' => count($tenants), 'Active' => $sa_active, 'Suspended' => $sa_susp),
+            'tt_placeholder' => 'Search tenant, slug or email...',
+            'tt_filters' => array('Active' => 'active', 'Suspended' => 'suspended'),
+        ));
+        ?>
+
         <!-- Tenants Directory Panel -->
         <div class="row">
             <div class="col-md-12">
                 <section class="panel" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); background: #ffffff;">
                     <div class="panel-body" style="padding: 0;">
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover" style="margin-bottom: 0;">
+                            <table id="sa-table" class="table table-striped table-hover" style="margin-bottom: 0;">
                                 <thead style="background: #f8fafc; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;">
                                     <tr>
                                         <th style="padding: 14px 20px;">Organization / Tenant Name</th>

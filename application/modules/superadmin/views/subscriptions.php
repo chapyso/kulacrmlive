@@ -68,6 +68,16 @@
             </div>
         </div>
 
+        <?php
+        $sa_sub_active = 0; $sa_sub_other = 0;
+        foreach ($subscriptions as $sa_s) { if ($sa_s->status === 'active') { $sa_sub_active++; } else { $sa_sub_other++; } }
+        $this->load->view('superadmin/_table_tools', array(
+            'tt_stats' => array('Subscriptions' => count($subscriptions), 'Active' => $sa_sub_active, 'Suspended / other' => $sa_sub_other),
+            'tt_placeholder' => 'Search tenant or plan...',
+            'tt_filters' => array('Active' => 'active', 'Suspended' => 'suspended'),
+        ));
+        ?>
+
         <!-- Subscriptions Table Panel -->
         <div class="row">
             <div class="col-md-12">
@@ -85,7 +95,7 @@
                         <?php endif; ?>
 
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover" style="margin-bottom: 0;">
+                            <table id="sa-table" class="table table-striped table-hover" style="margin-bottom: 0;">
                                 <thead style="background: #f8fafc; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b;">
                                     <tr>
                                         <th style="padding: 14px 20px;">Tenant Business</th>
