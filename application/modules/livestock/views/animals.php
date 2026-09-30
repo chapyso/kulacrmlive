@@ -23,7 +23,7 @@
                             <div class="progress" style="height:8px; margin:6px 0;"><div class="progress-bar progress-bar-success" style="width:<?= $h->stock > 0 ? min(100, round($h->named / $h->stock * 100)) : 0; ?>%"></div></div>
                             <a class="button button-info" href="<?= base_url('livestock/animals?ls_id=' . $h->ls_id . '&lst_id=' . $h->lst_id . '&state=unnamed'); ?>">Name them</a>
                             <?php if ($h->unregistered > 0) { ?>
-                                <form action="<?= base_url('livestock/generateAnimals'); ?>" method="post" style="display:inline;" onsubmit="return confirm('Create <?= $h->unregistered; ?> blank animal records with auto tags?');">
+                                <form action="<?= base_url('livestock/generateAnimals'); ?>" method="post" style="display:inline;" data-confirm="Create <?= $h->unregistered; ?> blank animal records with auto tags?" data-confirm-title="Create animal records" data-confirm-btn="Yes, create">
                                     <input type="hidden" name="action_token" value="<?= action_token(); ?>">
                                     <input type="hidden" name="ls_id" value="<?= $h->ls_id; ?>">
                                     <input type="hidden" name="lst_id" value="<?= $h->lst_id; ?>">
@@ -110,7 +110,7 @@
                                                 <?php } ?>
                                             </select>
                                         </td>
-                                        <td><button type="submit" class="button button-danger" formaction="<?= base_url('livestock/removeAnimal'); ?>" formmethod="post" name="an_id" value="<?= $a->an_id; ?>" onclick="return confirm('Remove this animal from the registry?');"><i class="fas fa-trash"></i></button></td>
+                                        <td><button type="submit" class="button button-danger" formaction="<?= base_url('livestock/removeAnimal'); ?>" formmethod="post" name="an_id" value="<?= $a->an_id; ?>" data-confirm="Remove this animal from the registry?" data-confirm-btn="Yes, remove"><i class="fas fa-trash"></i></button></td>
                                     </tr>
                                 <?php } ?>
                                 <?php if (empty($animals)) { ?><tr><td colspan="8" class="text-center text-muted">No animals here yet.</td></tr><?php } ?>

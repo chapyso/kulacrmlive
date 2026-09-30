@@ -140,37 +140,29 @@
         $('.restore_backup').click(function(e) {
             e.preventDefault();
             var href = $(this).attr('href');
-            var r = confirm("<?= lang('restore_confirm'); ?>");
-            if (r == true) {
+            Kula.confirm("<?= lang('restore_confirm'); ?>", { danger: false, confirmText: 'Yes, restore' }).then(function(ok) {
+                if (!ok) return;
                 $('#wModalLabel').text('<?= lang('restore_modal_heading'); ?>');
                 $('#wModal').modal({
                     backdrop: 'static',
                     keyboard: true
                 }).appendTo('body').modal('show');
                 window.location.href = href;
-            } else {
-                return false;
-            }
+            });
         });
         $('.restore_db').click(function(e) {
             e.preventDefault();
             var href = $(this).attr('href');
-            var r = confirm("<?= lang('restore_confirm'); ?>");
-            if (r == true) {
-                window.location.href = href;
-            } else {
-                return false;
-            }
+            Kula.confirm("<?= lang('restore_confirm'); ?>", { danger: false, confirmText: 'Yes, restore' }).then(function(ok) {
+                if (ok) window.location.href = href;
+            });
         });
         $('.delete_file').click(function(e) {
             e.preventDefault();
             var href = $(this).attr('href');
-            var r = confirm("<?= lang('delete_confirm'); ?>");
-            if (r == true) {
-                window.location.href = href;
-            } else {
-                return false;
-            }
+            Kula.confirm("<?= lang('delete_confirm'); ?>", { danger: true }).then(function(ok) {
+                if (ok) window.location.href = href;
+            });
         });
     });
 </script>
