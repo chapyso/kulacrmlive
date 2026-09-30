@@ -454,6 +454,15 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label>Animal (optional)</label>
+                        <select name="prs_animal_id" id="animalAdd" class="form-control js-example-basic-single" style="width: 100%;">
+                            <option value="0">-- Whole batch / no specific animal --</option>
+                            <?php foreach ($animals as $an) { ?>
+                                <option value="<?= (int) $an->an_id; ?>"><?= html_escape($an->an_name . ' (' . $an->ls_name . ($an->lst_title ? ' - ' . $an->lst_title : '') . ')'); ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="exampleInputEmail1"><?= lang('production_date'); ?><span class="text-danger">*</span></label>
                         <input type="text" class="form-control datepicker" name="prs_date" id="" value='<?= get_current_date(); ?>' placeholder="" required>
                     </div>
@@ -624,6 +633,7 @@
             var batch_value = $(this).attr('data-batch-value');
             var unit = $(this).attr('data-unit');
             $('#myModal3').modal('show');
+            $('#animalAdd').val('0').trigger('change');
             $("#productAssignId").val(iid);
             $("#productId").val(product_id);
             $("#productName").val(product_name);

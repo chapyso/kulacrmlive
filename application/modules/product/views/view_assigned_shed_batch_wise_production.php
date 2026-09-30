@@ -276,12 +276,15 @@
                                     <th><?= lang('shed'); ?></th>
                                     <th><?= lang('batch'); ?></th>
                                     <th><?= lang('production_quantity'); ?></th>
+                                    <th>Animal</th>
                                     <th><?= lang('note'); ?></th>
                                     <th><?php echo lang('options'); ?></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
+                                $animalNames = array();
+                                foreach ($animals as $an) { $animalNames[$an->an_id] = $an->an_name; }
                                 $serial = 0;
                                 foreach ($stockProductions as $productions) {
                                     $serial++;
@@ -292,13 +295,14 @@
                                         <td><?= $this->shed_model->getShedById($productions->prs_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($productions->prs_shed_id)->sh_title ?> </td>
                                         <td><?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_title ?> </td>
                                         <td> <?= $productions->prs_production_quantity; ?></td>
+                                        <td> <?= !empty($productions->prs_animal_id) && isset($animalNames[$productions->prs_animal_id]) ? html_escape($animalNames[$productions->prs_animal_id]) : '-'; ?></td>
                                         <td> <?= $productions->prs_description; ?></td>
                                         <td>
                                             <?php
                                             // Complete/Incomplete Status 
                                             $batchActiveInactiveStatusInfo = $this->settings_model->getSingleData('live_assigned_shed_summary', ['lshs_sh_id' => $productions->prs_shed_id, 'lshs_batch_id' => $productions->prs_batch_id, 'lshs_status' => 1])->lshs_active_status; ?>
 
-                                            <button <?php echo ($batchActiveInactiveStatusInfo == 1) ? "disabled" : ""; ?> type="button" class="button button-warning editButton" data-toggle="modal" data-id="<?= $productions->prs_id; ?>" data-product-assign-id="<?= $productions->prs_pra_id ?>" data-product-name="<?= $productById->pr_name ?>" data-category-name="<?= $productCategory; ?>" data-date="<?= date("$settings->date_format", strtotime($productions->prs_date)); ?>" data-shed-id="<?= $productions->prs_shed_id; ?>" data-batch-id="<?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_id ?>" data-quantity="<?= $productions->prs_production_quantity; ?>" data-description="<?= $productions->prs_description; ?>" data-shed-value="<?= $this->shed_model->getShedById($productions->prs_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($productions->prs_shed_id)->sh_title ?>" data-batch-value="<?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_title ?>"><i class="fas fa-edit"></i> <?php echo lang('edit'); ?></button>
+                                            <button <?php echo ($batchActiveInactiveStatusInfo == 1) ? "disabled" : ""; ?> type="button" class="button button-warning editButton" data-toggle="modal" data-id="<?= $productions->prs_id; ?>" data-product-assign-id="<?= $productions->prs_pra_id ?>" data-product-name="<?= $productById->pr_name ?>" data-category-name="<?= $productCategory; ?>" data-date="<?= date("$settings->date_format", strtotime($productions->prs_date)); ?>" data-shed-id="<?= $productions->prs_shed_id; ?>" data-batch-id="<?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_id ?>" data-quantity="<?= $productions->prs_production_quantity; ?>" data-animal-id="<?= (int) $productions->prs_animal_id; ?>" data-description="<?= $productions->prs_description; ?>" data-shed-value="<?= $this->shed_model->getShedById($productions->prs_shed_id)->sh_no ?>: <?= $this->shed_model->getShedById($productions->prs_shed_id)->sh_title ?>" data-batch-value="<?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_id ?>: <?= $this->purchase_model->getAssignedSummaryDataByShedAndBatchId($productions->prs_shed_id, $productions->prs_batch_id)->lshs_batch_title ?>"><i class="fas fa-edit"></i> <?php echo lang('edit'); ?></button>
                                             <form action="<?php echo base_url('product/deleteProductStock'); ?>" method="post" style="display:inline" onsubmit="return confirm('<?= lang('are_you_sure_want_to_delete_this_item') ?>');">
                                                 <input type="hidden" name="prs_id" value="<?= $productions->prs_id; ?>">
                                                 <input type="hidden" name="prs_pra_id" value="<?= $productions->prs_pra_id; ?>">
@@ -360,6 +364,15 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label>Animal (optional)</label>
+                        <select name="prs_animal_id" id="animalEdit" class="form-control js-example-basic-single" style="width: 100%;">
+                            <option value="0">-- Whole batch / no specific animal --</option>
+                            <?php foreach ($animals as $an) { ?>
+                                <option value="<?= (int) $an->an_id; ?>"><?= html_escape($an->an_name . ' (' . $an->ls_name . ($an->lst_title ? ' - ' . $an->lst_title : '') . ')'); ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="exampleInputEmail1"><?php echo lang('description'); ?></label>
                         <textarea name="prs_description" class="form-control" id="description" rows="5" placeholder="Enter description" style="height: auto !important;" required></textarea>
                     </div>
@@ -395,6 +408,7 @@
             var quantity = $(this).attr('data-quantity');
             var date = $(this).attr('data-date');
             var description = $(this).attr('data-description');
+            $('#animalEdit').val($(this).attr('data-animal-id') || '0').trigger('change');
             $('#myModal').modal('show');
             $("#productionId").val(iid);
             $("#productAssignId").val(product_assign_id);

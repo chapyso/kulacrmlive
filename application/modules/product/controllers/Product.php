@@ -19,6 +19,7 @@ class Product extends MY_Controller
         $this->load->model('report/report_model');
         $this->load->model('food/food_model');
         $this->load->model('livestock/livestock_model');
+        $this->load->model('livestock/animal_model');
         $this->load->library('upload');
         $this->load->model('settings/settings_model');
         $settings = $this->settings_model->getSettings();
@@ -42,6 +43,7 @@ class Product extends MY_Controller
         $data['sheds'] = $this->shed_model->getShed();
         $data['batches'] = $this->shed_model->getBatch();
         $data['assignedProducts'] = $this->product_model->getProductAssign();
+        $data['animals'] = $this->animal_model->getActiveAnimals();
         $this->load->view('home/dashboard', $data); // just the header file
         $this->load->view('list_products', $data);
         $this->load->view('home/footer'); // just the header file
@@ -234,6 +236,7 @@ class Product extends MY_Controller
         $data['units'] = $this->settings_model->getUnit();
         $data['sheds'] = $this->shed_model->getShed();
         $data['batches'] = $this->shed_model->getBatch();
+        $data['animals'] = $this->animal_model->getActiveAnimals();
         $this->load->view('home/dashboard', $data); // just the header file
         $this->load->view('view_product_wise_production', $data);
         $this->load->view('home/footer'); // just the header file
@@ -274,6 +277,7 @@ class Product extends MY_Controller
             'prs_shed_id' => $prs_shed_id,
             'prs_batch_id' => $prs_batch_id,
             'prs_production_quantity' => $prs_production_quantity,
+            'prs_animal_id' => $this->animal_model->validAnimalId($this->input->post('prs_animal_id')),
             'prs_description' => $prs_description,
             'prs_date' => $prs_date,
             'prs_status' => 1,
@@ -296,6 +300,7 @@ class Product extends MY_Controller
         $prs_date = date("Y-m-d", strtotime($date));
         $updateData = array(
             'prs_production_quantity' => $prs_production_quantity,
+            'prs_animal_id' => $this->animal_model->validAnimalId($this->input->post('prs_animal_id')),
             'prs_description' => $prs_description,
             'prs_date' => $prs_date,
             'prs_updated_at' => get_current_time(),
@@ -314,6 +319,7 @@ class Product extends MY_Controller
 
         $data['productAssignedById'] = $this->product_model->getProductAssignById($pra_id);
         $data['productById'] = $this->product_model->getProductById($data['productAssignedById']->pra_pr_id);
+        $data['animals'] = $this->animal_model->getActiveAnimals();
 
         $this->load->view('home/dashboard', $data); // just the header file
         $this->load->view('view_assigned_shed_batch_wise_production', $data);
