@@ -7048,3 +7048,37 @@ body.dark-theme .wrapper > section.panel:has(> header.panel-heading) .row:has(> 
     backdrop-filter: none !important;
   }
 }
+
+/* ==========================================================================
+   ALL WHITE ACTION BUTTONS -> EMERALD GREEN
+   Covers the Save/Submit buttons (.button.button-info.submit_button) plus the other white
+   .button-info / .btn-info / export buttons, matching the global emerald submit style.
+   ========================================================================== */
+.button.button-info,
+.button.button-info.submit_button,
+button.button-info,
+a.button-info,
+.btn-info,
+.button.export,
+.export,
+button[type="submit"].button,
+input[type="submit"].button {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: #ffffff !important;
+  border: 1.5px solid #047857 !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3) !important;
+}
+
+.button.button-info:hover,
+.button.button-info.submit_button:hover,
+button.button-info:hover,
+a.button-info:hover,
+.btn-info:hover,
+.button.export:hover,
+.export:hover,
+button[type="submit"].button:hover,
+input[type="submit"].button:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%) !important;
+  color: #ffffff !important;
+  border-color: #065f46 !important;
+}
