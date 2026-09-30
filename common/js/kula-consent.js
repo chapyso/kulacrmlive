@@ -306,8 +306,12 @@
             var modal = document.getElementById('kula-cookie-preferences-modal');
             var isBannerVisible = banner && !banner.classList.contains('kula-consent-hidden');
             var isModalVisible = modal && !modal.classList.contains('kula-consent-hidden');
+            // Once the visitor has made a valid choice the floating pill stays hidden; preferences remain
+            // reachable from the footer / profile menu / cookie policy page links.
+            var stored = this.getConsent();
+            var hasChoice = !!stored && !this.isExpiredOrMateriallyChanged(stored);
             if (trigger) {
-                if (isBannerVisible || isModalVisible) {
+                if (isBannerVisible || isModalVisible || hasChoice) {
                     trigger.classList.add('kula-consent-hidden');
                     trigger.setAttribute('aria-hidden', 'true');
                 } else {

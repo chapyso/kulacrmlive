@@ -205,6 +205,12 @@
                                     </a>
                                 </li>
                             <?php } ?>
+                            <li>
+                                <a href="javascript:void(0)" onclick="if (window.KulaConsent) { KulaConsent.openPreferences(); }">
+                                    <i class="fa-solid fa-cookie-bite" style="color: #f59e0b;"></i>
+                                    <span>Cookie preferences</span>
+                                </a>
+                            </li>
                             <li class="divider" style="margin: 4px 0; border-top: 1px solid #f1f5f9;"></li>
                             <li>
                                 <a href="<?php echo base_url('auth/logout'); ?>" class="logout-link">
