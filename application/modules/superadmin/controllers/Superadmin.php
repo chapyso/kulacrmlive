@@ -189,6 +189,11 @@ class Superadmin extends MY_Controller {
             $next_status = ($tenant->status === 'active') ? 'suspended' : 'active';
             $this->db->where('id', $id)->update('tenants', array('status' => $next_status));
             $this->log_audit('TENANT_STATUS_TOGGLE', $id, array('from' => $tenant->status, 'to' => $next_status));
+            $this->load->library('Tenant_notifier');
+            $this->tenant_notifier->notify_admins($id, $next_status === 'suspended' ? 'tenant_suspended' : 'tenant_reactivated',
+                $next_status === 'suspended' ? 'Your KulaCRM account has been suspended' : 'Your KulaCRM account is active again',
+                '<p>The organization <strong>' . html_escape($tenant->name) . '</strong> is now <strong>' . html_escape($next_status) . '</strong>.'
+                . ($next_status === 'suspended' ? ' Please contact support to restore access.' : '') . '</p>');
             $this->session->set_flashdata('feedback', "Tenant '{$tenant->name}' status updated to {$next_status}.");
         }
         redirect('superadmin/tenants');
@@ -440,11 +445,19 @@ class Superadmin extends MY_Controller {
         $status = $this->input->post('status');
 
         if (!empty($tenant_id) && !empty($plan_id)) {
+            $status = in_array($status, array('active', 'suspended', 'trial'), true) ? $status : 'active';
             $update = array(
-                'plan_id' => $plan_id,
-                'status' => $status ?: 'active'
+                'plan_id' => (int)$plan_id,
+                'status' => $status
             );
-            $this->db->where('id', $tenant_id)->update('tenants', $update);
+            $this->db->where('id', (int)$tenant_id)->update('tenants', $update);
+            $plan = $this->db->get_where('subscription_plans', array('id' => (int)$plan_id))->row();
+            if ($plan) {
+                $this->load->library('Tenant_notifier');
+                $this->tenant_notifier->notify_admins((int)$tenant_id, 'plan_changed', 'Your KulaCRM plan is now ' . $plan->name,
+                    '<p>Your organization is now on the <strong>' . html_escape($plan->name) . '</strong> plan (status: ' . html_escape($status)
+                    . '). Monthly price: ' . number_format((float)$plan->price_monthly, 2) . '.</p>');
+            }
             $this->session->set_flashdata('feedback', 'Tenant subscription updated successfully.');
         }
         redirect('superadmin/subscriptions');

@@ -48,6 +48,69 @@ class Cron extends CI_Controller {
         }
     }
 
+    /**
+     * Platform emails to tenant admins: renewal, expiry, trial ending, plan limit warnings.
+     *   php index.php cron platform
+     */
+    public function platform() {
+        $tenants = $this->db->get_where('tenants', array('status' => 'active'))->result();
+        foreach ($tenants as $t) {
+            $tid = (int)$t->id;
+            $plan = $this->db->get_where('subscription_plans', array('id' => (int)$t->plan_id))->row();
+            $sent = array();
+
+            // Subscription period end (latest active subscription for this tenant)
+            $sub = $this->db->where('tenant_id', $tid)->where('status', 'active')->order_by('current_period_end', 'DESC')->limit(1)->get('subscriptions')->row();
+            if ($sub && !empty($sub->current_period_end)) {
+                $days = (int)floor((strtotime($sub->current_period_end) - time()) / 86400);
+                $end = date('j M Y', strtotime($sub->current_period_end));
+                if ($days < 0) {
+                    $sent[] = $this->platform_mail($tid, 'subscription_expired', 72, 'Your KulaCRM subscription has expired',
+                        '<p>Your subscription for <strong>' . html_escape($t->name) . '</strong> ended on ' . html_escape($end) . '. Please renew to keep full access.</p>');
+                } elseif ($days <= 1) {
+                    $sent[] = $this->platform_mail($tid, 'renewal_1d', 24, 'Your KulaCRM subscription renews or ends tomorrow',
+                        '<p>Your subscription for <strong>' . html_escape($t->name) . '</strong> reaches its period end on ' . html_escape($end) . '.</p>');
+                } elseif ($days <= 7) {
+                    $sent[] = $this->platform_mail($tid, 'renewal_7d', 96, 'Your KulaCRM subscription ends in ' . $days . ' days',
+                        '<p>Your subscription for <strong>' . html_escape($t->name) . '</strong> reaches its period end on ' . html_escape($end) . '.</p>');
+                }
+            }
+
+            // Trial ending
+            if (!empty($t->trial_ends_at)) {
+                $days = (int)floor((strtotime($t->trial_ends_at) - time()) / 86400);
+                if ($days >= 0 && $days <= 3) {
+                    $sent[] = $this->platform_mail($tid, 'trial_ending', 24, 'Your KulaCRM trial ends in ' . $days . ' day(s)',
+                        '<p>The trial for <strong>' . html_escape($t->name) . '</strong> ends on ' . html_escape(date('j M Y', strtotime($t->trial_ends_at))) . '. Choose a plan to continue.</p>');
+                }
+            }
+
+            // Plan limits (80%+)
+            if ($plan) {
+                $usage = array(
+                    'users'  => array((int)$this->db->where('tenant_id', $tid)->count_all_results('users'), (int)$plan->max_users),
+                    'sheds'  => array((int)$this->db->where('tenant_id', $tid)->count_all_results('shed'), (int)$plan->max_sheds),
+                );
+                foreach ($usage as $what => $uv) {
+                    if ($uv[1] > 0 && $uv[1] < 9000 && $uv[0] >= 0.8 * $uv[1]) {
+                        $sent[] = $this->platform_mail($tid, 'limit_' . $what, 168, 'You are close to your plan limit (' . $what . ')',
+                            '<p><strong>' . html_escape($t->name) . '</strong> is using ' . $uv[0] . ' of ' . $uv[1] . ' ' . html_escape($what)
+                            . ' allowed on the <strong>' . html_escape($plan->name) . '</strong> plan. Upgrade before you hit the limit.</p>');
+                    }
+                }
+            }
+            echo sprintf("tenant %d platform mails: %s\n", $tid, $sent ? implode(', ', array_filter($sent)) : 'none');
+        }
+    }
+
+    protected function platform_mail($tenant_id, $category, $cooldown_hours, $subject, $body) {
+        if ($this->tenant_notifier->recently_logged($tenant_id, $category, $cooldown_hours)) {
+            return '';
+        }
+        $r = $this->tenant_notifier->notify_admins($tenant_id, $category, $subject, $body);
+        return $category . '(' . $r['sent'] . '/' . ($r['sent'] + $r['failed']) . ')';
+    }
+
     protected function run_category($tenant_id, $tenant_name, $cat) {
         if ($this->recently_sent($tenant_id, $cat)) {
             return 'skipped (sent recently)';

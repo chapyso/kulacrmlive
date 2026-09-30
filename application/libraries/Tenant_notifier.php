@@ -70,6 +70,43 @@ class Tenant_notifier {
     }
 
     /**
+     * Platform-originated mail (billing, plan, suspension) to the ADMINS of one tenant.
+     * Not affected by tenant/user notification settings. Never reaches platform admins or other tenants.
+     */
+    public function notify_admins($tenant_id, $category, $subject, $body_html) {
+        $result = array('sent' => 0, 'failed' => 0, 'skipped' => 0);
+        $tenant_id = (int)$tenant_id;
+        $tenant = $tenant_id > 0 ? $this->CI->db->get_where('tenants', array('id' => $tenant_id))->row() : null;
+        if (!$tenant) {
+            return $result;
+        }
+        $this->CI->load->model('Email_service_model');
+
+        $this->CI->db->where('tenant_id', $tenant_id)->where('active', 1)->where('email !=', '');
+        if ($this->CI->db->field_exists('account_type', 'users')) {
+            $this->CI->db->where('account_type !=', 'platform_admin');
+        }
+        foreach ($this->CI->db->get('users')->result() as $u) {
+            if (!$this->CI->ion_auth->in_group('admin', (int)$u->id)) {
+                continue;
+            }
+            $sent = $this->CI->Email_service_model->send_generic($u->email, $subject, $body_html, 'KulaCRM');
+            $this->log($tenant_id, (int)$u->id, $category, $u->email, $subject, $sent ? 'sent' : 'failed');
+            $result[$sent ? 'sent' : 'failed']++;
+        }
+        return $result;
+    }
+
+    public function recently_logged($tenant_id, $category, $hours) {
+        if (!$this->CI->db->table_exists('email_log')) {
+            return false;
+        }
+        return $this->CI->db->where('tenant_id', (int)$tenant_id)->where('category', $category)->where('status', 'sent')
+            ->where('created_at >=', date('Y-m-d H:i:s', strtotime('-' . (int)$hours . ' hours')))
+            ->count_all_results('email_log') > 0;
+    }
+
+    /**
      * Active, non-platform users of this tenant who hold the permission
      */
     protected function recipients($tenant_id, $permission) {
