@@ -69,6 +69,75 @@
             </div>
         </div>
 
+        <!-- Platform insights -->
+        <div class="row" style="margin-bottom: 20px; display: flex; flex-wrap: wrap;">
+            <div class="col-lg-4 col-md-6" style="margin-bottom: 16px;">
+                <section class="panel" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); height: 100%; margin: 0;">
+                    <header class="panel-heading" style="background: transparent; border-bottom: 1px solid #f1f5f9; padding: 16px 20px; font-weight: 800; font-size: 14px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b; margin-right: 8px;"></i> Needs attention
+                    </header>
+                    <div class="panel-body" style="padding: 8px 20px 16px;">
+                        <?php if (empty($attention)): ?>
+                            <div style="padding: 24px 0; text-align: center; color: #94a3b8;">
+                                <i class="fa-solid fa-circle-check" style="font-size: 26px; color: #10b981; display: block; margin-bottom: 8px;"></i>
+                                Nothing needs your attention.
+                            </div>
+                        <?php else: foreach ($attention as $a): ?>
+                            <a href="<?php echo base_url($a['link']); ?>" style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; text-decoration: none; color: #334155;">
+                                <span style="width: 32px; height: 32px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: <?php echo $a['color']; ?>1a; color: <?php echo $a['color']; ?>; flex-shrink: 0;"><i class="fa-solid <?php echo $a['icon']; ?>"></i></span>
+                                <span style="font-size: 13px; font-weight: 600;"><?php echo htmlspecialchars($a['text']); ?></span>
+                            </a>
+                        <?php endforeach; endif; ?>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-lg-4 col-md-6" style="margin-bottom: 16px;">
+                <section class="panel" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); height: 100%; margin: 0;">
+                    <header class="panel-heading" style="background: transparent; border-bottom: 1px solid #f1f5f9; padding: 16px 20px; font-weight: 800; font-size: 14px;">
+                        <i class="fa-solid fa-layer-group" style="color: #6366f1; margin-right: 8px;"></i> Tenants by plan
+                    </header>
+                    <div class="panel-body" style="padding: 12px 20px 16px;">
+                        <?php $max_t = 1; foreach ($plan_dist as $pd) { $max_t = max($max_t, $pd['tenants']); } ?>
+                        <?php foreach ($plan_dist as $pd): ?>
+                            <div style="margin-bottom: 14px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: #334155;">
+                                    <span><?php echo htmlspecialchars($pd['name']); ?></span>
+                                    <span><?php echo (int)$pd['tenants']; ?> tenant(s) &middot; <?php echo $curr; ?> <?php echo number_format($pd['mrr'], 0); ?>/mo</span>
+                                </div>
+                                <div style="height: 8px; border-radius: 6px; background: #eef2ff; margin-top: 6px; overflow: hidden;">
+                                    <div style="height: 100%; width: <?php echo round(100 * $pd['tenants'] / $max_t); ?>%; background: #6366f1; border-radius: 6px;"></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                        <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 12px; background: #f1f5f9; border-radius: 8px; padding: 4px 10px; font-weight: 700; color: #475569;">New (30d): <?php echo (int)$new_tenants_30d; ?></span>
+                            <span style="font-size: 12px; background: #f1f5f9; border-radius: 8px; padding: 4px 10px; font-weight: 700; color: #475569;">Suspended: <?php echo (int)$suspended_tenants; ?></span>
+                            <span style="font-size: 12px; background: #f1f5f9; border-radius: 8px; padding: 4px 10px; font-weight: 700; color: #475569;">Emails 7d: <?php echo (int)$emails_sent_7d; ?> sent / <?php echo (int)$emails_failed_7d; ?> failed</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-lg-4 col-md-12" style="margin-bottom: 16px;">
+                <section class="panel" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); height: 100%; margin: 0;">
+                    <header class="panel-heading" style="background: transparent; border-bottom: 1px solid #f1f5f9; padding: 16px 20px; font-weight: 800; font-size: 14px;">
+                        <i class="fa-solid fa-clock-rotate-left" style="color: #06b6d4; margin-right: 8px;"></i> Recent platform activity
+                    </header>
+                    <div class="panel-body" style="padding: 8px 20px 16px;">
+                        <?php if (empty($recent_activity)): ?>
+                            <div style="padding: 24px 0; text-align: center; color: #94a3b8;">No activity recorded yet.</div>
+                        <?php else: foreach ($recent_activity as $ev): ?>
+                            <div style="padding: 9px 0; border-bottom: 1px solid #f1f5f9;">
+                                <div style="font-size: 12px; font-weight: 800; color: #334155; letter-spacing: 0.3px;"><?php echo htmlspecialchars(str_replace('_', ' ', $ev->action)); ?></div>
+                                <div style="font-size: 12px; color: #64748b;"><?php echo htmlspecialchars($ev->user_email ?: 'system'); ?> &middot; <?php echo htmlspecialchars(date('j M H:i', strtotime($ev->created_at))); ?></div>
+                            </div>
+                        <?php endforeach; endif; ?>
+                    </div>
+                </section>
+            </div>
+        </div>
+
         <!-- Recent Tenants Directory Table -->
         <div class="row">
             <div class="col-md-12">
@@ -255,12 +324,5 @@ $(document).ready(function() {
         openEditTenantModal(this);
     });
 
-    $(document).on('click', '.kula-delete-btn', function(e) {
-        var msg = $(this).data('confirm-msg') || 'Are you sure you want to delete this tenant?';
-        if (!confirm(msg)) {
-            e.preventDefault();
-            return false;
-        }
-    });
 });
 </script>

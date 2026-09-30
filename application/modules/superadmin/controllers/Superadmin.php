@@ -55,6 +55,55 @@ class Superadmin extends MY_Controller {
         $data['arr'] = $mrr * 12;
         $data['plans'] = $this->db->get('subscription_plans')->result();
 
+        // --- Insights for the dashboard (platform-level, all tenants) ---
+        $data['suspended_tenants'] = (int)$this->db->where('status !=', 'active')->count_all_results('tenants');
+        $data['new_tenants_30d'] = (int)$this->db->where('created_at >=', date('Y-m-d H:i:s', strtotime('-30 days')))->count_all_results('tenants');
+
+        $dist = array();
+        foreach ($data['plans'] as $pl) {
+            $dist[(int)$pl->id] = array('name' => $pl->name, 'tenants' => 0, 'mrr' => 0.0, 'price' => (float)$pl->price_monthly);
+        }
+        foreach ($this->db->get_where('tenants', array('status' => 'active'))->result() as $t) {
+            if (isset($dist[(int)$t->plan_id])) {
+                $dist[(int)$t->plan_id]['tenants']++;
+                $dist[(int)$t->plan_id]['mrr'] += $dist[(int)$t->plan_id]['price'];
+            }
+        }
+        $data['plan_dist'] = array_values($dist);
+
+        $attention = array();
+        $in14 = date('Y-m-d H:i:s', strtotime('+14 days'));
+        $this->db->select('tenants.name, subscriptions.current_period_end');
+        $this->db->from('subscriptions')->join('tenants', 'tenants.id = subscriptions.tenant_id');
+        $this->db->where('subscriptions.status', 'active')->where('subscriptions.current_period_end <=', $in14)->limit(5);
+        foreach ($this->db->get()->result() as $r) {
+            $days = (int)floor((strtotime($r->current_period_end) - time()) / 86400);
+            $attention[] = array('icon' => 'fa-calendar-xmark', 'color' => '#f59e0b', 'text' => $r->name . ($days < 0 ? ' subscription expired' : ' subscription ends in ' . $days . ' day(s)'), 'link' => 'superadmin/subscriptions');
+        }
+        foreach ($this->db->where('trial_ends_at IS NOT NULL', null, false)->where('trial_ends_at <=', date('Y-m-d H:i:s', strtotime('+7 days')))->limit(5)->get('tenants')->result() as $r) {
+            $attention[] = array('icon' => 'fa-hourglass-half', 'color' => '#6366f1', 'text' => $r->name . ' trial ends ' . date('j M', strtotime($r->trial_ends_at)), 'link' => 'superadmin/subscriptions');
+        }
+        foreach ($this->db->where('status !=', 'active')->limit(5)->get('tenants')->result() as $r) {
+            $attention[] = array('icon' => 'fa-ban', 'color' => '#ef4444', 'text' => $r->name . ' is ' . $r->status, 'link' => 'superadmin/tenants');
+        }
+
+        $data['emails_sent_7d'] = 0;
+        $data['emails_failed_7d'] = 0;
+        if ($this->db->table_exists('email_log')) {
+            $since = date('Y-m-d H:i:s', strtotime('-7 days'));
+            $data['emails_sent_7d'] = (int)$this->db->where('status', 'sent')->where('created_at >=', $since)->count_all_results('email_log');
+            $data['emails_failed_7d'] = (int)$this->db->where('status', 'failed')->where('created_at >=', $since)->count_all_results('email_log');
+            if ($data['emails_failed_7d'] > 0) {
+                $attention[] = array('icon' => 'fa-envelope-circle-check', 'color' => '#ef4444', 'text' => $data['emails_failed_7d'] . ' email(s) failed in the last 7 days', 'link' => 'superadmin/email_log?status=failed');
+            }
+        }
+        $data['attention'] = $attention;
+
+        $data['recent_activity'] = array();
+        if ($this->db->table_exists('audit_logs')) {
+            $data['recent_activity'] = $this->db->order_by('id', 'DESC')->limit(8)->get('audit_logs')->result();
+        }
+
         $this->load->view('superadmin/header', $data);
         $this->load->view('superadmin/overview', $data);
         $this->load->view('home/footer');

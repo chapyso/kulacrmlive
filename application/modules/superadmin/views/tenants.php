@@ -265,12 +265,5 @@ $(document).ready(function() {
         openEditTenantModal(this);
     });
 
-    $(document).on('click', '.kula-delete-btn', function(e) {
-        var msg = $(this).data('confirm-msg') || 'Are you sure you want to delete this tenant?';
-        if (!confirm(msg)) {
-            e.preventDefault();
-            return false;
-        }
-    });
 });
 </script>
