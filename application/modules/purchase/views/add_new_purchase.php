@@ -3,17 +3,74 @@
 <section id="main-content">
     <section class="wrapper site-min-height">
         <!-- page start-->
-        <section class="panel">
-            <header class="panel-heading bg-info">
-                <i class="fas fa-plus-circle"></i> <?php echo lang('add_new_purchase'); ?>
+        <section class="panel kula-pp">
+            <header class="kula-pp-head">
+                <div>
+                    <h2><i class="fas fa-plus-circle"></i> <?php echo lang('add_new_purchase'); ?></h2>
+                    <p>Record livestock bought from a supplier: add the items, then review the order summary and submit.</p>
+                </div>
             </header>
             <style>
-                form {
-                    border: 1px solid #ccc;
-                    padding: 23px;
-                    background: #fff;
-                    height: auto;
-                    clear: both;
+                /* Scoped to this page only. Flattens the nested panel layers into one clean surface. */
+                .kula-pp, .kula-pp .panel, .kula-pp .panel-body, .kula-pp .adv-table, .kula-pp .clearfix { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+                .kula-pp .clearfix > .col-md-12 { float: none; width: 100%; padding: 0 !important; }
+                .kula-pp form { border: 0 !important; padding: 0 !important; background: transparent !important; }
+                .kula-pp-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+                .kula-pp-head h2 { font-size: 22px; font-weight: 800; margin: 0 0 4px; color: #0f172a; border: 0; padding: 0; text-transform: none; }
+                .kula-pp-head h2 i { color: #047857; margin-right: 8px; }
+                .kula-pp-head p { margin: 0; color: #64748b; font-size: 13px; }
+                .kula-pp .kula-section-title { font-size: 11px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: #64748b; margin: 0 0 10px; }
+                /* Add-item bar */
+                .kula-pp .kula-entry-row { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 16px; padding: 18px !important; margin: 0 0 20px !important; }
+                .kula-pp .kula-entry-row > .col-md-3 { display: none; }
+                .kula-pp .kula-entry-row > .col-md-9 { float: none; width: 100%; padding: 0; }
+                .kula-pp .kula-entry { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+                .kula-pp .kula-entry > .form-group { float: none; width: auto; flex: 1 1 150px; min-width: 130px; padding: 0; margin: 0; }
+                .kula-pp .kula-entry > .row { float: none; flex: 0 0 auto; margin: 0; }
+                .kula-pp .kula-entry > .row > .col-md-12 { padding: 0; }
+                .kula-pp .kula-entry .save-btn { margin: 0 !important; height: 42px; border-radius: 10px; font-weight: 800; padding: 0 22px; }
+                .kula-pp .form-control, .kula-pp select.form-control { border-radius: 10px; height: 42px; box-shadow: none; background-color: #fff !important; border: 1px solid #cbd5e1; color: #0f172a; }
+                .kula-pp .select2-container--default .select2-selection--single, .kula-pp .select2-selection { background-color: #fff !important; }
+                .kula-pp .select2-container .select2-selection--single .select2-selection__rendered, .kula-pp .select2-selection__rendered { color: #0f172a; background-color: transparent !important; }
+                body.dark-theme .kula-pp .form-control, body.dark-theme .kula-pp select.form-control, body.dark-theme .kula-pp .select2-selection { background-color: #0b1220 !important; color: #f1f5f9; border-color: #1e293b; }
+                body.dark-theme .kula-pp .select2-selection__rendered { color: #f1f5f9; }
+                .kula-pp textarea.form-control { height: auto; }
+                .kula-pp label { font-weight: 700; font-size: 12px; color: #334155; margin-bottom: 6px; }
+                .kula-pp .select2-container--default .select2-selection--single, .kula-pp .select2-container .select2-selection--single { height: 42px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; }
+                .kula-pp .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 40px; padding-left: 12px; }
+                .kula-pp .select2-container--default .select2-selection--single .select2-selection__arrow { height: 40px; }
+                /* Items + summary layout */
+                .kula-pp #formId > .row { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 22px; margin: 0; align-items: start; }
+                .kula-pp #formId > .row::before, .kula-pp #formId > .row::after { display: none; }
+                .kula-pp #formId > .row > .col-md-9, .kula-pp #formId > .row > .col-md-3 { float: none; width: auto; padding: 0; }
+                .kula-pp .kula-items { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
+                .kula-pp .kula-items .row-top-margin { margin: 0; }
+                .kula-pp .kula-items .col-md-12 { padding: 0; }
+                .kula-pp .kula-table { margin: 0; border: 0; }
+                .kula-pp .kula-table > thead > th, .kula-pp .kula-table > thead > tr > th { background: #f8fafc; border: 0; border-bottom: 1px solid #e2e8f0; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: #64748b; padding: 12px 14px; }
+                .kula-pp .kula-table > tbody > tr > td { border: 0; border-bottom: 1px solid #f1f5f9; padding: 14px; vertical-align: middle; }
+                .kula-pp .kula-table > tbody > tr:last-child > td { border-bottom: 0; }
+                .kula-pp .kula-empty { display: none; padding: 34px 16px; text-align: center; color: #94a3b8; }
+                .kula-pp .kula-empty i { display: block; font-size: 26px; margin-bottom: 8px; color: #cbd5e1; }
+                .kula-pp .kula-summary { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px !important; position: sticky; top: 84px; }
+                .kula-pp .kula-summary .form-group { margin-bottom: 14px; }
+                .kula-pp .kula-summary .row { margin-left: -6px; margin-right: -6px; }
+                .kula-pp .kula-summary .row > [class*="col-"] { padding-left: 6px; padding-right: 6px; }
+                .kula-pp .button.bg-primary-light { display: flex !important; align-items: center; gap: 8px; background: #ecfdf5 !important; border: 1px solid #a7f3d0 !important; color: #065f46 !important; border-radius: 10px; padding: 10px 12px; margin: 4px 0 10px; font-weight: 700; }
+                .kula-pp .button.bg-primary-light label { margin: 0; color: inherit; cursor: pointer; }
+                .kula-pp #modal_body { border: 1px solid #a7f3d0 !important; border-radius: 12px; background: #f0fdf9; padding: 14px !important; }
+                .kula-pp label.note { float: none; width: auto; padding: 0; }
+                .kula-pp .col-md-12.note { padding: 0; float: none; width: 100%; }
+                .kula-pp .kula-summary button[name="submit"] { margin-top: 6px !important; width: 100% !important; padding: 14px !important; border: 0 !important; border-radius: 12px !important; background: #047857 !important; color: #fff !important; font-weight: 800; font-size: 15px; }
+                .kula-pp .kula-summary button[name="submit"]:hover { background: #065f46 !important; }
+                body.dark-theme .kula-pp-head h2 { color: #f1f5f9; }
+                body.dark-theme .kula-pp .kula-entry-row, body.dark-theme .kula-pp .kula-items, body.dark-theme .kula-pp .kula-summary { background: #111a2e !important; border-color: #1e293b !important; }
+                body.dark-theme .kula-pp label { color: #cbd5e1; }
+                @media (max-width: 991px) {
+                    .kula-pp #formId > .row { grid-template-columns: 1fr; }
+                    .kula-pp .kula-summary { position: static; }
+                    .kula-pp .kula-entry > .form-group { flex: 1 1 45%; }
+                    .kula-pp .kula-items { overflow-x: auto; }
                 }
             </style>
             <div class="panel">
@@ -35,9 +92,11 @@
                                         </div>
                                     <?php endif; ?>
                                     <?php echo validation_errors(); ?>
-                                    <div class="row">
+                                    <div class="row kula-entry-row">
                                         <!-- col-md-9 -->
                                         <div class="col-md-9">
+                                            <div class="kula-section-title" style="width:100%;">Add item</div>
+                                            <div class="kula-entry">
                                             <!-- <form> -->
                                             <input type="hidden" value="0" id="auto_generate_id">
                                             <div class="form-group col-sm-2">
@@ -78,6 +137,7 @@
                                                     <button type="submit" class="button button-primary save-btn form" style="margin: 0 15px 10px 0;"><i class="fas fa-plus-circle"></i> <?= lang('add'); ?></button>
                                                 </div>
                                             </div>
+                                            </div>
                                         </div>
 
                                         <div class="col-md-3">
@@ -87,9 +147,11 @@
                                     <form role="form" action="<?php echo base_url('') ?>purchase/insertPurchase" method="post" id="formId" enctype="multipart/form-data">
                                         <div class="row">
                                             <div class="col-md-9">
+                                                <div class="kula-section-title">Items</div>
+                                                <div class="kula-items">
                                                 <div class="row row-top-margin">
                                                     <div class="col-md-12">
-                                                        <table class="table table-bordered data-table">
+                                                        <table class="table data-table kula-table">
                                                             <thead class="table_heading_color">
                                                                 <th><?php echo lang('livestock_name'); ?></th>
                                                                 <th><?php echo lang('variant_name'); ?></th>
@@ -103,10 +165,13 @@
 
                                                             </tbody>
                                                         </table>
+                                                        <div class="kula-empty" id="kulaEmptyItems"><i class="fas fa-box-open"></i>No items added yet. Fill the fields above and press Add.</div>
                                                     </div>
                                                 </div>
+                                                </div>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-3 kula-summary">
+                                                <div class="kula-section-title">Order summary</div>
                                                 <input type="hidden" value="1" id="legal_sum">
                                                 <div class="form-group">
                                                     <label for="exampleInputEmail1"> <?php echo lang('supplier'); ?> </label><span class="text-danger">*</span>
@@ -209,6 +274,21 @@
 <!--main content end-->
 <!--footer start-->
 
+<script>
+    (function () {
+        function refreshEmpty() {
+            var tb = document.querySelector('.kula-pp .data-table tbody');
+            var empty = document.getElementById('kulaEmptyItems');
+            if (!tb || !empty) { return; }
+            empty.style.display = tb.querySelector('tr') ? 'none' : 'block';
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            var tb = document.querySelector('.kula-pp .data-table tbody');
+            refreshEmpty();
+            if (tb && window.MutationObserver) { new MutationObserver(refreshEmpty).observe(tb, { childList: true }); }
+        });
+    })();
+</script>
 <input type="hidden" id="supplierQuantityAlert" value="<?php echo $this->report_model->getCountRow('supplier', 's_id', ['s_status' => 1]); ?>">
 <input type="hidden" id="livestockQuantityAlert" value="<?php echo $this->report_model->getCountRow('livestock', 'ls_id', ['ls_status' => 1]); ?>">
 <input type="hidden" id="variantQuantityAlert" value="<?php echo $this->report_model->getCountRow('livestock_type', 'lst_id', ['lst_status' => 1]); ?>">
