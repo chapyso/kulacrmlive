@@ -29,6 +29,35 @@ class Ai_vision_service {
     }
 
     /**
+     * Unique per-tenant session code (PREFIX-YYYYMMDD-####); retries on collision.
+     */
+    protected function generate_session_code($prefix, $table, $tenant_id) {
+        for ($i = 0; $i < 10; $i++) {
+            $code = $prefix . '-' . date('Ymd') . '-' . sprintf('%04d', mt_rand(1, 9999));
+            $exists = $this->CI->db->where('tenant_id', $tenant_id)->where('session_code', $code)->count_all_results($table);
+            if (!$exists) {
+                return $code;
+            }
+        }
+        return $prefix . '-' . date('Ymd') . '-' . substr((string)microtime(true) * 10000, -6);
+    }
+
+    /**
+     * Human-readable batch label from the shed summary (falls back to "Batch N").
+     */
+    protected function resolve_batch_label($shed_id, $batch_id, $tenant_id) {
+        if (empty($batch_id)) {
+            return 'All Batches';
+        }
+        $row = $this->CI->db->select('lshs_batch_title')
+            ->where('lshs_sh_id', $shed_id)
+            ->where('lshs_batch_id', $batch_id)
+            ->where('tenant_id', $tenant_id)
+            ->get('live_assigned_shed_summary')->row();
+        return ($row && $row->lshs_batch_title !== '') ? $row->lshs_batch_title : 'Batch ' . $batch_id;
+    }
+
+    /**
      * Calculate Expected Available Livestock for a Shed & Optional Batch from KulaCRM
      */
     public function get_expected_livestock_count($shed_id, $batch_id = null) {
@@ -74,6 +103,9 @@ class Ai_vision_service {
         $this->CI->db->where('ltr_sh_id', $shed_id);
         $this->CI->db->where('ltr_status', 1);
         $this->CI->db->where('tenant_id', $tenant_id);
+        if (!empty($batch_id)) {
+            $this->CI->db->where('ltr_batch_id', $batch_id);
+        }
         $transfer_row = $this->CI->db->get('livestock_transfer_quantity')->row();
         $transfers = (int)($transfer_row->transfers ?? 0);
 
@@ -95,7 +127,7 @@ class Ai_vision_service {
         $user_id   = $this->CI->session->userdata('user_id') ?: 1;
 
         $calc = $this->get_expected_livestock_count($shed_id, $batch_id);
-        $session_code = 'CS-' . date('Ymd') . '-' . sprintf('%04d', rand(1, 9999));
+        $session_code = $this->generate_session_code('CS', 'ai_vision_counting_sessions', $tenant_id);
 
         $data = array(
             'tenant_id'          => $tenant_id,
@@ -145,17 +177,60 @@ class Ai_vision_service {
         $shed = $this->CI->db->get_where('shed', array('sh_id' => $session->shed_id, 'tenant_id' => $tenant_id))->row();
         $session->shed_name = $shed ? ($shed->sh_title ?? 'Shed #' . $shed->sh_no) : 'Shed #' . $session->shed_id;
 
-        $batch = null;
-        if (!empty($session->batch_id)) {
-            $batch = $this->CI->db->get_where('live_assigned_shed', array('lsh_batch_id' => $session->batch_id, 'tenant_id' => $tenant_id))->row();
-        }
-        $session->batch_code = $batch ? ($batch->lsh_batch_id ?? 'Batch ' . $session->batch_id) : ($session->batch_id ? 'Batch ' . $session->batch_id : 'All Batches');
+        $session->batch_code = $this->resolve_batch_label($session->shed_id, $session->batch_id, $tenant_id);
 
         return $session;
     }
 
     /**
-     * Analyze Device Camera Frame using Gemini Multimodal Vision & Reconcile with KulaCRM Records
+     * Animals registered so far in a session (not rejected). Each record is one physical
+     * animal seen in the session; ear tags are optional.
+     */
+    protected function load_session_animals($session_id, $tenant_id) {
+        $this->CI->db->select('id, tag_number, identification_status, is_counted, visual_features_json, candidate_matches_json');
+        $this->CI->db->where('session_id', $session_id);
+        $this->CI->db->where('tenant_id', $tenant_id);
+        $this->CI->db->where('identification_status !=', 'rejected');
+        $this->CI->db->order_by('id', 'ASC');
+        $rows = $this->CI->db->get('ai_vision_session_records')->result();
+
+        $animals = array();
+        foreach ($rows as $r) {
+            $meta = json_decode($r->candidate_matches_json, true);
+            $animals[(int)$r->id] = array(
+                'id'          => (int)$r->id,
+                'tag'         => $r->tag_number,
+                'status'      => $r->identification_status,
+                'animal_type' => is_array($meta) ? ($meta['animal_type'] ?? null) : null,
+                'last_box'    => is_array($meta) ? ($meta['last_box'] ?? null) : null,
+                'features'    => json_decode($r->visual_features_json, true) ?: array()
+            );
+        }
+        return $animals;
+    }
+
+    /**
+     * Intersection-over-union of two normalized {x,y,width,height} boxes.
+     */
+    protected function box_iou($a, $b) {
+        if (!is_array($a) || !is_array($b) || !isset($a['x'], $a['y'], $a['width'], $a['height'], $b['x'], $b['y'], $b['width'], $b['height'])) {
+            return 0.0;
+        }
+        $iw = min($a['x'] + $a['width'], $b['x'] + $b['width']) - max($a['x'], $b['x']);
+        $ih = min($a['y'] + $a['height'], $b['y'] + $b['height']) - max($a['y'], $b['y']);
+        if ($iw <= 0 || $ih <= 0) {
+            return 0.0;
+        }
+        $inter = $iw * $ih;
+        $union = ($a['width'] * $a['height']) + ($b['width'] * $b['height']) - $inter;
+        return $union > 0 ? $inter / $union : 0.0;
+    }
+
+    /**
+     * Analyze a camera frame and count every animal in it, with or without ear tags.
+     * Each physical animal becomes one session record. Re-sightings in later frames are matched
+     * back to it (readable ear tag, model re-identification, or box overlap) so an animal is
+     * never counted twice.
      */
     public function analyze_frame($session_id, $image_base64, $mime_type = 'image/jpeg') {
         $session = $this->get_session($session_id);
@@ -164,62 +239,46 @@ class Ai_vision_service {
         }
 
         $tenant_id = $this->get_tenant_id();
+        $known     = $this->load_session_animals($session_id, $tenant_id);
 
-        // Retrieve list of already counted tags/IDs in this session to enforce persistent unique counting
-        $this->CI->db->select('livestock_id, tag_number');
-        $this->CI->db->where('session_id', $session_id);
-        $this->CI->db->where('tenant_id', $tenant_id);
-        $this->CI->db->where('identification_status', 'confirmed');
-        $this->CI->db->where('is_counted', 1);
-        $counted_records = $this->CI->db->get('ai_vision_session_records')->result();
-
-        $counted_tags = array_filter(array_column($counted_records, 'tag_number'));
-        $counted_ids  = array_filter(array_column($counted_records, 'livestock_id'));
-
-        // Retrieve KulaCRM livestock records registered in this shed/batch for candidate matching
-        $this->CI->db->select('livestock.ls_id, livestock.ls_name, livestock_type.lst_title as variant_name');
-        $this->CI->db->from('livestock');
-        $this->CI->db->join('livestock_type', 'livestock_type.lst_id = livestock.ls_lst_type_id', 'left');
-        $this->CI->db->where('livestock.tenant_id', $tenant_id);
-        $this->CI->db->where('livestock.ls_status', 1);
-        $this->CI->db->limit(100);
-        $expected_records = $this->CI->db->get()->result_array();
+        $known_ctx = array();
+        foreach ($known as $k) {
+            $known_ctx[] = array(
+                'animal_no'   => $k['id'],
+                'animal_type' => $k['animal_type'],
+                'ear_tag'     => $k['tag'],
+                'features'    => $k['features'],
+                'last_box'    => $k['last_box']
+            );
+        }
 
         $context_payload = array(
-            'session_code'         => $session->session_code,
-            'shed_id'              => $session->shed_id,
-            'shed_name'            => $session->shed_name,
-            'selected_batch'       => $session->batch_code,
-            'already_counted_tags' => array_values($counted_tags),
-            'expected_livestock'   => $expected_records
+            'shed_name'      => $session->shed_name,
+            'selected_batch' => $session->batch_code,
+            'known_animals'  => $known_ctx
         );
 
-        $system_prompt = "You are KulaAI Vision, a high-precision computer vision model for livestock identification & smart counting.\n"
-            . "ANALYZE THE SUBMITTED CAMERA FRAME AND RETURN STRICT JSON WITH THIS EXACT SCHEMA:\n"
+        $system_prompt = "You are KulaAI Vision, a livestock counting model. Count every animal in the camera frame. Ear tags are NOT required.\n"
+            . "RETURN STRICT JSON WITH THIS EXACT SCHEMA:\n"
             . "{\n"
-            . '  "animal_detected": true|false,' . "\n"
-            . '  "animal_type": "goat|cattle|poultry|pig|sheep|unknown",' . "\n"
-            . '  "bounding_boxes": [ {"x": float_0_to_1, "y": float_0_to_1, "width": float_0_to_1, "height": float_0_to_1, "label": "string"} ],' . "\n"
-            . '  "ear_tag_detected": true|false,' . "\n"
-            . '  "ear_tag": "TAG_NUMBER or null",' . "\n"
-            . '  "ear_tag_readable": true|false,' . "\n"
-            . '  "candidate_livestock_id": int|null,' . "\n"
-            . '  "candidate_matches": [ {"livestock_id": int, "tag_number": "string", "variant": "string", "confidence": float} ],' . "\n"
-            . '  "visual_features": { "coat_color": "string", "markings": "string", "size_estimate": "small|medium|large", "breed_variant": "string" },' . "\n"
-            . '  "identification_status": "confirmed|needs_review|unknown",' . "\n"
-            . '  "confidence_level": float_0_to_100,' . "\n"
-            . '  "requires_human_confirmation": true|false,' . "\n"
-            . '  "batch_mismatch_detected": true|false,' . "\n"
-            . '  "detected_batch_id": "string or null"' . "\n"
+            . '  "animal_count": int,' . "\n"
+            . '  "animals": [ {' . "\n"
+            . '    "box": {"x": float_0_to_1, "y": float_0_to_1, "width": float_0_to_1, "height": float_0_to_1},' . "\n"
+            . '    "animal_type": "goat|cattle|poultry|pig|sheep|other",' . "\n"
+            . '    "ear_tag": "TAG or null",' . "\n"
+            . '    "features": {"coat_color": "string", "markings": "string", "size_estimate": "small|medium|large", "distinguishing_marks": "string"},' . "\n"
+            . '    "same_as_animal_no": int|null,' . "\n"
+            . '    "confidence": float_0_to_100' . "\n"
+            . "  } ]\n"
             . "}\n\n"
-            . "CRITICAL INTEGRITY & DETECTION RULES:\n"
-            . "1. STRICT REALITY ENFORCEMENT: ONLY detect genuine livestock/farm animals (goats, cows/cattle, sheep, pigs, poultry). If the image contains NO livestock (for example: empty barn/room, floor, wall, ceiling, human, desk, outdoor landscape without animals, blurry image), YOU MUST SET animal_detected=false, bounding_boxes=[], ear_tag_detected=false, ear_tag=null, identification_status='unknown', confidence_level=0. NEVER fabricate or hallucinate an animal.\n"
-            . "2. BOUNDING BOXES: If animals are detected, provide accurate normalized coordinates (x, y, width, height between 0.0 and 1.0) tightly surrounding each detected animal.\n"
-            . "3. EAR TAG OCR: If an ear tag is clearly visible on an animal, read its characters accurately. If no ear tag is visible or readable, set ear_tag_detected=false and ear_tag=null. Never invent tag numbers.\n"
-            . "4. CONFIDENCE THRESHOLDS:\n"
-            . "   - Confidence >= 85% -> identification_status = 'confirmed', requires_human_confirmation = false.\n"
-            . "   - Confidence 50%..84% -> identification_status = 'needs_review', requires_human_confirmation = true.\n"
-            . "   - Confidence < 50% -> identification_status = 'unknown'.\n";
+            . "RULES:\n"
+            . "1. Only real livestock. If the frame has no livestock (empty pen, floor, wall, person, blur), return animal_count=0 and animals=[]. Never invent animals.\n"
+            . "2. List EVERY distinct animal visible, including ones with no ear tag and ones partly hidden (list an animal if at least half of it is visible). Each physical animal appears exactly once.\n"
+            . "3. Each box tightly surrounds one animal (normalized 0..1). Never draw one box around a group.\n"
+            . "4. ear_tag: fill only if the characters are clearly readable, otherwise null. Never guess a tag.\n"
+            . "5. features: describe coat, markings and size well enough to recognise this animal in a later frame.\n"
+            . "6. known_animals lists animals already counted in this session, with their features and last position. Set same_as_animal_no to that animal_no ONLY if this animal is clearly the same one (matching coat, markings, size, and a plausible position). Otherwise null.\n"
+            . "7. Count animals that look alike separately; never merge two animals into one box.\n";
 
         $vision_res = $this->CI->ai_provider->generate_vision($system_prompt, $image_base64, $mime_type, $context_payload);
 
@@ -231,15 +290,13 @@ class Ai_vision_service {
             );
         }
 
-        // Parse structured JSON response
         $parsed = json_decode($vision_res['response'], true);
         if (!is_array($parsed)) {
-            // Attempt clean JSON extraction if wrapped in markdown
             $clean_json = preg_replace('/^```json\s*|\s*```$/i', '', trim($vision_res['response']));
             $parsed = json_decode($clean_json, true);
         }
 
-        if (!is_array($parsed) || !isset($parsed['animal_detected'])) {
+        if (!is_array($parsed) || !isset($parsed['animals']) || !is_array($parsed['animals'])) {
             return array(
                 'status' => false,
                 'error'  => 'Invalid AI vision analysis response schema.',
@@ -247,7 +304,33 @@ class Ai_vision_service {
             );
         }
 
-        if (!$parsed['animal_detected']) {
+        // Normalize detections; drop weak or invalid ones
+        $detections = array();
+        foreach ($parsed['animals'] as $a) {
+            if (!is_array($a) || empty($a['box']) || !is_array($a['box']) || !isset($a['box']['x'], $a['box']['y'])) {
+                continue;
+            }
+            $conf = (float)($a['confidence'] ?? 0);
+            if ($conf < 40) {
+                continue;
+            }
+            $tag = !empty($a['ear_tag']) ? trim((string)$a['ear_tag']) : null;
+            $detections[] = array(
+                'box' => array(
+                    'x'      => max(0.0, min(1.0, (float)$a['box']['x'])),
+                    'y'      => max(0.0, min(1.0, (float)$a['box']['y'])),
+                    'width'  => max(0.05, min(1.0, (float)($a['box']['width'] ?? $a['box']['w'] ?? 0.3))),
+                    'height' => max(0.05, min(1.0, (float)($a['box']['height'] ?? $a['box']['h'] ?? 0.3)))
+                ),
+                'animal_type' => !empty($a['animal_type']) ? strtolower((string)$a['animal_type']) : 'other',
+                'tag'         => ($tag !== null && $tag !== '' && strtolower($tag) !== 'null') ? $tag : null,
+                'features'    => is_array($a['features'] ?? null) ? $a['features'] : array(),
+                'same_as'     => !empty($a['same_as_animal_no']) ? (int)$a['same_as_animal_no'] : null,
+                'confidence'  => $conf
+            );
+        }
+
+        if (empty($detections)) {
             return array(
                 'status'           => true,
                 'animal_detected'  => false,
@@ -263,150 +346,144 @@ class Ai_vision_service {
             );
         }
 
-        // Check persistent double counting suppression
-        $detected_tag = !empty($parsed['ear_tag']) ? trim($parsed['ear_tag']) : null;
-        $detected_id  = !empty($parsed['candidate_livestock_id']) ? (int)$parsed['candidate_livestock_id'] : null;
-        $already_counted = false;
-
-        // Atomic DB Check & Lock to prevent Race Conditions under concurrent frame requests
+        // Serialize concurrent frames on this session, then re-read the animals registered so far
         $this->CI->db->trans_start();
+        $this->CI->db->query('SELECT id FROM ai_vision_counting_sessions WHERE id = ? AND tenant_id = ? FOR UPDATE', array((int)$session_id, (int)$tenant_id));
+        $known = $this->load_session_animals($session_id, $tenant_id);
 
-        if (!empty($detected_tag)) {
-            $existing_lock = $this->CI->db->get_where('ai_vision_session_records', array(
-                'session_id'            => $session_id,
-                'tenant_id'             => $tenant_id,
-                'tag_number'            => $detected_tag,
-                'identification_status' => 'confirmed'
-            ))->row();
-            if ($existing_lock) { $already_counted = true; }
-        }
-        if (!empty($detected_id) && !$already_counted) {
-            $existing_id_lock = $this->CI->db->get_where('ai_vision_session_records', array(
-                'session_id'            => $session_id,
-                'tenant_id'             => $tenant_id,
-                'livestock_id'          => $detected_id,
-                'identification_status' => 'confirmed'
-            ))->row();
-            if ($existing_id_lock) { $already_counted = true; }
-        }
+        $now       = date('Y-m-d H:i:s');
+        $claimed   = array();
+        $new_count = 0;
+        $out_boxes = array();
+        $confs     = array();
+        $first_tag = null;
 
-        // Parse Genuine Detected Bounding Boxes from AI
-        $raw_boxes = array();
-        if (!empty($parsed['bounding_boxes']) && is_array($parsed['bounding_boxes'])) {
-            foreach ($parsed['bounding_boxes'] as $b) {
-                if (is_array($b) && isset($b['x'], $b['y'])) {
-                    $raw_boxes[] = array(
-                        'x'      => max(0.0, min(1.0, (float)$b['x'])),
-                        'y'      => max(0.0, min(1.0, (float)$b['y'])),
-                        'width'  => max(0.05, min(1.0, (float)($b['width'] ?? $b['w'] ?? 0.3))),
-                        'height' => max(0.05, min(1.0, (float)($b['height'] ?? $b['h'] ?? 0.3))),
-                        'label'  => !empty($b['label']) ? (string)$b['label'] : (!empty($detected_tag) ? $detected_tag : 'LIVESTOCK')
-                    );
+        foreach ($detections as $d) {
+            $match_id = null;
+
+            // a) readable ear tag identical to a registered animal
+            if ($d['tag'] !== null) {
+                foreach ($known as $kid => $k) {
+                    if (!isset($claimed[$kid]) && !empty($k['tag']) && strtolower($k['tag']) === strtolower($d['tag'])) {
+                        $match_id = $kid;
+                        break;
+                    }
                 }
             }
-        } elseif (!empty($parsed['bounding_box']) && is_array($parsed['bounding_box'])) {
-            $b = $parsed['bounding_box'];
-            $raw_boxes[] = array(
-                'x'      => max(0.0, min(1.0, (float)($b['x'] ?? 0.2))),
-                'y'      => max(0.0, min(1.0, (float)($b['y'] ?? 0.15))),
-                'width'  => max(0.05, min(1.0, (float)($b['width'] ?? 0.4))),
-                'height' => max(0.05, min(1.0, (float)($b['height'] ?? 0.5))),
-                'label'  => !empty($detected_tag) ? $detected_tag : 'LIVESTOCK'
-            );
+            // b) model re-identification against known_animals
+            if ($match_id === null && $d['same_as'] !== null && isset($known[$d['same_as']]) && !isset($claimed[$d['same_as']])) {
+                $match_id = $d['same_as'];
+            }
+            // c) same spot as a registered animal of the same type (frames are about 1s apart)
+            if ($match_id === null) {
+                $best = 0.5;
+                foreach ($known as $kid => $k) {
+                    if (isset($claimed[$kid]) || ($k['animal_type'] && $k['animal_type'] !== $d['animal_type'])) {
+                        continue;
+                    }
+                    $iou = $this->box_iou($d['box'], $k['last_box']);
+                    if ($iou >= $best) {
+                        $best = $iou;
+                        $match_id = $kid;
+                    }
+                }
+            }
+
+            $meta_json = json_encode(array('animal_type' => $d['animal_type'], 'last_box' => $d['box']));
+
+            if ($match_id !== null) {
+                $claimed[$match_id] = true;
+                $upd = array('last_detected_at' => $now, 'candidate_matches_json' => $meta_json);
+                if ($d['tag'] !== null && empty($known[$match_id]['tag'])) {
+                    $upd['tag_number'] = $d['tag'];
+                }
+                $this->CI->db->where('id', $match_id)->where('tenant_id', $tenant_id)->update('ai_vision_session_records', $upd);
+                $record_id = $match_id;
+            } else {
+                $status = ($d['confidence'] >= 60) ? 'confirmed' : 'unknown';
+                $this->CI->db->insert('ai_vision_session_records', array(
+                    'tenant_id'              => $tenant_id,
+                    'session_id'             => $session_id,
+                    'livestock_id'           => null,
+                    'tag_number'             => $d['tag'],
+                    'identification_method'  => $d['tag'] !== null ? 'ear_tag' : 'visual_features',
+                    'identification_status'  => $status,
+                    'confidence'             => $d['confidence'],
+                    'candidate_matches_json' => $meta_json,
+                    'visual_features_json'   => json_encode($d['features']),
+                    'first_detected_at'      => $now,
+                    'last_detected_at'       => $now,
+                    'is_counted'             => ($status === 'confirmed') ? 1 : 0,
+                    'review_status'          => 'approved',
+                    'created_at'             => $now
+                ));
+                $record_id = $this->CI->db->insert_id();
+                $known[$record_id] = array(
+                    'id' => $record_id, 'tag' => $d['tag'], 'status' => $status,
+                    'animal_type' => $d['animal_type'], 'last_box' => $d['box'], 'features' => $d['features']
+                );
+                $claimed[$record_id] = true;
+                $new_count++;
+            }
+
+            $out_boxes[] = array_merge($d['box'], array('label' => '#' . $record_id . ($d['tag'] !== null ? ' ' . $d['tag'] : '')));
+            $confs[]     = $d['confidence'];
+            if ($first_tag === null && $d['tag'] !== null) {
+                $first_tag = $d['tag'];
+            }
         }
 
-        if ($already_counted) {
-            $this->CI->db->trans_complete();
-            return array(
-                'status'               => true,
-                'animal_detected'      => true,
-                'already_counted'      => true,
-                'identification_status'=> 'already_counted',
-                'tag_number'           => $detected_tag,
-                'livestock_id'         => $detected_id,
-                'bounding_boxes'       => $raw_boxes,
-                'bounding_box'         => (!empty($raw_boxes) ? $raw_boxes[0] : null),
-                'confidence'           => $parsed['confidence_level'] ?? 90,
-                'visual_features'      => $parsed['visual_features'] ?? array(),
-                'message'              => "Animal (" . ($detected_tag ?: "ID #{$detected_id}") . ") ALREADY COUNTED in this session. Count not incremented.",
-                'current_counts'       => array(
-                    'confirmed'        => $session->confirmed_count,
-                    'needs_review'     => $session->needs_review_count,
-                    'unknown'          => $session->unknown_count,
-                    'expected'         => $session->expected_count
-                )
-            );
-        }
+        // Session tallies are recomputed from the records so they never drift
+        $tally = $this->CI->db->query(
+            "SELECT
+                SUM(identification_status = 'confirmed' AND is_counted = 1) AS confirmed,
+                SUM(identification_status = 'needs_review') AS needs_review,
+                SUM(identification_status = 'unknown') AS unknown
+             FROM ai_vision_session_records
+             WHERE session_id = ? AND tenant_id = ?",
+            array((int)$session_id, (int)$tenant_id)
+        )->row();
+        $confirmed    = (int)($tally->confirmed ?? 0);
+        $needs_review = (int)($tally->needs_review ?? 0);
+        $unknown      = (int)($tally->unknown ?? 0);
+        $expected     = (int)$session->expected_count;
 
-        // Record persistent detection event in DB
-        $id_status  = $parsed['identification_status'] ?? 'unknown';
-        $confidence = (float)($parsed['confidence_level'] ?? 50.0);
-        $track_id   = $parsed['tracking_id'] ?? null;
-        $track_col  = $parsed['tracking_color'] ?? null;
-
-        $record_data = array(
-            'tenant_id'              => $tenant_id,
-            'session_id'            => $session_id,
-            'livestock_id'          => $detected_id,
-            'tracking_id'           => $track_id,
-            'tracking_color'        => $track_col,
-            'tag_number'            => $detected_tag,
-            'variant_id'            => null,
-            'identification_method' => !empty($parsed['ear_tag_detected']) ? 'ear_tag' : 'visual_features',
-            'identification_status' => $id_status,
-            'confidence'            => $confidence,
-            'candidate_matches_json'=> json_encode($parsed['candidate_matches'] ?? array()),
-            'visual_features_json'  => json_encode($parsed['visual_features'] ?? array()),
-            'first_detected_at'     => date('Y-m-d H:i:s'),
-            'last_detected_at'      => date('Y-m-d H:i:s'),
-            'is_counted'            => ($id_status === 'confirmed') ? 1 : 0,
-            'review_status'         => ($id_status === 'confirmed') ? 'approved' : 'pending',
-            'created_at'            => date('Y-m-d H:i:s')
-        );
-
-        $this->CI->db->insert('ai_vision_session_records', $record_data);
-        $record_id = $this->CI->db->insert_id();
-
-        // Update Session Tallies
-        if ($id_status === 'confirmed') {
-            $this->CI->db->set('confirmed_count', 'confirmed_count+1', FALSE);
-        } elseif ($id_status === 'needs_review') {
-            $this->CI->db->set('needs_review_count', 'needs_review_count+1', FALSE);
-        } else {
-            $this->CI->db->set('unknown_count', 'unknown_count+1', FALSE);
-        }
-
-        $this->CI->db->set('difference_count', 'expected_count - confirmed_count', FALSE);
-        $this->CI->db->where('id', $session_id);
-        $this->CI->db->where('tenant_id', $tenant_id);
-        $this->CI->db->update('ai_vision_counting_sessions');
-
+        $this->CI->db->where('id', $session_id)->where('tenant_id', $tenant_id)->update('ai_vision_counting_sessions', array(
+            'confirmed_count'    => $confirmed,
+            'needs_review_count' => $needs_review,
+            'unknown_count'      => $unknown,
+            'difference_count'   => $expected - $confirmed
+        ));
         $this->CI->db->trans_complete();
 
-        // Refetch updated session stats
-        $updated_session = $this->get_session($session_id);
+        $frame_count = count($detections);
+        $message     = $new_count > 0
+            ? "{$frame_count} animal(s) in frame, {$new_count} newly counted. Session total: {$confirmed}."
+            : "{$frame_count} animal(s) in frame, all already counted. Session total: {$confirmed}.";
 
         return array(
-            'status'                     => true,
-            'record_id'                  => $record_id,
-            'animal_detected'            => true,
-            'already_counted'            => false,
-            'identification_status'      => $id_status,
-            'tag_number'                 => $detected_tag,
-            'livestock_id'               => $detected_id,
-            'bounding_boxes'             => $raw_boxes,
-            'bounding_box'               => (!empty($raw_boxes) ? $raw_boxes[0] : null),
-            'candidate_matches'          => $parsed['candidate_matches'] ?? array(),
-            'visual_features'            => $parsed['visual_features'] ?? array(),
-            'confidence'                 => $confidence,
-            'requires_human_confirmation'=> (bool)($parsed['requires_human_confirmation'] ?? false),
-            'batch_mismatch'             => (bool)($parsed['batch_mismatch_detected'] ?? false),
-            'current_counts'             => array(
-                'confirmed'              => $updated_session->confirmed_count,
-                'needs_review'           => $updated_session->needs_review_count,
-                'unknown'                => $updated_session->unknown_count,
-                'expected'               => $updated_session->expected_count,
-                'difference'             => $updated_session->difference_count
+            'status'                      => true,
+            'animal_detected'             => true,
+            'already_counted'             => ($new_count === 0),
+            'identification_status'       => 'confirmed',
+            'frame_animal_count'          => $frame_count,
+            'new_in_frame'                => $new_count,
+            'tag_number'                  => $first_tag,
+            'livestock_id'                => null,
+            'bounding_boxes'              => $out_boxes,
+            'bounding_box'                => $out_boxes[0],
+            'candidate_matches'           => array(),
+            'visual_features'             => $detections[0]['features'],
+            'confidence'                  => round(array_sum($confs) / max(1, count($confs)), 1),
+            'requires_human_confirmation' => false,
+            'batch_mismatch'              => false,
+            'message'                     => $message,
+            'current_counts'              => array(
+                'confirmed'    => $confirmed,
+                'needs_review' => $needs_review,
+                'unknown'      => $unknown,
+                'expected'     => $expected,
+                'difference'   => $expected - $confirmed
             )
         );
     }
@@ -489,6 +566,11 @@ class Ai_vision_service {
 
         if ($record->identification_status === 'needs_review') {
             $this->CI->db->set('needs_review_count', 'GREATEST(0, needs_review_count-1)', FALSE);
+        } elseif ($record->identification_status === 'unknown') {
+            $this->CI->db->set('unknown_count', 'GREATEST(0, unknown_count-1)', FALSE);
+        } elseif ($record->identification_status === 'confirmed' && (int)$record->is_counted === 1) {
+            $this->CI->db->set('confirmed_count', 'GREATEST(0, confirmed_count-1)', FALSE);
+            $this->CI->db->set('difference_count', 'expected_count - confirmed_count', FALSE);
         }
 
         $this->CI->db->where('id', $session_id);
@@ -563,6 +645,9 @@ class Ai_vision_service {
         $this->CI->db->where('ltr_sh_id', $session->shed_id);
         $this->CI->db->where('ltr_status', 1);
         $this->CI->db->where('tenant_id', $tenant_id);
+        if (!empty($session->batch_id)) {
+            $this->CI->db->where('ltr_batch_id', $session->batch_id);
+        }
         $transfers = $this->CI->db->get('livestock_transfer_quantity')->result();
         $total_transfers = array_sum(array_column($transfers, 'ltr_transfer_quantity'));
 
@@ -624,7 +709,7 @@ class Ai_vision_service {
 
         foreach ($sessions as $s) {
             $s->shed_name = !empty($s->sh_title) ? $s->sh_title : 'Shed #' . ($s->sh_no ?? $s->shed_id);
-            $s->batch_code = !empty($s->batch_id) ? 'Batch ' . $s->batch_id : 'All Batches';
+            $s->batch_code = $this->resolve_batch_label($s->shed_id, $s->batch_id, $tenant_id);
         }
 
         return $sessions;
@@ -641,7 +726,7 @@ class Ai_vision_service {
         $tenant_id = $this->get_tenant_id();
         $user_id   = $this->CI->session->userdata('user_id') ?: 1;
 
-        $session_code = 'VS-' . date('Ymd') . '-' . sprintf('%04d', rand(1, 9999));
+        $session_code = $this->generate_session_code('VS', 'ai_vision_validation_sessions', $tenant_id);
 
         $data = array(
             'tenant_id'          => $tenant_id,
