@@ -1606,7 +1606,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(() => loadScriptOnce(HC_BASE + '/vendor/tfjs/coco-ssd.min.js'))
             .then(() => loadScriptOnce(HC_BASE + '/js/kula_head_counter.js'))
             .then(() => {
-                headCounter = new window.KulaHead.KulaHeadCounter({ intervalMs: 120 });
+                // ?model=accurate loads the larger, more accurate detector (about 65 MB, slower on phones)
+                const accurate = new URLSearchParams(location.search).get('model') === 'accurate';
+                headCounter = new window.KulaHead.KulaHeadCounter({ intervalMs: accurate ? 250 : 120, modelBase: accurate ? 'mobilenet_v2' : 'lite_mobilenet_v2' });
                 return headCounter.load();
             });
     }

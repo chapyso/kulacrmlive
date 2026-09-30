@@ -21,6 +21,8 @@ needed). The model weights (about 18 MB) are fetched once from Google's `storage
 
 If the on-device model cannot load, the page falls back to the older cloud (Gemini) frame analysis.
 
+Accuracy option: open `/kula_ai/vision?model=accurate` to use the larger COCO-SSD `mobilenet_v2` model (about 65 MB, slower). In a test on a sample photo it found 3 of 3 horses where the default lite model found 2.
+
 Limits: COCO-SSD knows cow, sheep, horse, dog, cat, bird (and a few wild animals). Goats and pigs are
 usually detected as sheep/cow/dog, so check the count on the first sessions. Animals fully hidden behind
 others cannot be seen. Tests: `node tests/head_counter.test.js`.
