@@ -236,7 +236,7 @@ RESPONSE GUIDELINES:
             $this->session->set_userdata($hist_key, array_slice($chat_history, -10));
 
             // 5. Audit Log Interaction
-            if (isset($this->kula_ai_model)) {
+            if (is_object($this->kula_ai_model)) {
                 $this->kula_ai_model->log_interaction(
                     $prompt,
                     $tools_used,
