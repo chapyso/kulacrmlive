@@ -359,6 +359,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .features-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .feature-card:nth-child(n) { grid-column: span 1; }
   .feature-card:nth-child(1), .feature-card:nth-child(8) { grid-column: span 2; }
