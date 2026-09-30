@@ -6562,6 +6562,18 @@ html.dark-theme header.header.white-bg {
 #kula-quick-actions-backdrop.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* iOS Safari keeps blurring everything under a hidden backdrop-filter layer (it sits above
+   the mobile sidebar drawer), so the blur only exists while the sheet is open. */
+#kula-quick-actions-backdrop:not(.active) {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  pointer-events: none;
+  display: none;
 }
 
 #kula-quick-actions-sheet {
