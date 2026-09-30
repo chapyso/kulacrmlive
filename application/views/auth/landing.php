@@ -250,107 +250,7 @@
                     <!-- Laptop Device Mockup -->
                     <div class="laptop-device">
                         <div class="laptop-screen">
-                            <div class="mockup-dashboard">
-                                <!-- Sidebar -->
-                                <div class="mockup-sidebar">
-                                    <div class="mockup-brand">
-                                        <img src="<?php echo !empty($dark_logo_url) ? $dark_logo_url : base_url('dark mode logo.png'); ?>" alt="KulaCRM" style="height: 28px; width: auto; object-fit: contain;">
-                                    </div>
-                                    <div class="mockup-menu">
-                                        <div class="mockup-item active"><i class="fas fa-th-large"></i> Dashboard</div>
-                                        <div class="mockup-item"><i class="fas fa-horse"></i> Livestock</div>
-                                        <div class="mockup-item"><i class="fas fa-warehouse"></i> Sheds</div>
-                                        <div class="mockup-item"><i class="fas fa-shopping-cart"></i> Purchases</div>
-                                        <div class="mockup-item"><i class="fas fa-syringe"></i> Vaccines</div>
-                                        <div class="mockup-item"><i class="fas fa-wheat-awn"></i> Food & Feed</div>
-                                        <div class="mockup-item"><i class="fas fa-industry"></i> Production</div>
-                                        <div class="mockup-item"><i class="fas fa-chart-line"></i> Sales</div>
-                                        <div class="mockup-item"><i class="fas fa-receipt"></i> Expenses</div>
-                                        <div class="mockup-item"><i class="fas fa-file-invoice"></i> Reports</div>
-                                        <div class="mockup-item"><i class="fas fa-users"></i> Staff</div>
-                                        <div class="mockup-item"><i class="fas fa-cog"></i> Settings</div>
-                                    </div>
-                                </div>
-
-                                <!-- Main Content Area -->
-                                <div class="mockup-content">
-                                    <!-- Topbar -->
-                                    <div class="mockup-topbar">
-                                        <div style="font-weight: 700; color: var(--primary-forest);">
-                                            <i class="fas fa-bars" style="margin-right: 8px; color: var(--text-muted);"></i> Dashboard
-                                        </div>
-                                        <div style="display: flex; align-items: center; gap: 10px;">
-                                            <i class="far fa-bell" style="color: var(--text-muted);"></i>
-                                            <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 10px;">
-                                                <div style="width: 22px; height: 22px; border-radius: 50%; background: var(--secondary-green); color: var(--white); display: flex; align-items: center; justify-content: center;">FM</div>
-                                                <span>Farm Manager</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h3 style="font-size: 14px; font-weight: 700; color: var(--primary-forest); margin-bottom: 2px;">Good morning, Farm Manager 👋</h3>
-                                        <p style="font-size: 10px; color: var(--text-muted);">Here's what's happening on your farm today.</p>
-                                    </div>
-
-                                    <!-- 4 KPI Cards -->
-                                    <div class="mockup-cards-grid">
-                                        <div class="mockup-kpi-card">
-                                            <div class="mockup-kpi-title">Total Livestock</div>
-                                            <div class="mockup-kpi-val">1,248</div>
-                                            <div class="mockup-kpi-change">+32 this week</div>
-                                        </div>
-                                        <div class="mockup-kpi-card">
-                                            <div class="mockup-kpi-title">Sheds</div>
-                                            <div class="mockup-kpi-val">18</div>
-                                            <div class="mockup-kpi-change" style="color: var(--text-muted);">Active sheds</div>
-                                        </div>
-                                        <div class="mockup-kpi-card">
-                                            <div class="mockup-kpi-title">Sales (This Month)</div>
-                                            <div class="mockup-kpi-val">UGX 24.5M</div>
-                                            <div class="mockup-kpi-change">+10% vs last month</div>
-                                        </div>
-                                        <div class="mockup-kpi-card">
-                                            <div class="mockup-kpi-title">Expenses (This Month)</div>
-                                            <div class="mockup-kpi-val">UGX 8.7M</div>
-                                            <div class="mockup-kpi-change" style="color: var(--secondary-green);">+12% vs last month</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 2 Visual Mockup Charts -->
-                                    <div class="mockup-charts-grid">
-                                        <div class="mockup-chart-card">
-                                            <div style="font-weight: 700; font-size: 11px; margin-bottom: 8px; color: var(--primary-forest);">Livestock by Type</div>
-                                            <div style="display: flex; align-items: center; gap: 12px; height: 90px;">
-                                                <div style="width: 70px; height: 70px; border-radius: 50%; background: conic-gradient(var(--primary-forest) 0% 45%, var(--secondary-green) 45% 70%, var(--bright-lime) 70% 90%, var(--border-color) 90% 100%); display: flex; align-items: center; justify-content: center;">
-                                                    <div style="width: 44px; height: 44px; background: var(--white); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 8px; font-weight: 700;">
-                                                        <span>1,248</span>
-                                                        <span style="font-size: 6px; color: var(--text-muted);">Total</span>
-                                                    </div>
-                                                </div>
-                                                <div style="font-size: 9px; display: flex; flex-direction: column; gap: 3px;">
-                                                    <div><span style="display:inline-block; width:6px; height:6px; background:var(--primary-forest); border-radius:50%; margin-right:4px;"></span>Cattle 45%</div>
-                                                    <div><span style="display:inline-block; width:6px; height:6px; background:var(--secondary-green); border-radius:50%; margin-right:4px;"></span>Goats 25%</div>
-                                                    <div><span style="display:inline-block; width:6px; height:6px; background:var(--bright-lime); border-radius:50%; margin-right:4px;"></span>Poultry 20%</div>
-                                                    <div><span style="display:inline-block; width:6px; height:6px; background:var(--border-color); border-radius:50%; margin-right:4px;"></span>Pigs 10%</div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="mockup-chart-card">
-                                            <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 11px; margin-bottom: 8px; color: var(--primary-forest);">
-                                                <span>Farm Performance</span>
-                                                <span style="font-size: 8px; color: var(--text-muted);">— Income &nbsp;-- Expenses</span>
-                                            </div>
-                                            <svg viewBox="0 0 200 70" style="width: 100%; height: 80px;">
-                                                <path d="M0,50 Q40,20 80,35 T160,15 T200,10" fill="none" stroke="var(--bright-lime)" stroke-width="3" />
-                                                <path d="M0,60 Q40,45 80,50 T160,40 T200,35" fill="none" stroke="var(--secondary-green)" stroke-dasharray="3,3" stroke-width="2" />
-                                            </svg>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
+                            <img src="<?php echo base_url('common/img/tenant-desktop-dashboard.jpg'); ?>" alt="KulaCRM farm dashboard on a laptop with the full navigation sidebar" width="800" height="455" loading="lazy" style="display:block;width:100%;height:auto;">
                         </div>
                         <div class="laptop-base"></div>
                     </div>
@@ -359,7 +259,7 @@
                     <div class="phone-device">
                         <div class="phone-screen">
                             <div class="phone-notch"></div>
-                            <img src="<?php echo base_url('common/img/tenant-mobile-dashboard.jpg'); ?>" alt="KulaCRM farm dashboard on a phone: today's summary, KulaAI assistant, purchases and expenses" width="562" height="1218" loading="lazy" style="display:block;width:100%;height:auto;">
+                            <img src="<?php echo base_url('common/img/tenant-mobile-sidebar.jpg'); ?>" alt="KulaCRM on a phone: the navigation menu with dashboard, livestock, sheds, health, purchases, sales and clients" width="562" height="1218" loading="lazy" style="display:block;width:100%;height:auto;">
                         </div>
                     </div>
                 </div>
