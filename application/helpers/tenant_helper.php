@@ -7,7 +7,7 @@ if (!function_exists('tenant_url')) {
      */
     function tenant_url($uri = '') {
         $CI =& get_instance();
-        $slug = !empty($CI->tenant_slug) ? $CI->tenant_slug : 'kulafarms';
+        $slug = !empty($CI->tenant_slug) ? $CI->tenant_slug : ((isset($CI->session) && $CI->session->userdata('tenant_slug')) ? $CI->session->userdata('tenant_slug') : 'kulafarms');
         if ($slug === 'default') {
             $slug = 'kulafarms';
         }
@@ -34,5 +34,28 @@ if (!function_exists('has_permission')) {
             return $CI->has_permission($permission_name);
         }
         return true;
+    }
+}
+
+if (!function_exists('plan_feature')) {
+    /**
+     * Is a product feature included in the active tenant's subscription plan? (for views / menus)
+     * Reads the tenant from the session because get_instance() is the bare base object in this HMVC setup.
+     * Platform admins outside impersonation are never restricted; missing data never locks a tenant out.
+     */
+    function plan_feature($feature) {
+        $CI =& get_instance();
+        if (!isset($CI->session)) {
+            return true;
+        }
+        $tenant_id = (int)$CI->session->userdata('tenant_id');
+        if ($tenant_id <= 0) {
+            return true;
+        }
+        if ($CI->session->userdata('account_type') === 'platform_admin' && !$CI->session->userdata('is_impersonating')) {
+            return true;
+        }
+        $CI->load->library('Plan_features');
+        return $CI->plan_features->has($tenant_id, $feature);
     }
 }

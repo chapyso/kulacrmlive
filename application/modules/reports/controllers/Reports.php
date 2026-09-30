@@ -5,6 +5,7 @@ class Reports extends MY_Controller {
 
     public function __construct() {
         parent::__construct();
+        $this->require_plan_feature('reports');
         $this->load->library('Ion_auth');
         $this->load->library('session');
         $this->load->database();

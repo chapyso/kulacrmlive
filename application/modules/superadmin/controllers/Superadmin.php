@@ -257,7 +257,9 @@ class Superadmin extends MY_Controller {
         $max_users = (int)$this->input->post('max_users');
         $max_livestock = (int)$this->input->post('max_livestock');
         $max_sheds = (int)$this->input->post('max_sheds');
-        $has_ai_access = $this->input->post('has_ai_access') ? 1 : 0;
+        $this->load->library('Plan_features');
+        $existing_plan = $id > 0 ? $this->db->get_where('subscription_plans', array('id' => $id))->row() : null;
+        list($features_json, $has_ai_access) = Plan_features::build_json($this->input->post('features'), $existing_plan ? $existing_plan->features_json : null);
         $is_active = $this->input->post('is_active') !== null ? (int)$this->input->post('is_active') : 1;
 
         if (empty($name)) {
@@ -279,6 +281,7 @@ class Superadmin extends MY_Controller {
             'max_livestock' => $max_livestock,
             'max_sheds'     => $max_sheds,
             'has_ai_access' => $has_ai_access,
+            'features_json' => $features_json,
             'is_active'     => $is_active
         );
 

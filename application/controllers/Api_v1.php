@@ -80,6 +80,16 @@ class Api_v1 extends CI_Controller {
         $this->user_email = (string)$payload['email'];
         $this->user_role  = (string)($payload['role'] ?? 'user');
 
+        // Plan gate: the tenant's plan must include API access
+        $this->load->library('Plan_features');
+        if (!$this->plan_features->has($this->tenant_id, 'api_access')) {
+            $this->output_json([
+                'status'  => 'error',
+                'code'    => 403,
+                'message' => 'API access is not included in your current plan'
+            ], 403);
+        }
+
         // Apply rate limit per tenant
         $this->rate_limiter->enforce('api_v1:tenant:' . $this->tenant_id, 120, 60);
     }

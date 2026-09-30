@@ -54,6 +54,12 @@ class Tenant_notifier {
             return $result;
         }
 
+        // Plan gate: automated alerts must be part of the tenant's plan
+        $this->CI->load->library('Plan_features');
+        if (!$this->CI->plan_features->has($tenant_id, 'email_alerts')) {
+            return $result;
+        }
+
         $this->CI->load->model('Email_service_model');
         $this->CI->load->model('Rbac_model');
 

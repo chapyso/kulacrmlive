@@ -6,6 +6,8 @@
 $permission_label = isset($permission_label) ? $permission_label : null;
 $dashboard_url = isset($dashboard_url) ? $dashboard_url : base_url('home');
 $is_logged_in = !empty($is_logged_in);
+$mode = isset($mode) ? $mode : 'permission';
+$feature_label = isset($feature_label) ? $feature_label : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +16,7 @@ $is_logged_in = !empty($is_logged_in);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Access restricted | KulaCRM</title>
+    <title><?php echo $mode === 'upgrade' ? 'Upgrade required' : 'Access restricted'; ?> | KulaCRM</title>
     <link rel="shortcut icon" href="<?php echo base_url('uploads/logo.png'); ?>">
     <style>
         :root { --bg:#f1f5f9; --card:#ffffff; --text:#0f172a; --muted:#64748b; --line:#e2e8f0; --brand:#047857; --brand-dark:#065f46; --warn-bg:#fffbeb; --warn:#b45309; }
@@ -43,9 +45,15 @@ $is_logged_in = !empty($is_logged_in);
 <body>
     <main class="card" role="main">
         <img class="logo" src="<?php echo base_url('logo.png'); ?>" alt="KulaCRM">
-        <div class="badge" aria-hidden="true">&#128274;</div>
-        <h1>You don&rsquo;t have access to this page</h1>
-        <p>Your account doesn&rsquo;t include the permission needed to open this part of KulaCRM.</p>
+        <?php if ($mode === 'upgrade'): ?>
+            <div class="badge" aria-hidden="true">&#10024;</div>
+            <h1><?php echo htmlspecialchars($feature_label); ?> isn&rsquo;t in your plan</h1>
+            <p>This feature is not included in your organization&rsquo;s current subscription. Ask your organization owner to upgrade the plan to unlock it.</p>
+        <?php else: ?>
+            <div class="badge" aria-hidden="true">&#128274;</div>
+            <h1>You don&rsquo;t have access to this page</h1>
+            <p>Your account doesn&rsquo;t include the permission needed to open this part of KulaCRM.</p>
+        <?php endif; ?>
         <?php if ($permission_label): ?>
             <div class="need">Permission needed: <?php echo htmlspecialchars($permission_label); ?></div>
         <?php endif; ?>
@@ -57,10 +65,10 @@ $is_logged_in = !empty($is_logged_in);
                 <a class="btn primary" href="<?php echo base_url('auth/login'); ?>">Sign in</a>
             <?php endif; ?>
         </div>
-        <?php if ($is_logged_in): ?>
+        <?php if ($is_logged_in && $mode !== 'upgrade'): ?>
             <p class="hint">Need access? Ask the owner or an administrator of your organization to update your role under Users &amp; Roles.</p>
         <?php endif; ?>
-        <div class="code">Error 403 &middot; Access restricted</div>
+        <div class="code">Error 403 &middot; <?php echo $mode === 'upgrade' ? 'Plan upgrade required' : 'Access restricted'; ?></div>
     </main>
 </body>
 </html>

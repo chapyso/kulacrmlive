@@ -259,11 +259,13 @@
                      <a href="<?php echo base_url('kula_ai/intelligence'); ?>" class="kula-menu-item" data-tooltip="Kula Intelligence">
                          <div class="kula-menu-icon" style="background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><i class="fa-solid fa-brain"></i></div>
                          <span class="kula-menu-text">Kula Intelligence</span>
+                         <?php if (function_exists('plan_feature') && !plan_feature('kula_ai')) { ?><i class="fa-solid fa-lock" style="margin-left:auto; color:#f59e0b; font-size:11px;" title="Not included in your plan"></i><?php } ?>
                      </a>
 
                      <a href="<?php echo base_url('kula_ai/vision'); ?>" class="kula-menu-item" data-tooltip="KulaAI Vision">
                          <div class="kula-menu-icon" style="color: #10b981;"><i class="fa-solid fa-eye"></i></div>
                          <span class="kula-menu-text">KulaAI Vision</span>
+                         <?php if (function_exists('plan_feature') && !plan_feature('kula_ai_vision')) { ?><i class="fa-solid fa-lock" style="margin-left:auto; color:#f59e0b; font-size:11px;" title="Not included in your plan"></i><?php } ?>
                      </a>
 
                      <?php if (has_permission('livestock.view')) { ?>

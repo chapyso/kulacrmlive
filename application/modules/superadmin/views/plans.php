@@ -62,10 +62,12 @@
                                         <span><i class="fa-solid fa-warehouse" style="color: #06b6d4; margin-right: 8px;"></i> Max Sheds:</span>
                                         <strong style="color: #0f172a;"><?php echo ($p->max_sheds >= 999) ? 'Unlimited' : $p->max_sheds; ?></strong>
                                     </li>
+                                    <?php $plan_feat = Plan_features::resolve($p); foreach (Plan_features::catalog() as $fkey => $fdef): ?>
                                     <li style="padding: 8px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
-                                        <span><i class="fa-solid fa-wand-magic-sparkles" style="color: #a855f7; margin-right: 8px;"></i> KulaAI Intelligence:</span>
-                                        <strong style="color: <?php echo !empty($p->has_ai_access) ? '#10b981' : '#ef4444'; ?>;"><?php echo !empty($p->has_ai_access) ? 'Included ✨' : 'Disabled'; ?></strong>
+                                        <span><i class="fa-solid <?php echo $fdef['icon']; ?>" style="color: #a855f7; margin-right: 8px;"></i> <?php echo htmlspecialchars($fdef['label']); ?>:</span>
+                                        <strong style="color: <?php echo !empty($plan_feat[$fkey]) ? '#10b981' : '#ef4444'; ?>;"><?php echo !empty($plan_feat[$fkey]) ? 'Included' : 'Not included'; ?></strong>
                                     </li>
+                                    <?php endforeach; ?>
                                 </ul>
                             </div>
 
@@ -125,14 +127,7 @@
                                                 <input type="number" name="max_sheds" value="<?php echo $p->max_sheds; ?>" class="form-control" required style="border-radius: 8px;">
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-md-12 form-group">
-                                                <label style="font-weight: 700; font-size: 13px; color: #334155; display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 6px;">
-                                                    <input type="checkbox" name="has_ai_access" value="1" <?php echo (!empty($p->has_ai_access)) ? 'checked' : ''; ?>>
-                                                    <span>✨ Enable KulaAI Intelligence Access for this Plan Tier</span>
-                                                </label>
-                                            </div>
-                                        </div>
+                                        <?php $this->load->view('superadmin/_plan_features', array('features' => Plan_features::resolve($p))); ?>
                                     </div>
                                     <div class="modal-footer" style="background: #f8fafc;">
                                         <button type="button" class="btn btn-default" data-dismiss="modal" style="border-radius: 8px; font-weight: 700;">Cancel</button>
@@ -191,14 +186,7 @@
                                     <input type="number" name="max_sheds" value="10" class="form-control" required style="border-radius: 8px;">
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12 form-group">
-                                    <label style="font-weight: 700; font-size: 13px; color: #334155; display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 6px;">
-                                        <input type="checkbox" name="has_ai_access" value="1" checked>
-                                        <span>✨ Enable KulaAI Intelligence Access for this Plan Tier</span>
-                                    </label>
-                                </div>
-                            </div>
+                            <?php $this->load->view('superadmin/_plan_features', array('features' => Plan_features::resolve(null))); ?>
                         </div>
                         <div class="modal-footer" style="background: #f8fafc;">
                             <button type="button" class="btn btn-default" data-dismiss="modal" style="border-radius: 8px; font-weight: 700;">Cancel</button>

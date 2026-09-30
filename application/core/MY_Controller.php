@@ -490,6 +490,44 @@ class MY_Controller extends MX_Controller {
     }
 
     /**
+     * Server-side plan gate: stop the request unless the tenant's plan includes the feature.
+     * Platform admins are never restricted. Returns JSON for AJAX/API-style callers, the branded page otherwise.
+     */
+    public function require_plan_feature($feature) {
+        // Platform (super admin) context is never restricted; an unknown tenant never locks anyone out
+        if ($this->context === 'PLATFORM' && !$this->is_impersonating) {
+            return;
+        }
+        if (empty($this->tenant_id)) {
+            return;
+        }
+        $this->load->library('Plan_features');
+        if ($this->plan_features->has((int)$this->tenant_id, $feature)) {
+            return;
+        }
+        $label = Plan_features::label($feature);
+        $wants_json = $this->input->is_ajax_request() || (!empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+        if ($wants_json) {
+            if (!headers_sent()) {
+                header('Content-Type: application/json; charset=utf-8');
+                http_response_code(403);
+            }
+            echo json_encode(array('status' => false, 'plan_upgrade_required' => true, 'feature' => $feature,
+                'error' => $label . ' is not included in your current plan. Please upgrade to unlock it.',
+                'response' => $label . ' is not included in your current plan. Please upgrade to unlock it.'));
+            exit;
+        }
+        if (!headers_sent()) {
+            set_status_header(403);
+        }
+        echo $this->load->view('home/access_denied', array(
+            'mode' => 'upgrade', 'feature_label' => $label,
+            'dashboard_url' => tenant_url('dashboard'), 'is_logged_in' => true, 'permission_label' => null,
+        ), true);
+        exit;
+    }
+
+    /**
      * Human-readable permission name, e.g. "livestock.view" -> "View livestock"
      */
     public function permission_label($permission_name) {

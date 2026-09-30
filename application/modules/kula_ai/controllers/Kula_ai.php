@@ -35,6 +35,20 @@ class Kula_ai extends MY_Controller {
         $this->load->model('kula_ai/kula_ai_model');
         $this->load->library('kula_ai/Ai_provider', null, 'ai_provider');
 
+        // Plan gate: each endpoint belongs to one plan feature (chat keeps its own friendly in-chat message)
+        $vision_methods = array('vision', 'vision_history', 'get_shed_batches', 'start_vision_session', 'process_vision_frame',
+            'confirm_vision_match', 'reject_vision_match', 'complete_vision_session', 'get_session_details', 'validation',
+            'accuracy_dashboard', 'start_validation_session', 'record_validation_attempt', 'get_validation_analytics');
+        $document_methods = array('analyze_document', 'approve_import', 'upload_document', 'confirm_import');
+        $kula_method = $this->router->fetch_method();
+        if (in_array($kula_method, $vision_methods, true)) {
+            $this->require_plan_feature('kula_ai_vision');
+        } elseif (in_array($kula_method, $document_methods, true)) {
+            $this->require_plan_feature('kula_ai_documents');
+        } elseif ($kula_method !== 'chat') {
+            $this->require_plan_feature('kula_ai');
+        }
+
         if (method_exists($this->load, 'service')) {
             $this->load->service('kula_ai/Ai_tool_service', null, 'ai_tool_service');
             $this->load->service('kula_ai/Ai_analytics_service', null, 'ai_analytics_service');
@@ -140,6 +154,9 @@ class Kula_ai extends MY_Controller {
 
         try {
             $gate = $this->check_plan_ai_access();
+            if (function_exists('plan_feature') && !plan_feature('kula_ai')) {
+                $gate['has_access'] = false;
+            }
             if (!$gate['has_access']) {
                 echo json_encode(array(
                     'status'   => false,
