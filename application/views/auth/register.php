@@ -305,7 +305,7 @@
                                    id="first_name" 
                                    name="first_name" 
                                    required 
-                                   placeholder="e.g. John Male"
+                                   placeholder="e.g. Gavin Male"
                                    value="<?php echo set_value('first_name'); ?>"
                                    class="custom-input w-full pl-11 pr-4 py-3.5 rounded-xl text-sm font-medium text-white placeholder-gray-500">
                         </div>
@@ -324,7 +324,7 @@
                                    id="email" 
                                    name="email" 
                                    required 
-                                   placeholder="e.g. john@kulafarms.com"
+                                   placeholder="e.g. gavin@kulafarms.com"
                                    value="<?php echo set_value('email'); ?>"
                                    class="custom-input w-full pl-11 pr-4 py-3.5 rounded-xl text-sm font-medium text-white placeholder-gray-500">
                         </div>

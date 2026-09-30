@@ -74,6 +74,26 @@ class Email_service_model extends CI_Model
     }
 
     /**
+     * Generic notification email: platform SMTP, tenant name shown as the sender name.
+     * Callers (Tenant_notifier) are responsible for choosing tenant-scoped recipients.
+     */
+    public function send_generic($to_email, $subject, $body_html, $from_name = null)
+    {
+        $this->init_smtp();
+        $smtp = $this->db->get('saas_smtp_settings')->row();
+        $from_email = $smtp ? $smtp->from_email : 'info@chapysocial.com';
+        $display = $from_name ? $from_name . ' (via KulaCRM)' : ($smtp ? $smtp->from_name : 'KulaCRM');
+
+        $this->email->clear();
+        $this->email->from($from_email, $display);
+        $this->email->to($to_email);
+        $this->email->subject($subject);
+        $this->email->message($this->wrap_html_template($subject, $body_html));
+
+        return @$this->email->send();
+    }
+
+    /**
      * 1. SaaS Welcome & Tenant Account Registration Email
      */
     public function send_tenant_welcome_email($to_email, $farm_name, $login_url, $username, $password = null)

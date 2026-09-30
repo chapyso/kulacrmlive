@@ -412,6 +412,7 @@
                               <?php if (has_permission('settings.view')) { ?>
                               <a href="<?php echo base_url('users/departments'); ?>">Departments</a>
                               <?php } ?>
+                              <a href="<?php echo base_url('users/notifications'); ?>">Email Notifications</a>
                               <?php if (has_permission('users.view')) { ?>
                               <a href="<?php echo base_url('users/activity_logs'); ?>">Audit Logs</a>
                               <?php } ?>

@@ -197,16 +197,19 @@ class Shed extends MY_Controller
         );
         $this->purchase_model->insertPurchase('livestock_death_quantity', $ValueData);
 
-        // Send emergency mortality alert email
-        $this->load->model('email_service_model');
+        // Notify eligible users of THIS tenant (respects tenant/user notification settings)
         $_shed = $this->shed_model->getShedById($ld_shed_id);
         $_shed_name = $_shed ? $_shed->sh_title : 'Unknown Shed';
-        $_curr_user = $this->ion_auth->user()->row();
-        $this->email_service_model->send_emergency_mortality_alert(
-            $_curr_user->email,
-            $_shed_name,
-            $ld_death_quantity,
-            $ld_death_reason
+        $this->load->library('Tenant_notifier');
+        $this->tenant_notifier->notify(
+            $this->require_tenant_id(),
+            'mortality_alert',
+            'Mortality alert - ' . $_shed_name,
+            '<h3 style="color:#991b1b;margin:0 0 8px 0;">Animal death recorded</h3>'
+            . '<p><strong>Shed:</strong> ' . html_escape($_shed_name) . '<br>'
+            . '<strong>Deaths logged:</strong> ' . (int)$ld_death_quantity . ' head(s)<br>'
+            . '<strong>Stated cause:</strong> ' . html_escape($ld_death_reason ?: 'Unspecified') . '</p>'
+            . '<p><a href="' . base_url('shed/listDeath') . '">Open the mortality log</a></p>'
         );
 
         $this->session->set_flashdata('success', 'Death record added successfully.');

@@ -141,6 +141,8 @@ $route['(:any)/users/activity_logs'] = 'users/activity_logs';
 $route['(:any)/users/invite'] = 'users/invite';
 $route['(:any)/users/create'] = 'users/create';
 $route['(:any)/users/update_status'] = 'users/update_status';
+$route['(:any)/users/notifications'] = 'users/notifications';
+$route['(:any)/users/save_notifications'] = 'users/save_notifications';
 $route['(:any)/users/(:any)'] = 'users/$1';
 
 

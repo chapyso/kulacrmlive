@@ -150,6 +150,57 @@ class Users extends MY_Controller {
     }
 
     /**
+     * Email notification preferences: tenant defaults (settings.update) and the user's own opt-outs
+     */
+    public function notifications() {
+        $tenant_id = $this->require_tenant_id();
+        $this->load->library('Tenant_notifier');
+        $user_id = (int)$this->ion_auth->get_user_id();
+
+        $data['categories'] = Tenant_notifier::categories();
+        $data['can_manage_tenant'] = $this->has_permission('settings.update');
+        $data['tenant_enabled'] = array();
+        $data['user_enabled'] = array();
+        foreach ($data['categories'] as $key => $cat) {
+            $data['tenant_enabled'][$key] = $this->tenant_notifier->is_enabled($tenant_id, 0, $key, (int)$cat['default']);
+            $data['user_enabled'][$key] = $this->tenant_notifier->is_enabled($tenant_id, $user_id, $key, 1);
+        }
+        $data['settings'] = $this->settings_model->getSettings();
+
+        $this->load->view('home/dashboard', $data);
+        $this->load->view('notifications', $data);
+        $this->load->view('home/footer');
+    }
+
+    public function save_notifications() {
+        $this->require_csrf_token_post();
+        $tenant_id = $this->require_tenant_id();
+        $this->load->library('Tenant_notifier');
+        $user_id = (int)$this->ion_auth->get_user_id();
+        $categories = Tenant_notifier::categories();
+
+        $mine = (array)$this->input->post('mine');
+        foreach ($categories as $key => $cat) {
+            $this->tenant_notifier->set_enabled($tenant_id, $user_id, $key, !empty($mine[$key]));
+        }
+        if ($this->has_permission('settings.update')) {
+            $tenant = (array)$this->input->post('tenant');
+            foreach ($categories as $key => $cat) {
+                $this->tenant_notifier->set_enabled($tenant_id, 0, $key, !empty($tenant[$key]));
+            }
+            $this->log_audit('NOTIFICATION_SETTINGS_UPDATE', $tenant_id, array('by' => $user_id));
+        }
+        $this->session->set_flashdata('success', 'Notification preferences saved.');
+        redirect('users/notifications');
+    }
+
+    protected function require_csrf_token_post() {
+        if (!verify_action_token()) {
+            show_error('Invalid or expired security token. Go back, refresh the page and try again.', 403, 'CSRF Protection Guard');
+        }
+    }
+
+    /**
      * Toggle User Status (Active / Suspended / Inactive)
      */
     public function update_status() {
