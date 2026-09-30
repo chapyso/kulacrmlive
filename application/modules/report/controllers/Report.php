@@ -33,7 +33,7 @@ class Report extends MY_Controller
         $this->load->model('settings/settings_model');
         $data['settings'] = $this->settings_model->getSettings();
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group(array('admin', 'Accountant'))) {
             redirect('home/permission');

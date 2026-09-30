@@ -28,7 +28,7 @@ class Sale extends MY_Controller
         $this->load->model('settings/settings_model');
         $data['settings'] = $this->settings_model->getSettings();
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group(array('admin', 'Accountant'))) {
             redirect('home/permission');
@@ -58,7 +58,7 @@ class Sale extends MY_Controller
     public function viewLivestockSale()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $lsss_id = $this->input->get('lsss_id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -73,7 +73,7 @@ class Sale extends MY_Controller
     public function listSale()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $from = $this->_validDate($this->input->get('from'));
         $to   = $this->_validDate($this->input->get('to'));
@@ -205,7 +205,7 @@ class Sale extends MY_Controller
     public function editLivestockSale()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $lsss_id = $this->input->get('lsss_id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -372,7 +372,7 @@ class Sale extends MY_Controller
     public function listProductSale()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $from = $this->_validDate($this->input->get('from'));
         $to   = $this->_validDate($this->input->get('to'));
@@ -390,7 +390,7 @@ class Sale extends MY_Controller
     public function addNewProductSale()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $data['clients'] = $this->client_model->getClient();
         $data['settings'] = $this->settings_model->getSettings();
@@ -517,7 +517,7 @@ class Sale extends MY_Controller
     public function editProductSale()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $prss_id = $this->input->get('prss_id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -643,7 +643,7 @@ class Sale extends MY_Controller
     public function viewProductSale()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $prss_id = $this->input->get('prss_id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -657,7 +657,7 @@ class Sale extends MY_Controller
     public function viewProductSaleClientInvoice()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $prss_id = $this->input->get('prss_id');
         $data['settings'] = $this->settings_model->getSettings();

@@ -28,7 +28,7 @@ class Payments extends MY_Controller
         $this->load->model('sale/sale_model');
         $this->load->model('home/home_model');
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group(array('admin'))) {
             redirect('home/permission');
@@ -39,7 +39,7 @@ class Payments extends MY_Controller
     public function listSupplierPayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $data['settings'] = $this->settings_model->getSettings();
         $data['suppliers'] = $this->supplier_model->getData('supplier', 's_status', 1);
@@ -52,7 +52,7 @@ class Payments extends MY_Controller
     public function viewSupplierWisePayment()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -270,7 +270,7 @@ class Payments extends MY_Controller
     public function viewSupplierPurchaseWisePayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('sp_purs_id');
         $data['purchaseInformationById'] = $this->report_model->getSingleData('livestock_purchase_summary', ['purs_id' => $id, 'purs_status' => 1]);
@@ -285,7 +285,7 @@ class Payments extends MY_Controller
     public function viewSupplierFoodPurchaseWisePayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('sp_fdps_id');
         $data['purchaseInformationById'] = $this->report_model->getSingleData('food_purchase_summary', ['fdps_id' => $id, 'fdps_status' => 1]);
@@ -300,7 +300,7 @@ class Payments extends MY_Controller
     public function viewSupplierVaccinePurchaseWisePayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('sp_vps_id');
         $data['purchaseInformationById'] = $this->report_model->getSingleData('vaccine_purchase_summary', ['vps_id' => $id, 'vps_status' => 1]);
@@ -315,7 +315,7 @@ class Payments extends MY_Controller
     public function viewSupplierWiseSupplierPayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -332,7 +332,7 @@ class Payments extends MY_Controller
     public function listClientPayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $data['settings'] = $this->settings_model->getSettings();
         $data['clients'] = $this->client_model->getClient();
@@ -345,7 +345,7 @@ class Payments extends MY_Controller
     public function viewClientWisePayment()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('c_id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -520,7 +520,7 @@ class Payments extends MY_Controller
     public function viewClientSaleWisePayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('cp_lsss_id');
         $data['saleInformationById'] = $this->report_model->getSingleData('livestock_sale_summary', ['lsss_id' => $id, 'lsss_status' => 1]);
@@ -535,7 +535,7 @@ class Payments extends MY_Controller
     public function viewClientProductSaleWisePayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('cp_prss_id');
         $data['saleInformationById'] = $this->report_model->getSingleData('product_sale_summary', ['prss_id' => $id, 'prss_status' => 1]);
@@ -551,7 +551,7 @@ class Payments extends MY_Controller
     public function viewClientWiseClientPayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -568,7 +568,7 @@ class Payments extends MY_Controller
     public function listStaffPayments()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $data['settings'] = $this->settings_model->getSettings();
         $data['staffs'] = $this->staff_model->getStaff();
@@ -580,7 +580,7 @@ class Payments extends MY_Controller
     public function viewStaffWisePayment()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $id = $this->input->get('sf_id');
         $data['settings'] = $this->settings_model->getSettings();

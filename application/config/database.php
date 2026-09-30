@@ -23,7 +23,7 @@ if (!empty($_env_group)) {
 // ── Environment Variable Resolution ─────────────────────────────────────────
 $db_host = getenv('DB_HOST') ?: getenv('DB_HOSTNAME') ?: (file_exists('/.dockerenv') ? 'kula-db' : '127.0.0.1');
 $db_user = getenv('DB_USER') ?: getenv('DB_USERNAME') ?: 'root';
-$db_pass = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: (file_exists('/.dockerenv') ? 'kula_root_pass' : '');
+$db_pass = getenv('DB_PASS') ?: getenv('DB_PASSWORD') ?: ''; // no built-in default: the password must come from the environment
 $db_name = getenv('DB_NAME') ?: getenv('DB_DATABASE') ?: 'livestock';
 $db_port = getenv('DB_PORT') ? (int)getenv('DB_PORT') : 3306;
 
@@ -55,7 +55,7 @@ $db['online'] = array(
     'dsn'	       => '',
     'hostname'     => getenv('DB_HOST') ?: 'kula-db',
     'username'     => getenv('DB_USER') ?: 'root',
-    'password'     => getenv('DB_PASS') ?: 'kula_root_pass',
+    'password'     => getenv('DB_PASS') ?: '',
     'database'     => getenv('DB_NAME') ?: 'livestock',
     'port'         => $db_port,
     'dbdriver'     => 'mysqli',

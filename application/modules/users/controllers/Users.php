@@ -14,7 +14,7 @@ class Users extends MY_Controller {
         $this->load->model('Department_model');
 
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
 
         $settings = $this->settings_model->getSettings();

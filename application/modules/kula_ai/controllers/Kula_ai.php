@@ -28,7 +28,7 @@ class Kula_ai extends MY_Controller {
                 ));
                 exit();
             } else {
-                redirect('auth/login', 'refresh');
+                redirect('auth/login');
             }
         }
 

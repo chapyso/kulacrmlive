@@ -6882,3 +6882,12 @@ html.dark-theme header.header.white-bg {
 .kula-fab-circle i {
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Phone layout: header action pills wrap instead of running off the right edge */
+@media (max-width: 576px) {
+    div:has(> .hero-date-pill) { flex-wrap: wrap !important; max-width: 100% !important; }
+}
+@media (max-width: 576px) {
+    .kula-hero-card .hero-actions-right { flex-wrap: wrap !important; max-width: 100% !important; min-width: 0 !important; justify-content: flex-start !important; }
+    .kula-hero-card .hero-actions-right > * { flex: 0 1 auto !important; min-width: 0 !important; }
+}

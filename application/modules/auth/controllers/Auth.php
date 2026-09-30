@@ -266,7 +266,7 @@ class Auth extends MY_Controller {
                 redirect(tenant_url('dashboard'), 'refresh');
             } else {
                 $this->session->set_flashdata('message', 'Account created successfully. Please sign in to continue.');
-                redirect('auth/login', 'refresh');
+                redirect('auth/login');
             }
         } else {
             $this->data['message'] = (validation_errors()) ? validation_errors() : $this->session->flashdata('message');
@@ -284,7 +284,7 @@ class Auth extends MY_Controller {
 
         //redirect them to the login page
         $this->session->set_flashdata('message', $this->ion_auth->messages());
-        redirect('auth/login', 'refresh');
+        redirect('auth/login');
     }
 
     //change password
@@ -294,7 +294,7 @@ class Auth extends MY_Controller {
         $this->form_validation->set_rules('new_confirm', $this->lang->line('change_password_validation_new_password_confirm_label'), 'required');
 
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
 
         $user = $this->ion_auth->user()->row();

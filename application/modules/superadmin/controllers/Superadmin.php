@@ -14,7 +14,7 @@ class Superadmin extends MY_Controller {
         $this->load->model('settings/settings_model');
 
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
 
         // Restrict Superadmin section strictly to Super Admin user

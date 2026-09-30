@@ -21,7 +21,7 @@ class Supplier extends MY_Controller
         $this->load->model('report/report_model');
 
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group(array('admin'))) {
             redirect('home/permission');

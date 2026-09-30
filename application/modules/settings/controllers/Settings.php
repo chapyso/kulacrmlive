@@ -25,7 +25,7 @@ class Settings extends MY_Controller
         $this->load->model('ion_auth_model');
 
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group('admin')) {
             redirect('home/permission');

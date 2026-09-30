@@ -216,7 +216,7 @@
             <div class="section-title">
                 <i class="fa-solid fa-tag" style="color: #6366f1;"></i> Accuracy by Identification Method
             </div>
-            <table class="val-table">
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table class="val-table">
                 <thead>
                     <tr>
                         <th>Method</th>
@@ -241,7 +241,7 @@
                         <tr><td colspan="4" style="color: #94a3b8; text-align: center;">No method test records yet.</td></tr>
                     <?php endif; ?>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <!-- Viewing Condition Breakdown -->

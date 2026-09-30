@@ -60,6 +60,18 @@ class MY_Controller extends MX_Controller {
         // 6. XSS Protection legacy fallback
         header('X-XSS-Protection: 1; mode=block');
 
+        // 7. Content-Security-Policy: no plugins/objects, no framing by other sites, no <base> or form hijacking.
+        //    Inline scripts/styles and HTTPS CDNs stay allowed because the existing pages depend on them.
+        header("Content-Security-Policy: default-src 'self' https: data: blob:; "
+            . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; "
+            . "style-src 'self' 'unsafe-inline' https:; "
+            . "img-src 'self' data: blob: https:; "
+            . "font-src 'self' data: https:; "
+            . "connect-src 'self' https: blob: data:; "
+            . "media-src 'self' blob: data: https:; "
+            . "frame-src 'self' https:; "
+            . "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
+
         // 7. Remove PHP server signature
         header_remove('X-Powered-By');
     }
@@ -167,7 +179,7 @@ class MY_Controller extends MX_Controller {
             if ($this->ion_auth->logged_in()) {
                 redirect(tenant_url('dashboard'), 'refresh');
             } else {
-                redirect('auth/login', 'refresh');
+                redirect('auth/login');
             }
         }
     }
@@ -190,7 +202,7 @@ class MY_Controller extends MX_Controller {
             if ($user && (int)$user->active !== 1) {
                 $this->ion_auth->logout();
                 $this->session->set_flashdata('message', 'Your account has been deactivated. Please contact support.');
-                redirect('auth/login', 'refresh');
+                redirect('auth/login');
                 return;
             }
 
@@ -227,7 +239,7 @@ class MY_Controller extends MX_Controller {
                     // Fail closed: a non-platform user must belong to an existing tenant
                     $this->ion_auth->logout();
                     $this->session->set_flashdata('message', 'Your account is not linked to an organization. Please contact support.');
-                    redirect('auth/login', 'refresh');
+                    redirect('auth/login');
                     return;
                 }
                 if ($user && !empty($user->tenant_id)) {
@@ -237,7 +249,7 @@ class MY_Controller extends MX_Controller {
                         if ($tenant->status !== 'active') {
                             $this->ion_auth->logout();
                             $this->session->set_flashdata('message', 'Your organization account is suspended. Please contact support.');
-                            redirect('auth/login', 'refresh');
+                            redirect('auth/login');
                             return;
                         }
 

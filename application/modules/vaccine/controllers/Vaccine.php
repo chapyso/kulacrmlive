@@ -26,7 +26,7 @@ class Vaccine extends MY_Controller
         $language = (!empty($settings) && !empty($settings->language)) ? $settings->language : 'english';
         $this->lang->load('system_syntax', $language);
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group(array('admin'))) {
             redirect('home/permission');

@@ -30,7 +30,7 @@ class Purchase extends MY_Controller
         $this->load->model('settings/settings_model');
         $data['settings'] = $this->settings_model->getSettings();
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group(array('admin', 'Accountant'))) {
             redirect('home/permission');
@@ -62,7 +62,7 @@ class Purchase extends MY_Controller
     public function purchase()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
 
         $data['settings'] = $this->settings_model->getSettings();
@@ -74,7 +74,7 @@ class Purchase extends MY_Controller
     public function viewLivestockPurchase()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $purs_id = $this->input->get('purs_id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -207,7 +207,7 @@ class Purchase extends MY_Controller
     public function editLivestockPurchase()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $purs_id = $this->input->get('purs_id');
         $data['settings'] = $this->settings_model->getSettings();
@@ -411,7 +411,7 @@ class Purchase extends MY_Controller
     public function livestockAssignToShed()
     {
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $data['settings'] = $this->settings_model->getSettings();
         $data['sheds'] = $this->shed_model->getShed();
@@ -593,7 +593,7 @@ class Purchase extends MY_Controller
     {
         $lshs_id = $this->input->get('lshs_id');
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         $data['settings'] = $this->settings_model->getSettings();
         $data['sheds'] = $this->shed_model->getShed();

@@ -22,7 +22,7 @@ class Client extends MY_Controller
 
         if (!$this->ion_auth->logged_in()) {
             //redirect them to the login page
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group(array('admin'))) {
             redirect('home/permission');

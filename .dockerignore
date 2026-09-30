@@ -6,3 +6,11 @@ mysql_data
 *.tar.gz
 *.sql
 cookie*.txt
+
+# Keep build files and secrets out of the web root (Coolify injects env values into the Dockerfile as ARG lines)
+Dockerfile
+docker-compose*.yml
+.env
+scratch
+scripts
+DB

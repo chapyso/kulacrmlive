@@ -16,7 +16,7 @@ class Medicine extends MY_Controller {
         $this->load->model('shed/shed_model');
         $this->load->model('settings/settings_model');
         if (!$this->ion_auth->logged_in()) {
-            redirect('auth/login', 'refresh');
+            redirect('auth/login');
         }
         if (!$this->ion_auth->in_group(array('admin'))) {
             redirect('home/permission');
