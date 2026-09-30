@@ -90,13 +90,12 @@ var EditableTable = function () {
             $(document).on('click', '#editable-sample a.delete', function (e) {
                 e.preventDefault();
 
-                if (confirm("Are you sure to delete this row ?") == false) {
-                    return;
-                }
-
                 var nRow = $(this).parents('tr')[0];
-                oTable.fnDeleteRow(nRow);
-                alert("Deleted! Do not forget to do some ajax to sync with backend :)");
+                Kula.confirm("Are you sure to delete this row ?", { danger: true }).then(function (ok) {
+                    if (!ok) return;
+                    oTable.fnDeleteRow(nRow);
+                    Kula.notify('success', "Deleted! Do not forget to do some ajax to sync with backend :)");
+                });
             });
 
             $(document).on('click', '#editable-sample a.cancel', function (e) {

@@ -30,6 +30,7 @@
 <script type="text/javascript" src="<?php echo base_url('common/js/toastr.min.js'); ?>"></script>
 <!-- sweet Alert -->
 <script type="text/javascript" src="<?php echo base_url('common/assets/sweetalert2/sweetalert2.all.min.js'); ?>"></script>
+<script src="<?php echo base_url('common/js/kula_notify.js'); ?>?v=<?php echo @filemtime(FCPATH . 'common/js/kula_notify.js'); ?>"></script>
 <!-- <script src="common/js/advanced-form-components.js"></script> -->
 
 <script type="text/javascript" src="<?php echo base_url('common/assets/ckeditor/ckeditor.js'); ?>"></script>
@@ -126,27 +127,6 @@
 </script>
 
 <!-- Universal Modern SweetAlert2 & Toastr Notification Engine -->
-<style>
-.kula-swal-popup {
-    border-radius: 20px !important;
-    padding: 24px !important;
-    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.3) !important;
-    border: 1px solid rgba(226, 232, 240, 0.2) !important;
-}
-.kula-swal-confirm-btn {
-    border-radius: 10px !important;
-    font-weight: 700 !important;
-    padding: 10px 20px !important;
-    font-size: 13px !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
-}
-.kula-swal-cancel-btn {
-    border-radius: 10px !important;
-    font-weight: 700 !important;
-    padding: 10px 20px !important;
-    font-size: 13px !important;
-}
-</style>
 <script>
 $(document).ready(function() {
     // 1. Toastr Options & Session Flash Messages Engine
@@ -185,95 +165,27 @@ $(document).ready(function() {
         <?php endif; ?>
     }
 
-    // 2. Global SweetAlert2 Interceptor for Links/Buttons (.deleteBySweetAlert, .kula-delete-btn, [onclick*="confirm"])
-    $(document).on("click", ".deleteBySweetAlert, .kula-delete-btn, a[onclick*='confirm'], button[onclick*='confirm']", function(e) {
+    // 2. Delete links/buttons that opt in with a class (.deleteBySweetAlert / .kula-delete-btn).
+    //    Inline confirm() handlers and data-confirm are handled globally by common/js/kula_notify.js.
+    $(document).on("click", ".deleteBySweetAlert, .kula-delete-btn", function(e) {
         e.preventDefault();
-        e.stopPropagation();
-        var link = $(this).attr("href");
-        var dataMsg = $(this).attr("data-confirm-msg");
-        var totalUsedPlace = $(this).attr("total-used");
-        var typeName = $(this).attr("type-name");
-        var textPrint = "You won't be able to revert this action!";
-
-        if (dataMsg) {
-            textPrint = dataMsg;
-        } else if (totalUsedPlace > 0) {
-            textPrint = "This item (" + (typeName || 'record') + ") is used in " + totalUsedPlace + " other places. Deleting it will remove associated records!";
-        } else {
-            var onclickAttr = $(this).attr('onclick') || '';
-            var match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
-            if (match && match[1]) {
-                textPrint = match[1];
-            }
+        var $el = $(this);
+        var link = $el.attr("href");
+        var totalUsedPlace = $el.attr("total-used");
+        var typeName = $el.attr("type-name");
+        var text = $el.attr("data-confirm-msg") || "You won't be able to revert this action!";
+        if (!$el.attr("data-confirm-msg") && totalUsedPlace > 0) {
+            text = "This item (" + (typeName || 'record') + ") is used in " + totalUsedPlace + " other places. Deleting it will remove associated records!";
         }
-
-        var isDark = document.documentElement.classList.contains('dark-theme');
-
-        Swal.fire({
-            title: 'Are you sure?',
-            text: textPrint,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: '<i class="fa-solid fa-trash" style="margin-right: 6px;"></i> Yes, Delete It!',
-            cancelButtonText: 'Cancel',
-            customClass: {
-                popup: 'kula-swal-popup',
-                confirmButton: 'kula-swal-confirm-btn',
-                cancelButton: 'kula-swal-cancel-btn'
-            },
-            background: isDark ? '#0f172a' : '#ffffff',
-            color: isDark ? '#f8fafc' : '#0f172a'
-        }).then(function(result) {
-            if ((result.isConfirmed || result.value === true)) {
-                if (link && link !== '#' && link !== 'javascript:void(0);') {
-                    window.location.href = link;
-                } else {
-                    var parentForm = $(e.target).closest('form');
-                    if (parentForm.length) parentForm.off('submit').submit();
-                }
+        Kula.confirm(text, { danger: true }).then(function(ok) {
+            if (!ok) return;
+            if (link && link !== '#' && link !== 'javascript:void(0);') {
+                window.location.href = link;
+            } else {
+                var parentForm = $el.closest('form');
+                if (parentForm.length) parentForm.off('submit').submit();
             }
         });
-        return false;
-    });
-
-    // 3. Global SweetAlert2 Interceptor for Forms (form[onsubmit*="confirm"])
-    $(document).on("submit", "form[onsubmit*='confirm']", function(e) {
-        var form = this;
-        if ($(form).data('swal-passed')) {
-            return true;
-        }
-        e.preventDefault();
-        
-        var onsubmitAttr = $(form).attr('onsubmit') || '';
-        var match = onsubmitAttr.match(/confirm\(['"](.*?)['"]\)/);
-        var textPrint = (match && match[1]) ? match[1] : "Are you sure you want to proceed with this action?";
-        var isDark = document.documentElement.classList.contains('dark-theme');
-
-        Swal.fire({
-            title: 'Are you sure?',
-            text: textPrint,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: '<i class="fa-solid fa-check" style="margin-right: 6px;"></i> Yes, Proceed!',
-            cancelButtonText: 'Cancel',
-            customClass: {
-                popup: 'kula-swal-popup',
-                confirmButton: 'kula-swal-confirm-btn',
-                cancelButton: 'kula-swal-cancel-btn'
-            },
-            background: isDark ? '#0f172a' : '#ffffff',
-            color: isDark ? '#f8fafc' : '#0f172a'
-        }).then(function(result) {
-            if ((result.isConfirmed || result.value === true)) {
-                $(form).data('swal-passed', true);
-                form.submit();
-            }
-        });
-        return false;
     });
 });
 </script>

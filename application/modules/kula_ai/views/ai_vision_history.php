@@ -139,6 +139,7 @@
             color: #f8fafc;
         }
     </style>
+<script src="<?php echo base_url('common/js/kula_notify.js'); ?>?v=<?php echo @filemtime(FCPATH . 'common/js/kula_notify.js'); ?>"></script>
 </head>
 <body>
 
