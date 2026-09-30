@@ -78,6 +78,25 @@ class Ion_auth
 
 		$email_config = $this->config->item('email_config', 'ion_auth');
 
+		// The Super Admin SMTP page (saas_smtp_settings) is the single source of truth when configured
+		$CI =& get_instance();
+		if (isset($CI->db) && $CI->db->table_exists('saas_smtp_settings') && is_array($email_config))
+		{
+			$smtp = $CI->db->get('saas_smtp_settings')->row();
+			if ($smtp && !empty($smtp->smtp_host))
+			{
+				$email_config['smtp_host']   = $smtp->smtp_host;
+				$email_config['smtp_port']   = (int)$smtp->smtp_port;
+				$email_config['smtp_user']   = $smtp->mail_username;
+				$email_config['smtp_pass']   = $smtp->mail_password;
+				$email_config['smtp_crypto'] = strtolower($smtp->smtp_encryption);
+				if (!empty($smtp->from_email))
+				{
+					$this->config->config['ion_auth']['admin_email'] = $smtp->from_email;
+				}
+			}
+		}
+
 		if ($this->config->item('use_ci_email', 'ion_auth') && isset($email_config) && is_array($email_config))
 		{
 			$this->email->initialize($email_config);
