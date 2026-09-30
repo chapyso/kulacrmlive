@@ -20,11 +20,12 @@
     <!-- Google Fonts & FontAwesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Landing Page CSS -->
     <link rel="stylesheet" href="<?php echo base_url('common/css/landing.css?v=' . time()); ?>">
+    <link rel="stylesheet" href="<?php echo base_url('common/css/landing-modern.css?v=' . time()); ?>">
     
     <style>
         .pricing-grid-dynamic {
@@ -78,7 +79,7 @@
             margin-bottom: 6px;
         }
         .plan-name {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 22px;
             font-weight: 800;
             color: var(--primary-forest);
@@ -90,7 +91,7 @@
             margin-bottom: 20px;
         }
         .plan-price-main {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Bricolage Grotesque', sans-serif;
             font-size: 28px;
             font-weight: 800;
             color: var(--primary-forest);
@@ -214,8 +215,8 @@
             <div class="hero-grid">
                 <!-- Left Column -->
                 <div class="hero-content">
-                    <span class="hero-tag">FARM MANAGEMENT SYSTEM</span>
-                    <h1 class="hero-title">Manage Your Farm.<br>Grow Your Business.</h1>
+                    <span class="hero-tag">Farm management, one system</span>
+                    <h1 class="hero-title">Manage your farm.<br><span class="accent">Grow your business.</span></h1>
                     <p class="hero-subtitle">
                         KulaCRM brings livestock management, farm operations, sales, expenses and reporting together in one powerful platform.
                     </p>
@@ -535,47 +536,47 @@
                 <div class="about-cards-grid">
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-cow"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">1. Livestock Management</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Livestock Management</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Manage livestock, breeds, variants, batches and lifecycle records across your entire farm.</p>
                     </div>
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-warehouse"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">2. Shed & Batch Management</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Shed & Batch Management</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Track where livestock are located and manage them batch-by-batch with capacity planning.</p>
                     </div>
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-cart-shopping"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">3. Purchasing</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Purchasing</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Manage suppliers, livestock purchases, multi-line invoices and outstanding payments.</p>
                     </div>
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-syringe"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">4. Vaccination & Health Records</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Vaccination & Health Records</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Manage vaccines, dose stocks, schedules and upcoming vaccination reminders.</p>
                     </div>
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-wheat-awn"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">5. Feed & Food Management</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Feed & Food Management</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Track food purchases, inventory stock, shed distributions and consumption efficiency.</p>
                     </div>
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-bottle-droplet"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">6. Production Management</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Production Management</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Record production (milk, eggs, wool, manure) from livestock batches and manage inventory.</p>
                     </div>
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-arrows-rotate"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">7. Transfers & Reproduction</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Transfers & Reproduction</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Track livestock movement between sheds and record new births and reproduction cycles.</p>
                     </div>
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-cash-register"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">8. Sales & Payments</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Sales & Payments</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Manage livestock and product sales, client directory, invoices and payment receipts.</p>
                     </div>
                     <div class="about-info-card">
                         <div style="font-size: 24px; color: var(--secondary-green); margin-bottom: 10px;"><i class="fa-solid fa-users-gear"></i></div>
-                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">9. Staff Management</h4>
+                        <h4 style="font-size: 16px; font-weight: 700; color: var(--primary-forest);">Staff Management</h4>
                         <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">Manage farm staff directory, role types, payroll logs and staff disbursements.</p>
                     </div>
                 </div>

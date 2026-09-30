@@ -1,5 +1,5 @@
 /* KulaCRM Landing Page Styles - Softchap Publishing */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700;800&family=Figtree:wght@400;500;600;700;800&display=swap');
 
 :root {
   --primary-forest: #003A0C;
@@ -26,7 +26,7 @@
 
 html {
   scroll-behavior: smooth;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Figtree', system-ui, -apple-system, sans-serif;
   color: var(--text-dark);
   background-color: var(--bg-light);
 }
@@ -187,11 +187,11 @@ body {
   color: var(--secondary-green);
   text-transform: uppercase;
   margin-bottom: 16px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
 }
 
 .hero-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 52px;
   font-weight: 800;
   line-height: 1.15;
@@ -470,7 +470,7 @@ body {
 }
 
 .section-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 38px;
   font-weight: 800;
   color: var(--primary-forest);
@@ -591,7 +591,7 @@ body {
 }
 
 .stat-val {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 38px;
   font-weight: 800;
   color: var(--bright-lime);
@@ -856,7 +856,7 @@ body {
 }
 
 .cta-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Bricolage Grotesque', sans-serif;
   font-size: 42px;
   font-weight: 800;
   line-height: 1.2;
