@@ -7025,3 +7025,26 @@ body.dark-theme .wrapper > section.panel:has(> header.panel-heading) .row:has(> 
 .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-1, .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-2 { flex: 0 0 auto; float: none; width: auto; margin-top: 0 !important; padding: 0; }
 .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-2:empty { display: none; }
 @media (max-width: 991px) { .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) { flex-wrap: wrap; } .wrapper > section.panel:has(> header.panel-heading) .row:has(> .col-md-9 > .row > .form-group[class*="col-sm-"]) > .col-md-9 { flex-basis: 100%; } }
+
+/* ==========================================================================
+   MOBILE DRAWER: SHARP SIDEBAR ON iOS SAFARI
+   The drawer's dim backdrop used backdrop-filter, and Safari blurred the open
+   sidebar along with the page. The backdrop is now a plain dim layer, and the open
+   drawer is explicitly stacked above it (still below the bottom nav).
+   ========================================================================== */
+@media (max-width: 991px) {
+  #kula-mobile-backdrop {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(15, 23, 42, 0.55) !important;
+    z-index: 99990 !important;
+  }
+  #sidebar.kula-mobile-open {
+    z-index: 99995 !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+    filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
