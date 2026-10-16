@@ -161,9 +161,22 @@
             /* ==========================================================================
                DASHBOARD MOBILE & RESPONSIVE COMPONENT ENGINE
                ========================================================================== */
-            .kula-dashboard-card-body,
-            .kula-fin-card-body {
+            .kula-dashboard-card-body {
                 padding: 24px;
+            }
+            /* ==========================================================================
+               KULACRM MODERN FINANCIAL BREAKDOWN COMPONENT
+               ========================================================================== */
+            .kula-fin-card {
+                background: #FFFFFF !important;
+                border-radius: 20px !important;
+                border: 1px solid #E5EAF1 !important;
+                box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04) !important;
+                margin-bottom: 0 !important;
+                overflow: hidden;
+            }
+            .kula-fin-card-body {
+                padding: 20px 24px !important;
             }
             .kula-fin-header {
                 display: flex;
@@ -171,65 +184,385 @@
                 justify-content: space-between;
                 flex-wrap: wrap;
                 gap: 12px;
-                margin-bottom: 20px;
-                border-bottom: 1px solid #f1f5f9;
-                padding-bottom: 16px;
+                margin-bottom: 18px;
+            }
+            .kula-fin-header-left {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                min-width: 0;
+                flex: 1 1 auto;
+            }
+            .kula-fin-icon-square {
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                background: #E6F7F1;
+                color: #009F72;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 19px;
+                flex-shrink: 0;
             }
             .kula-fin-title-wrap {
-                flex: 1 1 240px;
                 min-width: 0;
+            }
+            .kula-fin-title {
+                font-size: 19px;
+                font-weight: 800;
+                color: #111827;
+                margin: 0 0 2px 0;
+                letter-spacing: -0.3px;
+                line-height: 1.25;
+            }
+            .kula-fin-subtitle {
+                margin: 0;
+                font-size: 12.5px;
+                color: #64748B;
+                font-weight: 500;
+                line-height: 1.3;
             }
             .kula-fin-badge-wrap {
                 flex-shrink: 0;
             }
+            .kula-fin-lifetime-btn {
+                background: #F1F5F9;
+                color: #334155;
+                font-size: 12px;
+                font-weight: 700;
+                padding: 7px 16px;
+                border-radius: 12px;
+                border: 1px solid #E2E8F0;
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                text-decoration: none !important;
+                transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+                cursor: pointer;
+            }
+            .kula-fin-lifetime-btn:hover {
+                background: #E2E8F0;
+                color: #0F172A;
+                transform: translateY(-1px);
+            }
+            
+            /* Content Row: 34% Left, 66% Right */
             .kula-fin-content-row {
                 display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-                gap: 20px;
+                gap: 14px;
+                align-items: stretch;
             }
             .kula-fin-chart-col {
-                flex: 0 0 38%;
-                max-width: 38%;
+                flex: 0 0 34%;
+                max-width: 34%;
+                min-width: 270px;
+                display: flex;
+            }
+            .kula-fin-chart-box {
+                background: #F4FBF7;
+                border: 1px solid #E6F4EA;
+                border-radius: 18px;
+                padding: 16px 14px 14px 14px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+                width: 100%;
+                min-height: 250px;
+            }
+            .kula-fin-leaf-bg {
+                position: absolute;
+                bottom: -4px;
+                left: -4px;
+                opacity: 0.28;
+                pointer-events: none;
+                z-index: 1;
+            }
+            .kula-fin-chart-wrap {
+                width: 100%;
+                max-width: 220px;
+                margin: 0 auto;
+                position: relative;
+                z-index: 2;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .kula-fin-chart-legend {
+                position: relative;
+                z-index: 2;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                min-width: 220px;
+                gap: 36px;
+                margin-top: 8px;
+                width: 100%;
             }
+            .kula-fin-legend-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 1px;
+                text-align: center;
+            }
+            .kula-fin-legend-head {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .kula-fin-dot {
+                width: 9px;
+                height: 9px;
+                border-radius: 50%;
+                display: inline-block;
+            }
+            .dot-revenue {
+                background: #009F72;
+            }
+            .dot-expense {
+                background: #EF4444;
+            }
+            .kula-fin-legend-label {
+                font-size: 11.5px;
+                font-weight: 700;
+                color: #1E293B;
+            }
+            .kula-fin-legend-pct {
+                font-size: 12px;
+                font-weight: 800;
+                color: #1E293B;
+            }
+            
+            /* Right Statistics Column */
             .kula-fin-stats-col {
-                flex: 1 1 55%;
-                min-width: 260px;
+                flex: 1 1 66%;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                gap: 12px;
             }
             .kula-fin-stats-grid {
                 display: grid;
                 grid-template-columns: repeat(2, 1fr);
-                gap: 14px;
+                gap: 12px;
             }
             .kula-fin-stat-card {
-                border-radius: 14px;
-                padding: 14px 16px;
+                border-radius: 16px;
+                padding: 14px 18px 16px 18px;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
+                min-height: 116px;
+                min-width: 0;
+                transition: transform 0.15s ease, box-shadow 0.15s ease;
+            }
+            .kula-fin-stat-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px -2px rgba(15, 23, 42, 0.05);
+            }
+            .card-expense {
+                background: #FEF2F2;
+                border: 1px solid #FEE2E2;
+            }
+            .card-revenue {
+                background: #F0FDF4;
+                border: 1px solid #DCFCE7;
+            }
+            .kula-fin-stat-top {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 6px;
+            }
+            .kula-fin-stat-label-wrap {
+                display: flex;
+                align-items: center;
+                gap: 8px;
                 min-width: 0;
             }
+            .kula-fin-arrow-box {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                flex-shrink: 0;
+            }
+            .box-expense {
+                background: #FDE8E8;
+                color: #EF4444;
+            }
+            .box-revenue {
+                background: #DCFCE7;
+                color: #009F72;
+            }
+            .kula-fin-stat-title {
+                font-size: 12.5px;
+                font-weight: 600;
+                color: #64748B;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .kula-fin-pill {
+                font-size: 11px;
+                font-weight: 800;
+                padding: 2.5px 8.5px;
+                border-radius: 9999px;
+                line-height: 1.2;
+                white-space: nowrap;
+            }
+            .pill-expense {
+                background: #EF4444;
+                color: #FFFFFF;
+            }
+            .pill-revenue {
+                background: #009F72;
+                color: #FFFFFF;
+            }
+            .kula-fin-stat-val {
+                font-size: 23px;
+                font-weight: 800;
+                color: #111827;
+                margin: 4px 0 10px 0;
+                letter-spacing: -0.4px;
+                line-height: 1.15;
+                word-break: break-word;
+            }
+            .kula-fin-prog-track {
+                height: 6px;
+                border-radius: 9999px;
+                overflow: hidden;
+                margin-top: auto;
+            }
+            .track-expense {
+                background: #FEE2E2;
+            }
+            .track-revenue {
+                background: #DCFCE7;
+            }
+            .kula-fin-prog-fill {
+                height: 100%;
+                border-radius: 9999px;
+                transition: width 0.4s ease;
+            }
+            .fill-expense {
+                background: #EF4444;
+            }
+            .fill-revenue {
+                background: #009F72;
+            }
+            
+            /* Net Operating Profit Card */
             .kula-fin-net-card {
-                grid-column: span 2;
-                border-radius: 14px;
-                padding: 14px 16px;
+                border-radius: 16px;
+                padding: 14px 20px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 14px;
+                min-width: 0;
+                transition: transform 0.15s ease, box-shadow 0.15s ease;
+                position: relative;
+                overflow: hidden;
+            }
+            .kula-fin-net-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px -2px rgba(15, 23, 42, 0.05);
+            }
+            .net-profit {
+                background: #F0FDF4;
+                border: 1px solid #DCFCE7;
+            }
+            .net-loss {
+                background: #FEF2F2;
+                border: 1px solid #FEE2E2;
+            }
+            .kula-fin-net-left {
+                display: flex;
+                align-items: center;
+                gap: 12px;
                 min-width: 0;
             }
-            .kula-fin-amount {
-                font-size: 19px;
+            .kula-fin-net-icon {
+                width: 38px;
+                height: 38px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                flex-shrink: 0;
+            }
+            .icon-profit {
+                background: #DCFCE7;
+                color: #009F72;
+            }
+            .icon-loss {
+                background: #FEE2E2;
+                color: #EF4444;
+            }
+            .kula-fin-net-data {
+                display: flex;
+                flex-direction: column;
+            }
+            .kula-fin-net-label {
+                font-size: 12px;
+                font-weight: 600;
+                color: #64748B;
+                margin-bottom: 2px;
+                line-height: 1.2;
+            }
+            .kula-fin-net-val {
+                font-size: 25px;
                 font-weight: 800;
-                margin: 0 0 6px 0;
+                margin: 0;
+                line-height: 1.15;
+                letter-spacing: -0.5px;
                 word-break: break-word;
             }
-            .kula-fin-net-amount {
-                font-size: 20px;
-                font-weight: 800;
-                margin: 4px 0 0 0;
-                word-break: break-word;
+            .text-profit {
+                color: #009F72;
+            }
+            .text-loss {
+                color: #EF4444;
+            }
+            .kula-fin-net-right {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                flex-shrink: 0;
+            }
+            .kula-fin-net-graphic {
+                opacity: 0.85;
+                display: flex;
+                align-items: center;
+            }
+            .kula-fin-net-badge {
+                padding: 7px 18px;
+                border-radius: 9999px;
+                font-size: 13px;
+                font-weight: 700;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                white-space: nowrap;
+            }
+            .badge-profit {
+                background: #009F72;
+                color: #FFFFFF;
+                box-shadow: 0 2px 8px rgba(0, 159, 114, 0.25);
+            }
+            .badge-loss {
+                background: #EF4444;
+                color: #FFFFFF;
+                box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
             }
 
             /* Card 2: Livestock Stock Analysis */
@@ -266,9 +599,71 @@
             }
 
             /* Dark Mode Support */
-            body.dark-theme .kula-fin-header,
-            html.dark-theme .kula-fin-header {
-                border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+            body.dark-theme .kula-fin-card,
+            html.dark-theme .kula-fin-card {
+                background: #1e293b !important;
+                border-color: rgba(255, 255, 255, 0.08) !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+            }
+            body.dark-theme .kula-fin-title,
+            html.dark-theme .kula-fin-title {
+                color: #f8fafc !important;
+            }
+            body.dark-theme .kula-fin-subtitle,
+            html.dark-theme .kula-fin-subtitle {
+                color: #94a3b8 !important;
+            }
+            body.dark-theme .kula-fin-icon-square,
+            html.dark-theme .kula-fin-icon-square {
+                background: rgba(0, 159, 114, 0.2) !important;
+                color: #34d399 !important;
+            }
+            body.dark-theme .kula-fin-lifetime-btn,
+            html.dark-theme .kula-fin-lifetime-btn {
+                background: rgba(255, 255, 255, 0.06) !important;
+                border-color: rgba(255, 255, 255, 0.1) !important;
+                color: #e2e8f0 !important;
+            }
+            body.dark-theme .kula-fin-chart-box,
+            html.dark-theme .kula-fin-chart-box {
+                background: #0f172a !important;
+                border-color: rgba(255, 255, 255, 0.08) !important;
+            }
+            body.dark-theme .kula-fin-legend-label,
+            html.dark-theme .kula-fin-legend-label,
+            body.dark-theme .kula-fin-legend-pct,
+            html.dark-theme .kula-fin-legend-pct {
+                color: #e2e8f0 !important;
+            }
+            body.dark-theme .card-expense,
+            html.dark-theme .card-expense {
+                background: rgba(239, 68, 68, 0.1) !important;
+                border-color: rgba(239, 68, 68, 0.25) !important;
+            }
+            body.dark-theme .card-revenue,
+            html.dark-theme .card-revenue {
+                background: rgba(0, 159, 114, 0.1) !important;
+                border-color: rgba(0, 159, 114, 0.25) !important;
+            }
+            body.dark-theme .net-profit,
+            html.dark-theme .net-profit {
+                background: rgba(0, 159, 114, 0.1) !important;
+                border-color: rgba(0, 159, 114, 0.25) !important;
+            }
+            body.dark-theme .net-loss,
+            html.dark-theme .net-loss {
+                background: rgba(239, 68, 68, 0.1) !important;
+                border-color: rgba(239, 68, 68, 0.25) !important;
+            }
+            body.dark-theme .kula-fin-stat-val,
+            html.dark-theme .kula-fin-stat-val {
+                color: #ffffff !important;
+            }
+            body.dark-theme .kula-fin-stat-title,
+            html.dark-theme .kula-fin-stat-title,
+            body.dark-theme .kula-fin-net-label,
+            html.dark-theme .kula-fin-net-label {
+                color: #94a3b8 !important;
             }
             body.dark-theme .kula-entity-card,
             html.dark-theme .kula-entity-card {
@@ -280,12 +675,12 @@
             @media (max-width: 991px) {
                 .kula-fin-content-row {
                     flex-direction: column !important;
-                    gap: 16px !important;
+                    gap: 14px !important;
                 }
                 .kula-fin-chart-col {
                     flex: 0 0 100% !important;
                     max-width: 100% !important;
-                    margin-bottom: 6px !important;
+                    width: 100% !important;
                 }
                 .kula-fin-stats-col {
                     flex: 0 0 100% !important;
@@ -303,55 +698,56 @@
             @media (max-width: 640px) {
                 .kula-dashboard-card-body,
                 .kula-fin-card-body {
-                    padding: 14px 10px !important;
+                    padding: 16px 14px !important;
                 }
                 .kula-fin-header {
-                    margin-bottom: 10px !important;
-                    padding-bottom: 8px !important;
-                    gap: 6px !important;
+                    margin-bottom: 12px !important;
+                    gap: 8px !important;
                 }
-                .kula-fin-header h3 {
-                    font-size: 15px !important;
+                .kula-fin-title {
+                    font-size: 16px !important;
                 }
-                .kula-fin-header p {
+                .kula-fin-subtitle {
                     font-size: 11.5px !important;
                 }
-                .kula-fin-badge-wrap span {
-                    font-size: 10.5px !important;
-                    padding: 3px 8px !important;
+                .kula-fin-icon-square {
+                    width: 34px !important;
+                    height: 34px !important;
+                    font-size: 16px !important;
+                    border-radius: 10px !important;
                 }
-                .kula-fin-chart-col {
-                    margin-bottom: 4px !important;
+                .kula-fin-lifetime-btn {
+                    font-size: 11px !important;
+                    padding: 5px 12px !important;
                 }
                 #incomeExpenseStatement {
                     max-width: 180px !important;
                     margin: 0 auto !important;
                 }
                 .kula-fin-stats-grid {
-                    grid-template-columns: 1fr 1fr !important;
-                    gap: 8px !important;
+                    grid-template-columns: 1fr !important;
+                    gap: 10px !important;
                 }
                 .kula-fin-stat-card {
-                    grid-column: span 1 !important;
-                    padding: 10px 10px !important;
-                    border-radius: 12px !important;
+                    padding: 12px 14px !important;
+                    min-height: 98px !important;
                 }
-                .kula-fin-stat-card span {
-                    font-size: 11px !important;
+                .kula-fin-stat-val {
+                    font-size: 19px !important;
+                    margin: 4px 0 8px 0 !important;
                 }
                 .kula-fin-net-card {
-                    grid-column: span 2 !important;
-                    padding: 10px 12px !important;
-                    border-radius: 12px !important;
+                    padding: 12px 14px !important;
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 10px !important;
                 }
-                .kula-fin-amount {
-                    font-size: 13.5px !important;
-                    margin: 0 0 4px 0 !important;
-                    letter-spacing: -0.2px !important;
+                .kula-fin-net-val {
+                    font-size: 21px !important;
                 }
-                .kula-fin-net-amount {
-                    font-size: 15px !important;
-                    margin: 2px 0 0 0 !important;
+                .kula-fin-net-right {
+                    width: 100% !important;
+                    justify-content: space-between !important;
                 }
                 .kula-stock-legend-grid {
                     grid-template-columns: repeat(2, 1fr) !important;
@@ -408,265 +804,490 @@
 
 
          <?php
-         // Alert cards — counts only; thresholds come from Settings.
+         // Ensure trend and historical metrics are available
+         if (empty($kpi_trends) && is_object($this->home_model) && method_exists($this->home_model, 'getModernKpiTrendsData')) {
+             $kpi_trends = $this->home_model->getModernKpiTrendsData();
+         }
+
+         // 12 KPI Metric Calculations (Exact Business Logic Preserved)
          $lowStockThreshold = isset($settings->low_stock_threshold) ? (int) $settings->low_stock_threshold : 10;
          $overdueDays       = isset($settings->overdue_payment_days) ? (int) $settings->overdue_payment_days : 7;
          $alertLowStock     = count($this->home_model->getLowStockBatches($lowStockThreshold));
          $alertSupOverdue   = count($this->home_model->getOverdueSupplierPayments($overdueDays));
          $alertCliOverdue   = count($this->home_model->getOverdueClientPayments($overdueDays));
          $alertVaccDue      = count($this->home_model->getVaccinationsDueWithin(7));
-         $anyAlerts         = ($alertLowStock + $alertSupOverdue + $alertCliOverdue + $alertVaccDue) > 0;
+
+         // Financial Performance Values
+         $total_livestock_purchased_amount = isset($total_livestock_purchased_amount) ? $total_livestock_purchased_amount : ((is_object($this->purchase_model) && method_exists($this->purchase_model, 'getTotalLivestockPurchasedAmount')) ? $this->purchase_model->getTotalLivestockPurchasedAmount() : 0);
+
+         $foodPurchaseAmount    = $this->report_model->getSumData('food_purchase_summary', 'fdps_grand_total', ['fdps_status' => 1]);
+         $vaccinePurchaseAmount = $this->report_model->getSumData('vaccine_purchase_summary', 'vps_grand_total', ['vps_status' => 1]);
+         $expenseAmount         = $this->report_model->getSumData('expense', 'ex_amount', ['ex_status' => 1]);
+         $otherExpense          = $foodPurchaseAmount + $vaccinePurchaseAmount + $expenseAmount;
+
+         $totalSaleAmount       = $this->sale_model->getTotalLivestockSaleAmount();
+         $productSaleAmount     = $this->report_model->getSumData('product_sale_summary', 'prss_grand_total', ['prss_status' => 1]);
+
+         // Livestock & Daily Operations Values
+         $totalBirthQuantity    = $this->report_model->getSumData('live_assigned_shed_summary', 'lshs_assign_total_quantity', ['lshs_status' => 1, 'lshs_type' => 2]);
+         $purQ                  = $this->report_model->getTotalPurchaseSubTotal('purv_quantity');
+         $saleQ                 = $this->report_model->getTotalLivestockSaleQuantity('lssv_quantity');
+         $deathQ                = $this->report_model->getTotalDeath('ld_death_quantity');
+         $inStockQuantity       = ($purQ + $totalBirthQuantity) - ($saleQ + $deathQ);
+
+         $livestockPurchaseAmountToday = $this->report_model->getSumData('livestock_purchase_summary', 'purs_sub_total', ['purs_status' => 1, 'purs_date' => date("Y-m-d")]);
+         $foodPurchaseAmountToday      = $this->report_model->getSumData('food_purchase_summary', 'fdps_grand_total', ['fdps_status' => 1, 'fdps_date' => date("Y-m-d")]);
+         $vaccinePurchaseAmountToday   = $this->report_model->getSumData('vaccine_purchase_summary', 'vps_grand_total', ['vps_status' => 1, 'vps_date' => date("Y-m-d")]);
+         $expenseAmountToday           = $this->report_model->getSumData('expense', 'ex_amount', ['ex_status' => 1, 'ex_date' => date("Y-m-d")]);
+         $otherExpenseToday            = $livestockPurchaseAmountToday + $foodPurchaseAmountToday + $vaccinePurchaseAmountToday + $expenseAmountToday;
+
+         $livestockSaleAmountToday     = $this->report_model->getSumData('livestock_sale_summary', 'lsss_grand_total', ['lsss_date' => date("Y-m-d")]);
+         $productSaleAmountToday       = $this->report_model->getSumData('product_sale_summary', 'prss_grand_total', ['prss_status' => 1, 'prss_date' => date("Y-m-d")]);
+         $todaySaleAmount              = $livestockSaleAmountToday + $productSaleAmountToday;
+
+         $todayPurchaseLive            = $this->report_model->getTodayPurchaseSubTotal(date("Y-m-d"), 'purv_quantity');
+
+         // Helper for compact SVG bar sparkline
+         if (!function_exists('kula_render_bar_chart')) {
+             function kula_render_bar_chart($points, $colorHex, $gradId) {
+                 $max = !empty($points) ? max($points) : 0;
+                 $count = count($points);
+                 if ($count < 6) {
+                     $points = array_pad($points, 6, 0);
+                     $count = 6;
+                 }
+                 $svg = '<svg viewBox="0 0 68 26" width="68" height="26" class="kula-sparkline-svg" aria-hidden="true">';
+                 $svg .= '<defs><linearGradient id="' . $gradId . '" x1="0" y1="0" x2="0" y2="1">';
+                 $svg .= '<stop offset="0%" stop-color="' . $colorHex . '" stop-opacity="0.95"/>';
+                 $svg .= '<stop offset="100%" stop-color="' . $colorHex . '" stop-opacity="0.25"/>';
+                 $svg .= '</linearGradient></defs>';
+                 for ($i = 0; $i < $count; $i++) {
+                     $x = 2 + $i * 11;
+                     $val = (float)$points[$i];
+                     if ($max > 0) {
+                         $h = max(4, round(($val / $max) * 20));
+                         $opacity = $val > 0 ? (0.45 + 0.55 * ($val / $max)) : 0.18;
+                     } else {
+                         $h = 4 + ($i * 1.5);
+                         $opacity = 0.18;
+                     }
+                     $y = 25 - $h;
+                     $svg .= '<rect x="' . $x . '" y="' . $y . '" width="5.5" height="' . $h . '" rx="2" ry="2" fill="url(#' . $gradId . ')" opacity="' . round($opacity, 2) . '" />';
+                 }
+                 $svg .= '</svg>';
+                 return $svg;
+             }
+         }
+
+         // Helper for compact SVG wave/line sparkline
+         if (!function_exists('kula_render_wave_chart')) {
+             function kula_render_wave_chart($points, $colorHex, $gradId, $elevate = false) {
+                 $max = !empty($points) ? max($points) : 0;
+                 $svg = '<svg viewBox="0 0 80 26" width="80" height="26" class="kula-sparkline-svg" aria-hidden="true">';
+                 $svg .= '<defs><linearGradient id="' . $gradId . '" x1="0" y1="0" x2="0" y2="1">';
+                 $svg .= '<stop offset="0%" stop-color="' . $colorHex . '" stop-opacity="0.32"/>';
+                 $svg .= '<stop offset="100%" stop-color="' . $colorHex . '" stop-opacity="0.0"/>';
+                 $svg .= '</linearGradient></defs>';
+                 if ($max > 0 || $elevate) {
+                     $pathArea = "M 0,22 C 16,22 28,19 40,14 C 54,8 65,12 80,5 L 80,26 L 0,26 Z";
+                     $pathLine = "M 0,22 C 16,22 28,19 40,14 C 54,8 65,12 80,5";
+                 } else {
+                     $pathArea = "M 0,22 C 20,22 36,19 52,17 C 64,15 72,13 80,10 L 80,26 L 0,26 Z";
+                     $pathLine = "M 0,22 C 20,22 36,19 52,17 C 64,15 72,13 80,10";
+                 }
+                 $svg .= '<path d="' . $pathArea . '" fill="url(#' . $gradId . ')"/>';
+                 $svg .= '<path d="' . $pathLine . '" fill="none" stroke="' . $colorHex . '" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round"/>';
+                 $svg .= '</svg>';
+                 return $svg;
+             }
+         }
          ?>
-         <?php if ($anyAlerts): ?>
-         <!-- Alert cards -->
-         <div class="row state-overview" style="margin-bottom: 10px;">
-             <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-                 <a href="<?php echo base_url('shed/addShed'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                     <section class="panel card__box" style="<?php echo $alertLowStock > 0 ? 'border-left:4px solid #e67e22;' : ''; ?>">
-                         <div class="symbol <?php echo $alertLowStock > 0 ? 'red' : 'terques'; ?>">
+
+         <!-- ================================================================= -->
+         <!-- SECTION A: ALERTS & ACTIONS                                       -->
+         <!-- ================================================================= -->
+         <div class="kula-kpi-section">
+             <div class="kula-kpi-section-header">
+                 <div class="kula-kpi-section-title-row">
+                     <span class="kula-section-dot dot-red"></span>
+                     <h3 class="kula-kpi-section-heading">Alerts &amp; Actions</h3>
+                     <?php $totalAlertCount = $alertLowStock + $alertSupOverdue + $alertCliOverdue + $alertVaccDue; ?>
+                     <span class="kula-section-counter"><?php echo $totalAlertCount; ?> pending</span>
+                 </div>
+                 <p class="kula-kpi-section-desc">Critical operational alerts, low stock thresholds, overdue supplier &amp; client balances, and scheduled vaccines</p>
+             </div>
+             <div class="kula-modern-kpi-grid">
+                 <!-- 1. Low stock batches -->
+                 <a href="<?php echo base_url('shed/addShed'); ?>" class="kula-kpi-card" title="Batches with remaining inventory &le; threshold (<?php echo $lowStockThreshold; ?>)">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Low stock batches</h4>
+                             <p class="kula-kpi-subtitle">Batches with &le; <?php echo $lowStockThreshold; ?> items</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-red">
                              <i class="fa-solid fa-triangle-exclamation"></i>
                          </div>
-                         <div class="value">
-                             <h4><?php echo $alertLowStock; ?></h4>
-                             <strong class="text-info">Low stock batches (&le; <?php echo $lowStockThreshold; ?>)</strong>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $alertLowStock; ?></div>
+                             <?php if ($alertLowStock > 0): ?>
+                                 <span class="kula-kpi-badge badge-red"><i class="fa-solid fa-arrow-up"></i> +<?php echo $alertLowStock; ?></span>
+                             <?php else: ?>
+                                 <span class="kula-kpi-badge badge-green"><i class="fa-solid fa-arrow-down"></i> 0%</span>
+                             <?php endif; ?>
                          </div>
-                     </section>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php echo kula_render_wave_chart([], '#EF4444', 'wave-low-stock', ($alertLowStock > 0)); ?>
+                         </div>
+                     </div>
                  </a>
-             </div>
-             <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-                 <a href="<?php echo base_url('payments/listSupplierPayments'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                     <section class="panel card__box" style="<?php echo $alertSupOverdue > 0 ? 'border-left:4px solid #c0392b;' : ''; ?>">
-                         <div class="symbol <?php echo $alertSupOverdue > 0 ? 'red' : 'terques'; ?>">
+
+                 <!-- 2. Overdue supplier invoices -->
+                 <a href="<?php echo base_url('payments/listSupplierPayments'); ?>" class="kula-kpi-card" title="Supplier purchase invoices pending payment past <?php echo $overdueDays; ?> days">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Overdue supplier invoices</h4>
+                             <p class="kula-kpi-subtitle">Invoices older than <?php echo $overdueDays; ?> days</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-red">
                              <i class="fa-solid fa-file-invoice-dollar"></i>
                          </div>
-                         <div class="value">
-                             <h4><?php echo $alertSupOverdue; ?></h4>
-                             <strong class="text-info">Overdue supplier invoices (&gt; <?php echo $overdueDays; ?>d)</strong>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $alertSupOverdue; ?></div>
+                             <?php if ($alertSupOverdue > 0): ?>
+                                 <span class="kula-kpi-badge badge-red"><i class="fa-solid fa-arrow-up"></i> +<?php echo $alertSupOverdue; ?></span>
+                             <?php else: ?>
+                                 <span class="kula-kpi-badge badge-green"><i class="fa-solid fa-arrow-down"></i> 0%</span>
+                             <?php endif; ?>
                          </div>
-                     </section>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php echo kula_render_wave_chart([], '#EF4444', 'wave-sup-overdue', ($alertSupOverdue > 0)); ?>
+                         </div>
+                     </div>
                  </a>
-             </div>
-             <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-                 <a href="<?php echo base_url('payments/listClientPayments'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                     <section class="panel card__box" style="<?php echo $alertCliOverdue > 0 ? 'border-left:4px solid #c0392b;' : ''; ?>">
-                         <div class="symbol <?php echo $alertCliOverdue > 0 ? 'red' : 'terques'; ?>">
+
+                 <!-- 3. Overdue client invoices -->
+                 <a href="<?php echo base_url('payments/listClientPayments'); ?>" class="kula-kpi-card" title="Customer sales invoices with unpaid balances older than <?php echo $overdueDays; ?> days">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Overdue client invoices</h4>
+                             <p class="kula-kpi-subtitle">Invoices older than <?php echo $overdueDays; ?> days</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-green">
                              <i class="fa-solid fa-hand-holding-dollar"></i>
                          </div>
-                         <div class="value">
-                             <h4><?php echo $alertCliOverdue; ?></h4>
-                             <strong class="text-info">Overdue client invoices (&gt; <?php echo $overdueDays; ?>d)</strong>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $alertCliOverdue; ?></div>
+                             <?php if ($alertCliOverdue > 0): ?>
+                                 <span class="kula-kpi-badge badge-red"><i class="fa-solid fa-arrow-up"></i> +<?php echo $alertCliOverdue; ?></span>
+                             <?php else: ?>
+                                 <span class="kula-kpi-badge badge-green"><i class="fa-solid fa-arrow-down"></i> 0%</span>
+                             <?php endif; ?>
                          </div>
-                     </section>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php echo kula_render_wave_chart([], '#009F72', 'wave-cli-overdue', ($alertCliOverdue > 0)); ?>
+                         </div>
+                     </div>
                  </a>
-             </div>
-             <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12">
-                 <a href="<?php echo base_url('vaccine/listVaccinatedShed'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                     <section class="panel card__box" style="<?php echo $alertVaccDue > 0 ? 'border-left:4px solid #2980b9;' : ''; ?>">
-                         <div class="symbol <?php echo $alertVaccDue > 0 ? 'blue' : 'terques'; ?>">
+
+                 <!-- 4. Vaccinations due -->
+                 <a href="<?php echo base_url('vaccine/listVaccinatedShed'); ?>" class="kula-kpi-card" title="Livestock vaccination schedules due within the next 7 days">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Vaccinations due</h4>
+                             <p class="kula-kpi-subtitle">Due within 7 days</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-blue">
                              <i class="fa-solid fa-syringe"></i>
                          </div>
-                         <div class="value">
-                             <h4><?php echo $alertVaccDue; ?></h4>
-                             <strong class="text-info">Vaccinations due within 7d</strong>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $alertVaccDue; ?></div>
+                             <?php if ($alertVaccDue > 0): ?>
+                                 <span class="kula-kpi-badge badge-blue"><i class="fa-solid fa-calendar-check"></i> +<?php echo $alertVaccDue; ?> Due</span>
+                             <?php else: ?>
+                                 <span class="kula-kpi-badge badge-green"><i class="fa-solid fa-arrow-down"></i> 0%</span>
+                             <?php endif; ?>
                          </div>
-                     </section>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php 
+                             $vaccPoints = $kpi_trends['vacc_schedule'] ?? [];
+                             echo kula_render_wave_chart($vaccPoints, '#3478F6', 'wave-vacc-due', ($alertVaccDue > 0)); 
+                             ?>
+                         </div>
+                     </div>
                  </a>
              </div>
          </div>
-         <!-- /Alert cards -->
-         <?php endif; ?>
- 
-         <!-- page start-->
-         <div class="row">
-             <div class="col-md-12">
-                  <!-- All 8 KPI Cards inside single unified Flexbox Grid -->
-                  <div class="row state-overview kula-kpi-grid">
-                      <!-- 1. Monthly Livestock Purchases -->
-                      <div class="col-lg-3 col-sm-6 col-xs-6">
-                          <a href="<?php echo base_url('purchase'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                              <section class="panel card__box">
-                                  <div class="symbol blue">
-                                      <i class="fa-solid fa-coins"></i>
-                                  </div>
-                                  <div class="value">
-                                      <strong class="text-info">Livestock Purchases (Month)</strong>
-                                      <h4>
-                                          <?php echo $currency . number_format_currency($total_livestock_purchased_amount, 2); ?>
-                                      </h4>
-                                      <span class="kula-trend-badge up"><i class="fa-solid fa-arrow-trend-up"></i> +18.2%</span>
-                                  </div>
-                              </section>
-                          </a>
-                      </div>
 
-                      <!-- 2. Operating Expenses -->
-                      <div class="col-lg-3 col-sm-6 col-xs-6">
-                          <a href="<?php echo base_url('expense/listExpense'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                              <section class="panel card__box">
-                                  <div class="symbol red">
-                                      <i class="fa-solid fa-arrow-trend-down"></i>
-                                  </div>
-                                  <div class="value">
-                                      <strong class="text-info">Operating Expenses (Month)</strong>
-                                      <h4 class="count">
-                                          <?php
-                                          $foodPurchaseAmount = $this->report_model->getSumData('food_purchase_summary', 'fdps_grand_total', ['fdps_status' => 1]);
-                                          $vaccinePurchaseAmount = $this->report_model->getSumData('vaccine_purchase_summary', 'vps_grand_total', ['vps_status' => 1]);
-                                          $expenseAmount = $this->report_model->getSumData('expense', 'ex_amount', ['ex_status' => 1]);
-                                          $otherExpense = $foodPurchaseAmount + $vaccinePurchaseAmount + $expenseAmount;
-                                          echo $currency . number_format_currency($otherExpense, 2);
-                                          ?>
-                                      </h4>
-                                      <span class="kula-trend-badge down"><i class="fa-solid fa-arrow-trend-down"></i> -8.5%</span>
-                                  </div>
-                              </section>
-                          </a>
-                      </div>
-
-                      <!-- 3. Livestock Sales -->
-                      <div class="col-lg-3 col-sm-6 col-xs-6">
-                          <a href="<?php echo base_url('sale/listSale'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                              <section class="panel card__box">
-                                  <div class="symbol terques">
-                                      <i class="fa-solid fa-chart-pie"></i>
-                                  </div>
-                                  <div class="value">
-                                      <strong class="text-info">Livestock Sales</strong>
-                                      <h4 class="count2">
-                                          <?php
-                                          $totalSaleAmount = $this->sale_model->getTotalLivestockSaleAmount();
-                                          echo $currency . number_format_currency($totalSaleAmount, 2); ?>
-                                      </h4>
-                                      <span class="kula-trend-badge up"><i class="fa-solid fa-arrow-trend-up"></i> +24.3%</span>
-                                  </div>
-                              </section>
-                          </a>
-                      </div>
-
-                      <!-- 4. Product Sales -->
-                      <div class="col-lg-3 col-sm-6 col-xs-6">
-                          <a href="<?php echo base_url('sale/listProductSale'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                              <section class="panel card__box">
-                                  <div class="symbol yellow">
-                                      <i class="fa-solid fa-receipt"></i>
-                                  </div>
-                                  <div class="value">
-                                      <strong class="text-info">Product Sales</strong>
-                                      <h4>
-                                          <?php $productSaleAmount = $this->report_model->getSumData('product_sale_summary', 'prss_grand_total', ['prss_status' => 1]);
-                                          echo $currency . number_format_currency($productSaleAmount, 2);
-                                          ?>
-                                      </h4>
-                                      <span class="kula-trend-badge neutral"><i class="fa-solid fa-clock"></i> Active</span>
-                                  </div>
-                              </section>
-                          </a>
-                      </div>
-
-                      <!-- 5. Total Active Livestock -->
-                      <div class="col-lg-3 col-sm-6 col-xs-6">
-                          <a href="<?php echo base_url('livestock/addLivestock'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                              <section class="panel card__box">
-                                  <div class="symbol red">
-                                      <i class="fa-solid fa-cow"></i>
-                                  </div>
-                                  <div class="value">
-                                      <strong class="text-info">Total Active Livestock</strong>
-                                      <h4 class="count2">
-                                          <?php
-                                          $totalBirthQuantity = $this->report_model->getSumData('live_assigned_shed_summary', 'lshs_assign_total_quantity', ['lshs_status' => 1, 'lshs_type' => 2]);
-                                          $purQ = $this->report_model->getTotalPurchaseSubTotal('purv_quantity');
-                                          $saleQ = $this->report_model->getTotalLivestockSaleQuantity('lssv_quantity');
-                                          $deathQ = $this->report_model->getTotalDeath('ld_death_quantity');
-                                          $inStockQuantity = ($purQ + $totalBirthQuantity) - ($saleQ + $deathQ);
-                                          if ($inStockQuantity) {
-                                              echo number_format_currency($inStockQuantity, 0);
-                                          } else {
-                                              echo 0;
-                                          }
-                                          ?>
-                                      </h4>
-                                      <span class="kula-trend-badge up"><i class="fa-solid fa-shield-halved"></i> Active Stock</span>
-                                  </div>
-                              </section>
-                          </a>
-                      </div>
-
-                      <!-- 6. Today's Purchases -->
-                      <div class="col-lg-3 col-sm-6 col-xs-6">
-                          <a href="<?php echo base_url('purchase'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                              <section class="panel card__box">
-                                  <div class="symbol terques">
-                                      <i class="fa-solid fa-cart-shopping"></i>
-                                  </div>
-                                  <div class="value">
-                                      <strong class="text-info">Today's Purchases</strong>
-                                      <h4 class="count2">
-                                          <?php
-                                          $livestockPurchaseAmountToday = $this->report_model->getSumData('livestock_purchase_summary', 'purs_sub_total', ['purs_status' => 1, 'purs_date' => date("Y-m-d")]);
-                                          $foodPurchaseAmountToday = $this->report_model->getSumData('food_purchase_summary', 'fdps_grand_total', ['fdps_status' => 1, 'fdps_date' => date("Y-m-d")]);
-                                          $vaccinePurchaseAmountToday = $this->report_model->getSumData('vaccine_purchase_summary', 'vps_grand_total', ['vps_status' => 1, 'vps_date' => date("Y-m-d")]);
-                                          $expenseAmountToday = $this->report_model->getSumData('expense', 'ex_amount', ['ex_status' => 1, 'ex_date' => date("Y-m-d")]);
-                                          $otherExpenseToday = $livestockPurchaseAmountToday + $foodPurchaseAmountToday + $vaccinePurchaseAmountToday + $expenseAmountToday;
-                                          echo $currency . number_format_currency($otherExpenseToday, 2);
-                                          ?>
-                                      </h4>
-                                      <span class="kula-trend-badge up"><i class="fa-solid fa-calendar-day"></i> Today</span>
-                                  </div>
-                              </section>
-                          </a>
-                      </div>
-
-                      <!-- 7. Today's Sales -->
-                      <div class="col-lg-3 col-sm-6 col-xs-6">
-                          <a href="<?php echo base_url('sale/listSale'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                              <section class="panel card__box">
-                                  <div class="symbol yellow">
-                                      <i class="fa-solid fa-file-invoice-dollar"></i>
-                                  </div>
-                                  <div class="value">
-                                      <strong class="text-info">Today's Sales</strong>
-                                      <h4 class="count4">
-                                          <?php
-                                          $livestockSaleAmountToday = $this->report_model->getSumData('livestock_sale_summary', 'lsss_grand_total', ['lsss_date' => date("Y-m-d")]);
-                                          $productSaleAmountToday = $this->report_model->getSumData('product_sale_summary', 'prss_grand_total', ['prss_status' => 1, 'prss_date' => date("Y-m-d")]);
-                                          $todaySaleAmount = $livestockSaleAmountToday + $productSaleAmountToday;
-                                          echo $currency . number_format_currency($todaySaleAmount, 2);
-                                          ?>
-                                      </h4>
-                                      <span class="kula-trend-badge neutral"><i class="fa-solid fa-calendar-day"></i> Today</span>
-                                  </div>
-                              </section>
-                          </a>
-                      </div>
-
-                      <!-- 8. New Livestock Today -->
-                      <div class="col-lg-3 col-sm-6 col-xs-6">
-                          <a href="<?php echo base_url('purchase'); ?>" style="text-decoration:none; display:block; color:inherit;">
-                              <section class="panel card__box">
-                                  <div class="symbol blue">
-                                      <i class="fa-solid fa-wheat-field"></i>
-                                  </div>
-                                  <div class="value">
-                                      <strong class="text-info">New Livestock Today</strong>
-                                      <h4 class="count3">
-                                          <?php $todayPurchaseLive = $this->report_model->getTodayPurchaseSubTotal(date("Y-m-d"), 'purv_quantity');
-                                          if ($todayPurchaseLive) {
-                                              echo $todayPurchaseLive;
-                                          } else {
-                                              echo 0;
-                                          }
-                                          ?>
-                                      </h4>
-                                      <span class="kula-trend-badge up"><i class="fa-solid fa-plus"></i> New</span>
-                                  </div>
-                              </section>
-                          </a>
-                      </div>
-                  </div>     </div>
+         <!-- ================================================================= -->
+         <!-- SECTION B: FINANCIAL PERFORMANCE                                  -->
+         <!-- ================================================================= -->
+         <div class="kula-kpi-section">
+             <div class="kula-kpi-section-header">
+                 <div class="kula-kpi-section-title-row">
+                     <span class="kula-section-dot dot-blue"></span>
+                     <h3 class="kula-kpi-section-heading">Financial Performance</h3>
                  </div>
+                 <p class="kula-kpi-section-desc">Livestock capital purchases, operational expenses, herd sales, and commercial product revenues</p>
+             </div>
+             <div class="kula-modern-kpi-grid">
+                 <!-- 5. Livestock Purchases -->
+                 <a href="<?php echo base_url('purchase'); ?>" class="kula-kpi-card" title="Total expenditure on livestock procurement">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Livestock Purchases</h4>
+                             <p class="kula-kpi-subtitle">This Month</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-blue">
+                             <i class="fa-solid fa-coins"></i>
+                         </div>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $currency . number_format_currency($total_livestock_purchased_amount, 2); ?></div>
+                             <?php 
+                             $purComp = $kpi_trends['pur_comp'] ?? ['text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false];
+                             ?>
+                             <span class="kula-kpi-badge <?php echo $purComp['badge_class']; ?>">
+                                 <i class="fa-solid <?php echo $purComp['icon']; ?>"></i> 
+                                 <span><?php echo htmlspecialchars($purComp['text']); ?></span>
+                             </span>
+                         </div>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php 
+                             $purPoints = $kpi_trends['pur_points'] ?? [];
+                             echo kula_render_bar_chart($purPoints, '#3478F6', 'bar-pur-points'); 
+                             ?>
+                         </div>
+                     </div>
+                 </a>
+
+                 <!-- 6. Operating Expenses -->
+                 <a href="<?php echo base_url('expense/listExpense'); ?>" class="kula-kpi-card" title="Operational expenditures including feed, veterinary items, and farm utility costs">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Operating Expenses</h4>
+                             <p class="kula-kpi-subtitle">This Month</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-red">
+                             <i class="fa-solid fa-arrow-trend-down"></i>
+                         </div>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $currency . number_format_currency($otherExpense, 2); ?></div>
+                             <?php 
+                             $expComp = $kpi_trends['exp_comp'] ?? ['text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false];
+                             ?>
+                             <span class="kula-kpi-badge <?php echo $expComp['badge_class']; ?>">
+                                 <i class="fa-solid <?php echo $expComp['icon']; ?>"></i> 
+                                 <span><?php echo htmlspecialchars($expComp['text']); ?></span>
+                             </span>
+                         </div>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php 
+                             $expPoints = $kpi_trends['exp_points'] ?? [];
+                             echo kula_render_bar_chart($expPoints, '#EF4444', 'bar-exp-points'); 
+                             ?>
+                         </div>
+                     </div>
+                 </a>
+
+                 <!-- 7. Livestock Sales -->
+                 <a href="<?php echo base_url('sale/listSale'); ?>" class="kula-kpi-card" title="Total sales revenue generated from livestock">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Livestock Sales</h4>
+                             <p class="kula-kpi-subtitle">This Month</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-green">
+                             <i class="fa-solid fa-chart-pie"></i>
+                         </div>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $currency . number_format_currency($totalSaleAmount, 2); ?></div>
+                             <?php 
+                             $saleComp = $kpi_trends['sale_comp'] ?? ['text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false];
+                             ?>
+                             <span class="kula-kpi-badge <?php echo $saleComp['badge_class']; ?>">
+                                 <i class="fa-solid <?php echo $saleComp['icon']; ?>"></i> 
+                                 <span><?php echo htmlspecialchars($saleComp['text']); ?></span>
+                             </span>
+                         </div>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php 
+                             $salePoints = $kpi_trends['live_sale_points'] ?? [];
+                             echo kula_render_bar_chart($salePoints, '#009F72', 'bar-sale-points'); 
+                             ?>
+                         </div>
+                     </div>
+                 </a>
+
+                 <!-- 8. Product Sales -->
+                 <a href="<?php echo base_url('sale/listProductSale'); ?>" class="kula-kpi-card" title="Total sales revenue generated from farm products (dairy, eggs, meat, etc.)">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Product Sales</h4>
+                             <p class="kula-kpi-subtitle">This Month</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-amber">
+                             <i class="fa-solid fa-receipt"></i>
+                         </div>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $currency . number_format_currency($productSaleAmount, 2); ?></div>
+                             <?php 
+                             $prodComp = $kpi_trends['prod_comp'] ?? ['text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false];
+                             if ($prodComp['has_data']): ?>
+                                 <span class="kula-kpi-badge <?php echo $prodComp['badge_class']; ?>">
+                                     <i class="fa-solid <?php echo $prodComp['icon']; ?>"></i> 
+                                     <span><?php echo htmlspecialchars($prodComp['text']); ?></span>
+                                 </span>
+                             <?php else: ?>
+                                 <span class="kula-kpi-badge badge-neutral">
+                                     <i class="fa-solid fa-clock"></i> Active
+                                 </span>
+                             <?php endif; ?>
+                         </div>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php 
+                             $prodPoints = $kpi_trends['prod_sale_points'] ?? [];
+                             echo kula_render_bar_chart($prodPoints, '#F59E0B', 'bar-prod-points'); 
+                             ?>
+                         </div>
+                     </div>
+                 </a>
              </div>
          </div>
+
+         <!-- ================================================================= -->
+         <!-- SECTION C: LIVESTOCK & DAILY OPERATIONS                           -->
+         <!-- ================================================================= -->
+         <div class="kula-kpi-section">
+             <div class="kula-kpi-section-header">
+                 <div class="kula-kpi-section-title-row">
+                     <span class="kula-section-dot dot-green"></span>
+                     <h3 class="kula-kpi-section-heading">Livestock &amp; Daily Operations</h3>
+                 </div>
+                 <p class="kula-kpi-section-desc">Real-time animal inventory counts, today's procurement totals, today's commercial sales, and newly admitted livestock</p>
+             </div>
+             <div class="kula-modern-kpi-grid">
+                 <!-- 9. Total Active Livestock -->
+                 <a href="<?php echo base_url('livestock/addLivestock'); ?>" class="kula-kpi-card" title="Active livestock headcount currently housed on the farm">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Total Active Livestock</h4>
+                             <p class="kula-kpi-subtitle">Currently in stock</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-red">
+                             <i class="fa-solid fa-cow"></i>
+                         </div>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $inStockQuantity ? number_format_currency($inStockQuantity, 0) : '0'; ?></div>
+                             <span class="kula-kpi-badge badge-green">
+                                 <i class="fa-solid fa-shield-halved"></i> Active Stock
+                             </span>
+                         </div>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php echo kula_render_wave_chart([$inStockQuantity], '#EF4444', 'wave-active-live', ($inStockQuantity > 0)); ?>
+                         </div>
+                     </div>
+                 </a>
+
+                 <!-- 10. Today's Purchases -->
+                 <a href="<?php echo base_url('purchase'); ?>" class="kula-kpi-card" title="Total expenses and purchases recorded today">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Today's Purchases</h4>
+                             <p class="kula-kpi-subtitle">Today's total value</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-green">
+                             <i class="fa-solid fa-cart-shopping"></i>
+                         </div>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $currency . number_format_currency($otherExpenseToday, 2); ?></div>
+                             <span class="kula-kpi-badge badge-green">
+                                 <i class="fa-regular fa-calendar-check"></i> Today
+                             </span>
+                         </div>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php 
+                             $dailyPurPoints = $kpi_trends['daily_purchases'] ?? [];
+                             echo kula_render_wave_chart($dailyPurPoints, '#009F72', 'wave-today-pur', ($otherExpenseToday > 0)); 
+                             ?>
+                         </div>
+                     </div>
+                 </a>
+
+                 <!-- 11. Today's Sales -->
+                 <a href="<?php echo base_url('sale/listSale'); ?>" class="kula-kpi-card" title="Total commercial sales recorded today across livestock and products">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">Today's Sales</h4>
+                             <p class="kula-kpi-subtitle">Today's total value</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-amber">
+                             <i class="fa-solid fa-file-invoice"></i>
+                         </div>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $currency . number_format_currency($todaySaleAmount, 2); ?></div>
+                             <span class="kula-kpi-badge badge-neutral">
+                                 <i class="fa-regular fa-calendar"></i> Today
+                             </span>
+                         </div>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php 
+                             $dailySalePoints = $kpi_trends['daily_sales'] ?? [];
+                             echo kula_render_wave_chart($dailySalePoints, '#F59E0B', 'wave-today-sale', ($todaySaleAmount > 0)); 
+                             ?>
+                         </div>
+                     </div>
+                 </a>
+
+                 <!-- 12. New Livestock Today -->
+                 <a href="<?php echo base_url('purchase'); ?>" class="kula-kpi-card" title="Total new livestock heads purchased or admitted today">
+                     <div class="kula-kpi-top">
+                         <div class="kula-kpi-title-wrap">
+                             <h4 class="kula-kpi-title">New Livestock Today</h4>
+                             <p class="kula-kpi-subtitle">Added today</p>
+                         </div>
+                         <div class="kula-kpi-icon-box icon-blue">
+                             <i class="fa-solid fa-plus"></i>
+                         </div>
+                     </div>
+                     <div class="kula-kpi-bottom">
+                         <div class="kula-kpi-data-col">
+                             <div class="kula-kpi-value"><?php echo $todayPurchaseLive ? $todayPurchaseLive : '0'; ?></div>
+                             <span class="kula-kpi-badge badge-green">
+                                 <i class="fa-solid fa-plus"></i> New
+                             </span>
+                         </div>
+                         <div class="kula-kpi-chart-wrap">
+                             <?php 
+                             $dailyNewLivePoints = $kpi_trends['daily_new_live'] ?? [];
+                             echo kula_render_wave_chart($dailyNewLivePoints, '#3478F6', 'wave-today-new-live', ($todayPurchaseLive > 0)); 
+                             ?>
+                         </div>
+                     </div>
+                 </a>
+             </div>
+         </div>
+
          <!-- Payment and received Amount -->
          <?php
          // Total Expense (Livestock & Feed Purchases + Operating Expenses + Staff Payments)
@@ -693,90 +1314,143 @@
          $totalReceivedAmount = max($calculatedIncome, (float)$clientReceivedTotal);
          ?>
 
-          <!-- CARD 1: Full-Width Expense & Income Breakdown -->
+          <!-- CARD 1: Modern Expense & Financial Breakdown -->
           <div class="row" style="margin-bottom: 24px;">
               <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                  <section class="panel custom__table kula-fin-card" style="background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.03); margin-bottom: 0;">
-                      <div class="panel-body kula-dashboard-card-body kula-fin-card-body">
+                  <section class="panel custom__table kula-fin-card">
+                      <div class="panel-body kula-fin-card-body">
+                          <!-- Header -->
                           <div class="kula-fin-header">
-                              <div class="kula-fin-title-wrap">
-                                  <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px; border: none; padding: 0; text-transform: none; letter-spacing: -0.3px;">
-                                      <i class="fa-solid fa-chart-pie" style="color: #059669;"></i> Expense &amp; Financial Breakdown
-                                  </h3>
-                                  <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 500;">Comparison of total operational expenses vs cumulative farm revenue</p>
+                              <div class="kula-fin-header-left">
+                                  <div class="kula-fin-icon-square">
+                                      <i class="fa-solid fa-chart-pie"></i>
+                                  </div>
+                                  <div class="kula-fin-title-wrap">
+                                      <h3 class="kula-fin-title">Expense &amp; Financial Breakdown</h3>
+                                      <p class="kula-fin-subtitle">Comparison of total operational expenses vs cumulative farm revenue</p>
+                                  </div>
                               </div>
                               <div class="kula-fin-badge-wrap">
-                                  <span style="background: #f1f5f9; color: #334155; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center;">
-                                      <i class="fa-regular fa-clock" style="margin-right: 5px;"></i> Lifetime Statements
-                                  </span>
+                                  <a href="<?php echo base_url('report/viewFinancialReport'); ?>" class="kula-fin-lifetime-btn" title="View Lifetime Statements">
+                                      <i class="fa-regular fa-clock"></i> Lifetime Statements
+                                  </a>
                               </div>
                           </div>
 
+                          <!-- Content Row: Doughnut Left (34%), Metrics Right (66%) -->
                           <div class="kula-fin-content-row">
-                              <!-- Donut Chart Column -->
+                              <!-- Left: Doughnut Chart Column -->
                               <div class="kula-fin-chart-col">
-                                  <div style="width: 100%; display: flex; justify-content: center; align-items: center;">
-                                      <div id="incomeExpenseStatement" style="width: 100%; max-width: 280px;"></div>
+                                  <div class="kula-fin-chart-box">
+                                      <!-- Decorative organic foliage accent -->
+                                      <svg class="kula-fin-leaf-bg" width="76" height="92" viewBox="0 0 76 92" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                          <path d="M12 92C12 62 25 36 56 26C41 46 43 67 31 92H12Z" fill="#34D399"/>
+                                          <path d="M0 76C10 51 26 31 46 21C33 41 31 61 16 76H0Z" fill="#A7F3D0"/>
+                                          <path d="M26 51C36 31 51 16 70 5C53 21 49 39 36 51H26Z" fill="#6EE7B7"/>
+                                      </svg>
+
+                                      <div class="kula-fin-chart-wrap">
+                                          <div id="incomeExpenseStatement"></div>
+                                      </div>
+
+                                      <?php
+                                      $sumTotal = (float)$totalPaidAmount + (float)$totalReceivedAmount;
+                                      $expPct = $sumTotal > 0 ? (int)round(((float)$totalPaidAmount / $sumTotal) * 100) : 0;
+                                      $incPct = $sumTotal > 0 ? (100 - $expPct) : 0;
+                                      $netBalance = (float)$totalReceivedAmount - (float)$totalPaidAmount;
+                                      ?>
+
+                                      <!-- Compact Chart Legend -->
+                                      <div class="kula-fin-chart-legend">
+                                          <div class="kula-fin-legend-item">
+                                              <div class="kula-fin-legend-head">
+                                                  <span class="kula-fin-dot dot-revenue"></span>
+                                                  <span class="kula-fin-legend-label">Revenue</span>
+                                              </div>
+                                              <span class="kula-fin-legend-pct"><?= $incPct; ?>%</span>
+                                          </div>
+                                          <div class="kula-fin-legend-item">
+                                              <div class="kula-fin-legend-head">
+                                                  <span class="kula-fin-dot dot-expense"></span>
+                                                  <span class="kula-fin-legend-label">Expenses</span>
+                                              </div>
+                                              <span class="kula-fin-legend-pct"><?= $expPct; ?>%</span>
+                                          </div>
+                                      </div>
                                   </div>
                               </div>
 
-                              <!-- Financial Details & Metrics Grid Column -->
+                              <!-- Right: Financial Summary Column -->
                               <div class="kula-fin-stats-col">
-                                  <?php
-                                  $sumTotal = (float)$totalPaidAmount + (float)$totalReceivedAmount;
-                                  $expPct = $sumTotal > 0 ? round(((float)$totalPaidAmount / $sumTotal) * 100) : 0;
-                                  $incPct = $sumTotal > 0 ? round(((float)$totalReceivedAmount / $sumTotal) * 100) : 0;
-                                  $netBalance = (float)$totalReceivedAmount - (float)$totalPaidAmount;
-                                  ?>
-                                  
+                                  <!-- Upper 2 Metric Cards -->
                                   <div class="kula-fin-stats-grid">
-                                      <!-- Expenses Card -->
-                                      <div class="kula-fin-stat-card" style="background: #fef2f2; border: 1px solid #fecaca;">
-                                          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                              <span style="font-size: 12px; font-weight: 700; color: #991b1b; display: flex; align-items: center; gap: 6px;">
-                                                  <i class="fa-solid fa-arrow-down-long"></i> Total Expenses
-                                              </span>
-                                              <span style="background: #ef4444; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $expPct; ?>%</span>
+                                      <!-- Card A: Total Expenses -->
+                                      <div class="kula-fin-stat-card card-expense">
+                                          <div class="kula-fin-stat-top">
+                                              <div class="kula-fin-stat-label-wrap">
+                                                  <div class="kula-fin-arrow-box box-expense">
+                                                      <i class="fa-solid fa-arrow-down"></i>
+                                                  </div>
+                                                  <span class="kula-fin-stat-title">Total Expenses</span>
+                                              </div>
+                                              <span class="kula-fin-pill pill-expense"><?= $expPct; ?>%</span>
                                           </div>
-                                          <h4 class="kula-fin-amount" style="color: #7f1d1d;">
+                                          <h4 class="kula-fin-stat-val">
                                               <?= $currency . number_format_currency($totalPaidAmount, 2); ?>
                                           </h4>
-                                          <div style="height: 6px; background: #fee2e2; border-radius: 4px; overflow: hidden; margin-top: 4px;">
-                                              <div style="width: <?= $expPct; ?>%; height: 100%; background: #ef4444; border-radius: 4px;"></div>
+                                          <div class="kula-fin-prog-track track-expense">
+                                              <div class="kula-fin-prog-fill fill-expense" style="width: <?= $expPct; ?>%;"></div>
                                           </div>
                                       </div>
 
-                                      <!-- Income Card -->
-                                      <div class="kula-fin-stat-card" style="background: #ecfdf5; border: 1px solid #a7f3d0;">
-                                          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                              <span style="font-size: 12px; font-weight: 700; color: #065f46; display: flex; align-items: center; gap: 6px;">
-                                                  <i class="fa-solid fa-arrow-up-long"></i> Total Revenue
-                                              </span>
-                                              <span style="background: #059669; color: #ffffff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $incPct; ?>%</span>
+                                      <!-- Card B: Total Revenue -->
+                                      <div class="kula-fin-stat-card card-revenue">
+                                          <div class="kula-fin-stat-top">
+                                              <div class="kula-fin-stat-label-wrap">
+                                                  <div class="kula-fin-arrow-box box-revenue">
+                                                      <i class="fa-solid fa-arrow-up"></i>
+                                                  </div>
+                                                  <span class="kula-fin-stat-title">Total Revenue</span>
+                                              </div>
+                                              <span class="kula-fin-pill pill-revenue"><?= $incPct; ?>%</span>
                                           </div>
-                                          <h4 class="kula-fin-amount" style="color: #064e3b;">
+                                          <h4 class="kula-fin-stat-val">
                                               <?= $currency . number_format_currency($totalReceivedAmount, 2); ?>
                                           </h4>
-                                          <div style="height: 6px; background: #d1fae5; border-radius: 4px; overflow: hidden; margin-top: 4px;">
-                                              <div style="width: <?= $incPct; ?>%; height: 100%; background: #059669; border-radius: 4px;"></div>
+                                          <div class="kula-fin-prog-track track-revenue">
+                                              <div class="kula-fin-prog-fill fill-revenue" style="width: <?= $incPct; ?>%;"></div>
                                           </div>
                                       </div>
+                                  </div>
 
-                                      <!-- Net Balance Card -->
-                                      <div class="kula-fin-net-card" style="background: <?= $netBalance >= 0 ? '#f0fdf4' : '#fff1f2'; ?>; border: 1px solid <?= $netBalance >= 0 ? '#bbf7d0' : '#fecdd3'; ?>;">
-                                          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                                              <div>
-                                                  <span style="font-size: 12px; font-weight: 700; color: <?= $netBalance >= 0 ? '#166534' : '#9f1239'; ?>;">
-                                                      Net Operating Profit / Balance
-                                                  </span>
-                                                  <h4 class="kula-fin-net-amount" style="color: <?= $netBalance >= 0 ? '#14532d' : '#881337'; ?>;">
-                                                      <?= ($netBalance >= 0 ? '+' : '-') . $currency . number_format_currency(abs($netBalance), 2); ?>
-                                                  </h4>
-                                              </div>
-                                              <span style="background: <?= $netBalance >= 0 ? '#166534' : '#9f1239'; ?>; color: #ffffff; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px;">
-                                                  <?= $netBalance >= 0 ? '<i class="fa-solid fa-circle-check"></i> Profitable' : '<i class="fa-solid fa-circle-exclamation"></i> Deficit' ?>
-                                              </span>
+                                  <!-- Lower: Net Operating Profit Card -->
+                                  <div class="kula-fin-net-card <?= $netBalance >= 0 ? 'net-profit' : 'net-loss'; ?>">
+                                      <div class="kula-fin-net-left">
+                                          <div class="kula-fin-net-icon <?= $netBalance >= 0 ? 'icon-profit' : 'icon-loss'; ?>">
+                                              <i class="fa-solid fa-coins"></i>
                                           </div>
+                                          <div class="kula-fin-net-data">
+                                              <span class="kula-fin-net-label">Net Operating Profit / Balance</span>
+                                              <h4 class="kula-fin-net-val <?= $netBalance >= 0 ? 'text-profit' : 'text-loss'; ?>">
+                                                  <?= ($netBalance >= 0 ? '+' : '-') . $currency . number_format_currency(abs($netBalance), 2); ?>
+                                              </h4>
+                                          </div>
+                                      </div>
+                                      <div class="kula-fin-net-right">
+                                          <div class="kula-fin-net-graphic" aria-hidden="true">
+                                              <svg width="42" height="30" viewBox="0 0 44 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                  <rect x="2" y="20" width="7" height="12" rx="2" fill="<?= $netBalance >= 0 ? '#A7F3D0' : '#FECACA'; ?>"/>
+                                                  <rect x="13" y="14" width="7" height="18" rx="2" fill="<?= $netBalance >= 0 ? '#6EE7B7' : '#FCA5A5'; ?>"/>
+                                                  <rect x="24" y="6" width="7" height="26" rx="2" fill="<?= $netBalance >= 0 ? '#34D399' : '#F87171'; ?>"/>
+                                                  <path d="M22 <?= $netBalance >= 0 ? '6L38 6M38 6V22M38 6L18 26' : '26L38 26M38 26V10M38 26L18 6'; ?>" stroke="<?= $netBalance >= 0 ? '#10B981' : '#EF4444'; ?>" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                              </svg>
+                                          </div>
+                                          <span class="kula-fin-net-badge <?= $netBalance >= 0 ? 'badge-profit' : 'badge-loss'; ?>">
+                                              <?= $netBalance >= 0 
+                                                  ? '<i class="fa-solid fa-circle-check"></i> Profitable' 
+                                                  : '<i class="fa-solid fa-circle-exclamation"></i> Operating Loss'; 
+                                              ?>
+                                          </span>
                                       </div>
                                   </div>
                               </div>
@@ -1003,10 +1677,14 @@
              <!-- Shed And Batch Report with collapse -->
               <div class="col-lg-6">
                   <div class="faq_container">
-                      <div class="">
-                          <div class="widget__heading"><i class="fa-solid fa-network-wired"></i> <?php echo lang('shed_batch_wise_stock_quantity'); ?></div>
-                          <div id="showall" class="faq_qtn showall"><?php echo lang('show_all'); ?></div>
-                          <div id="hideall" class="faq_qtn hideall"><?php echo lang('hide_all'); ?></div>
+                      <div class="faq_container_header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                          <div class="widget__heading" style="margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                              <i class="fa-solid fa-network-wired"></i> <?php echo lang('shed_batch_wise_stock_quantity'); ?>
+                          </div>
+                          <div class="faq_action_btns" style="display: inline-flex; align-items: center; gap: 8px;">
+                              <div id="showall" class="faq_qtn showall"><?php echo lang('show_all'); ?></div>
+                              <div id="hideall" class="faq_qtn hideall"><?php echo lang('hide_all'); ?></div>
+                          </div>
                       </div>
                       <ul class="faq">
                           <?php
@@ -1190,115 +1868,123 @@
          });
      });
  </script>
- 
- <!-- Expense Income -->
+
+ <!-- Expense Income Donut Chart -->
  <script>
-     var colors = ['#EF4444', '#059669'];
-     var paidAmount = <?php echo (float)$totalPaidAmount; ?>;
-     var receivedAmount = <?php echo (float)$totalReceivedAmount; ?>;
-     
-     var chartSeries = [paidAmount, receivedAmount];
-     if (paidAmount === 0 && receivedAmount === 0) {
-         chartSeries = [0.001, 0.001];
-     }
- 
-     var options = {
-         series: chartSeries,
-         chart: {
-             width: '100%',
-             height: 250,
-             type: 'donut',
-             toolbar: { show: false }
-         },
-         colors: colors,
-         stroke: {
-             show: true,
-             width: 4,
-             colors: ['#ffffff']
-         },
-         plotOptions: {
-             pie: {
-                 donut: {
-                     size: '76%',
-                     labels: {
-                         show: true,
-                         name: {
-                             show: true,
-                             fontSize: '12px',
-                             fontWeight: '600',
-                             color: '#64748b',
-                             offsetY: -6
-                         },
-                         value: {
-                             show: true,
-                             fontSize: '15px',
-                             fontWeight: '800',
-                             color: '#0f172a',
-                             offsetY: 4,
-                             formatter: function (val) {
-                                 var sum = paidAmount + receivedAmount;
-                                 var cur = <?php echo json_encode(!empty($settings->currency) ? $settings->currency : 'UGX'); ?>;
-                                 return cur + ' ' + Number(sum).toLocaleString();
-                             }
-                         },
-                         total: {
-                             show: true,
-                             label: 'Total Volume',
-                             fontSize: '12px',
-                             fontWeight: '600',
-                             color: '#64748b',
-                             formatter: function (w) {
-                                 var sum = paidAmount + receivedAmount;
-                                 var cur = <?php echo json_encode(!empty($settings->currency) ? $settings->currency : 'UGX'); ?>;
-                                 return cur + ' ' + Number(sum).toLocaleString();
-                             }
-                         }
+     (function() {
+         var paidAmount = <?php echo (float)$totalPaidAmount; ?>;
+         var receivedAmount = <?php echo (float)$totalReceivedAmount; ?>;
+         var currencyStr = <?php echo json_encode(!empty($currency) ? trim($currency) : (!empty($settings->currency) ? trim($settings->currency) : 'UGX')); ?>;
+         var isDark = document.body.classList.contains('dark-theme') || (document.documentElement && document.documentElement.classList.contains('dark-theme'));
+
+         // Series: Green Revenue first, Red Expenses second to match design and legend
+         var chartSeries = [receivedAmount, paidAmount];
+         if (paidAmount === 0 && receivedAmount === 0) {
+             chartSeries = [0.001, 0.001];
+         }
+
+         var sumTotal = paidAmount + receivedAmount;
+
+         var options = {
+             series: chartSeries,
+             chart: {
+                 width: '100%',
+                 height: 205,
+                 type: 'donut',
+                 toolbar: { show: false },
+                 animations: {
+                     enabled: true,
+                     easing: 'easeinout',
+                     speed: 600
+                 }
+             },
+             colors: ['#009F72', '#EF4444'], // Green for revenue, Red for expenses
+             labels: ['Total Revenue', 'Total Expenses'],
+             stroke: {
+                 show: true,
+                 width: 3,
+                 colors: [isDark ? '#0f172a' : '#F4FBF7']
+             },
+             dataLabels: {
+                 enabled: false
+             },
+             legend: {
+                 show: false
+             },
+             tooltip: {
+                 theme: isDark ? 'dark' : 'light',
+                 y: {
+                     formatter: function(val) {
+                         if (paidAmount === 0 && receivedAmount === 0) return currencyStr + ' 0.00';
+                         return currencyStr + ' ' + Number(val).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
                      }
                  }
-             }
-         },
-         dataLabels: {
-             enabled: false
-         },
-         labels: ['<?= lang('expense'); ?>', '<?= lang('income'); ?>'],
-         legend: {
-             show: false
-         },
-         responsive: [{
-             breakpoint: 640,
-             options: {
-                 chart: {
-                     height: 170,
-                     width: '100%'
-                 },
-                 plotOptions: {
-                     pie: {
-                         donut: {
-                             size: '68%',
-                             labels: {
-                                 name: {
-                                     fontSize: '10px',
-                                     offsetY: -4
-                                 },
-                                 value: {
-                                     fontSize: '12px',
-                                     offsetY: 2
-                                 },
-                                 total: {
-                                     fontSize: '10px'
+             },
+             plotOptions: {
+                 pie: {
+                     donut: {
+                         size: '73%',
+                         background: 'transparent',
+                         labels: {
+                             show: true,
+                             name: {
+                                 show: true,
+                                 fontSize: '11px',
+                                 fontWeight: '600',
+                                 color: '#64748B',
+                                 offsetY: -5
+                             },
+                             value: {
+                                 show: true,
+                                 fontSize: '16px',
+                                 fontWeight: '800',
+                                 color: isDark ? '#FFFFFF' : '#111827',
+                                 offsetY: 4,
+                                 formatter: function (val) {
+                                     return currencyStr + ' ' + Math.round(sumTotal).toLocaleString();
+                                 }
+                             },
+                             total: {
+                                 show: true,
+                                 label: 'Total Volume',
+                                 fontSize: '11px',
+                                 fontWeight: '600',
+                                 color: '#64748B',
+                                 formatter: function (w) {
+                                     return currencyStr + ' ' + Math.round(sumTotal).toLocaleString();
                                  }
                              }
                          }
                      }
                  }
-             }
-         }]
-     };
- 
-     var chart = new ApexCharts(document.querySelector("#incomeExpenseStatement"), options);
-     chart.render();
+             },
+             responsive: [{
+                 breakpoint: 640,
+                 options: {
+                     chart: {
+                         height: 180
+                     },
+                     plotOptions: {
+                         pie: {
+                             donut: {
+                                 size: '70%',
+                                 labels: {
+                                     name: { fontSize: '10px', offsetY: -3 },
+                                     value: { fontSize: '14px', offsetY: 3 },
+                                     total: { fontSize: '10px' }
+                                 }
+                             }
+                         }
+                     }
+                 }
+             }]
+         };
+
+         var chart = new ApexCharts(document.querySelector("#incomeExpenseStatement"), options);
+         chart.render();
+     })();
  </script>
- 
+
  <!-- Stock Chart (RealEstate Pro Image 1 Multi-Wave Aesthetic) -->
  <script>
      var purQty = <?php echo (int)($purQ ? $purQ : 0); ?>;

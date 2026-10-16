@@ -89,6 +89,13 @@ class Home extends MY_Controller
             }
         } catch (Throwable $e) {}
 
+        // Modern KPI Cards trend and comparison data
+        try {
+            $data['kpi_trends'] = (is_object($this->home_model) && method_exists($this->home_model, 'getModernKpiTrendsData'))
+                ? $this->home_model->getModernKpiTrendsData()
+                : array();
+        } catch (Throwable $e) { $data['kpi_trends'] = array(); }
+
         $this->load->view('dashboard', $data); // just the header file
         $this->load->view('home', $data);
         $this->load->view('footer');

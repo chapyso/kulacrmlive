@@ -43,8 +43,6 @@
 
 <!--script for this page only-->
 <script src="<?php echo base_url('common/js/editable-table.js'); ?>"></script>
-<!-- Mobile Data Preview Engine -->
-<script src="<?php echo base_url('common/js/mobile-data-preview.js'); ?>?v=<?php echo time(); ?>"></script>
 
 <!-- END JAVASCRIPTS -->
 <script>

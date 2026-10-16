@@ -6,12 +6,15 @@ $_SERVER['SCRIPT_NAME'] = '/index.php';
 $_SERVER['SCRIPT_FILENAME'] = __DIR__ . '/../index.php';
 $_SERVER['REQUEST_URI'] = '/kula_ai/chat';
 
-$_POST['prompt'] = 'Write a comprehensive business plan for a 1,000 layer poultry farm including ROI and financial projections.';
+$prompt_arg = $argv[1] ?? 'ARE YOU STILL CONNECTED ?';
+$_POST['prompt'] = $prompt_arg;
+$_SERVER['argv'] = array('index.php', 'kula_ai', 'chat');
+$_SERVER['argc'] = 3;
 
 require_once __DIR__ . '/../index.php';
 $CI =& get_instance();
 $CI->load->library('ion_auth');
-$CI->ion_auth->login('ronaldi2040@gmail.com', 'Baale@256');
+$CI->ion_auth->login('ronaldi2040@gmail.com', (getenv('KULA_TEST_PASS') ?: ''));
 
 ob_start();
 $CI->load->module('kula_ai');

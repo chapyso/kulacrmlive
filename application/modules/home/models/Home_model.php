@@ -270,4 +270,243 @@ class Home_model extends MY_Model
             'expenses' => $expenses
         );
     }
+
+    /**
+     * Get 6-month historical monthly trend for a given table and column.
+     * Guaranteed tenant-isolated. Returns array of 6 floats [oldest ... current].
+     */
+    public function getMonthlyHistoricalTrend($table, $sum_col, $date_col, $status_col = null, $status_val = 1)
+    {
+        $points = array();
+        for ($i = 5; $i >= 0; $i--) {
+            $m_start = date('Y-m-01', strtotime("-$i months"));
+            $m_end   = date('Y-m-t', strtotime("-$i months"));
+            
+            $this->db->select("SUM($sum_col) as total");
+            $this->db->from($table);
+            $this->scope_tenant($table);
+            if ($status_col !== null) {
+                $this->db->where($status_col, $status_val);
+            }
+            $this->db->where("DATE($date_col) >=", $m_start);
+            $this->db->where("DATE($date_col) <=", $m_end);
+            $row = $this->db->get()->row();
+            $points[] = ($row && $row->total !== null) ? (float)$row->total : 0.0;
+        }
+        return $points;
+    }
+
+    /**
+     * Get 6-month historical operating expenses (feed + vaccine + general expenses).
+     */
+    public function getMonthlyExpensesTrend()
+    {
+        $feed = $this->getMonthlyHistoricalTrend('food_purchase_summary', 'fdps_grand_total', 'fdps_date', 'fdps_status', 1);
+        $vacc = $this->getMonthlyHistoricalTrend('vaccine_purchase_summary', 'vps_grand_total', 'vps_date', 'vps_status', 1);
+        $exp  = $this->getMonthlyHistoricalTrend('expense', 'ex_amount', 'ex_date', 'ex_status', 1);
+        
+        $total = array();
+        for ($i = 0; $i < 6; $i++) {
+            $total[$i] = ($feed[$i] ?? 0.0) + ($vacc[$i] ?? 0.0) + ($exp[$i] ?? 0.0);
+        }
+        return $total;
+    }
+
+    /**
+     * Get 7-day daily historical trend for a table and date column.
+     */
+    public function getDailyHistoricalTrend($table, $sum_col, $date_col, $status_col = null, $status_val = 1)
+    {
+        $points = array();
+        for ($i = 6; $i >= 0; $i--) {
+            $day = date('Y-m-d', strtotime("-$i days"));
+            $this->db->select("SUM($sum_col) as total");
+            $this->db->from($table);
+            $this->scope_tenant($table);
+            if ($status_col !== null) {
+                $this->db->where($status_col, $status_val);
+            }
+            $this->db->where("DATE($date_col)", $day);
+            $row = $this->db->get()->row();
+            $points[] = ($row && $row->total !== null) ? (float)$row->total : 0.0;
+        }
+        return $points;
+    }
+
+    /**
+     * Get 7-day daily purchases trend (livestock + food + vaccine + expense).
+     */
+    public function getDailyPurchasesTrend()
+    {
+        $live = $this->getDailyHistoricalTrend('livestock_purchase_summary', 'purs_sub_total', 'purs_date', 'purs_status', 1);
+        $food = $this->getDailyHistoricalTrend('food_purchase_summary', 'fdps_grand_total', 'fdps_date', 'fdps_status', 1);
+        $vacc = $this->getDailyHistoricalTrend('vaccine_purchase_summary', 'vps_grand_total', 'vps_date', 'vps_status', 1);
+        $exp  = $this->getDailyHistoricalTrend('expense', 'ex_amount', 'ex_date', 'ex_status', 1);
+
+        $total = array();
+        for ($i = 0; $i < 7; $i++) {
+            $total[$i] = ($live[$i] ?? 0.0) + ($food[$i] ?? 0.0) + ($vacc[$i] ?? 0.0) + ($exp[$i] ?? 0.0);
+        }
+        return $total;
+    }
+
+    /**
+     * Get 7-day daily sales trend (livestock + product).
+     */
+    public function getDailySalesTrend()
+    {
+        $live = $this->getDailyHistoricalTrend('livestock_sale_summary', 'lsss_grand_total', 'lsss_date', 'lsss_status', 1);
+        $prod = $this->getDailyHistoricalTrend('product_sale_summary', 'prss_grand_total', 'prss_date', 'prss_status', 1);
+
+        $total = array();
+        for ($i = 0; $i < 7; $i++) {
+            $total[$i] = ($live[$i] ?? 0.0) + ($prod[$i] ?? 0.0);
+        }
+        return $total;
+    }
+
+    /**
+     * Get daily livestock quantity purchased for a specific day.
+     */
+    public function getDailyLivestockQuantity($day)
+    {
+        $this->db->select("SUM(purv_quantity) AS total");
+        $this->db->from('livestock_purchase_value');
+        $this->db->join('livestock_purchase_summary', 'livestock_purchase_summary.purs_id = livestock_purchase_value.purv_purs_id');
+        $this->db->where('purs_status', 1);
+        $this->db->where('purv_status', 1);
+        $this->db->where('DATE(purs_date)', $day);
+        $this->scope_tenant('livestock_purchase_value');
+        $row = $this->db->get()->row();
+        return ($row && $row->total !== null) ? (float)$row->total : 0.0;
+    }
+
+    /**
+     * Get 7-day forward vaccination schedule count (from today to +6 days).
+     */
+    public function getVaccination7DaySchedule()
+    {
+        $tenant_id = $this->get_tenant_id();
+        $counts = array();
+        for ($i = 0; $i < 7; $i++) {
+            $day = date('Y-m-d', strtotime("+$i days"));
+            $this->db->from('vaccine_dose_assigned_quantity vdq');
+            $this->db->where('vdq.vdq_status', 1);
+            $this->db->where('vdq.tenant_id', $tenant_id);
+            $this->db->where('DATE(vdq.vdq_vaccination_date)', $day);
+            $counts[] = (int)$this->db->count_all_results();
+        }
+        return $counts;
+    }
+
+    /**
+     * Calculate comparison between current and previous period.
+     * Returns an array with change, text, badge_type ('green', 'red', 'neutral'),
+     * and icon name.
+     */
+    public function computePeriodComparison($current, $previous, $period_label = 'vs last month', $is_cost_or_debt = false)
+    {
+        $current = (float)$current;
+        $previous = (float)$previous;
+
+        if ($previous > 0) {
+            $pct = round((($current - $previous) / $previous) * 100, 1);
+            $sign = $pct > 0 ? '+' : '';
+            $text = "{$sign}{$pct}% {$period_label}";
+            
+            if ($pct > 0) {
+                // If it's a cost/debt, an increase is negative (red)
+                $badge_class = $is_cost_or_debt ? 'badge-red' : 'badge-green';
+                $icon = 'fa-arrow-trend-up';
+            } elseif ($pct < 0) {
+                // If it's a cost/debt, a decrease is positive (green)
+                $badge_class = $is_cost_or_debt ? 'badge-green' : 'badge-red';
+                $icon = 'fa-arrow-trend-down';
+            } else {
+                $badge_class = 'badge-green';
+                $icon = 'fa-minus';
+                $text = "0.0% {$period_label}";
+            }
+            return array('text' => $text, 'badge_class' => $badge_class, 'icon' => $icon, 'has_data' => true);
+        } elseif ($current > 0) {
+            $badge_class = $is_cost_or_debt ? 'badge-red' : 'badge-green';
+            return array('text' => "+100% {$period_label}", 'badge_class' => $badge_class, 'icon' => 'fa-arrow-trend-up', 'has_data' => true);
+        } else {
+            return array('text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false);
+        }
+    }
+
+    /**
+     * Master method: Fetch all KPI trends, comparisons, and sparkline data.
+     */
+    public function getModernKpiTrendsData()
+    {
+        try {
+            // 1. Monthly historical data for financial cards (6 months)
+            $purPoints = $this->getMonthlyHistoricalTrend('livestock_purchase_summary', 'purs_grand_total', 'purs_date', 'purs_status', 1);
+            $expPoints = $this->getMonthlyExpensesTrend();
+            $liveSalePoints = $this->getMonthlyHistoricalTrend('livestock_sale_summary', 'lsss_grand_total', 'lsss_date', 'lsss_status', 1);
+            $prodSalePoints = $this->getMonthlyHistoricalTrend('product_sale_summary', 'prss_grand_total', 'prss_date', 'prss_status', 1);
+
+            // Comparisons: month-0 (current) vs month-1 (previous)
+            $currPur = $purPoints[5] ?? 0.0;
+            $prevPur = $purPoints[4] ?? 0.0;
+            $purComp = $this->computePeriodComparison($currPur, $prevPur, 'vs last month', false);
+
+            $currExp = $expPoints[5] ?? 0.0;
+            $prevExp = $expPoints[4] ?? 0.0;
+            $expComp = $this->computePeriodComparison($currExp, $prevExp, 'vs last month', true);
+
+            $currSale = $liveSalePoints[5] ?? 0.0;
+            $prevSale = $liveSalePoints[4] ?? 0.0;
+            $saleComp = $this->computePeriodComparison($currSale, $prevSale, 'vs last month', false);
+
+            $currProd = $prodSalePoints[5] ?? 0.0;
+            $prevProd = $prodSalePoints[4] ?? 0.0;
+            $prodComp = $this->computePeriodComparison($currProd, $prevProd, 'vs last month', false);
+
+            // Daily historical data (7 days)
+            $dailyPurchases = $this->getDailyPurchasesTrend();
+            $dailySales = $this->getDailySalesTrend();
+            
+            $dailyNewLive = array();
+            for ($i = 6; $i >= 0; $i--) {
+                $day = date('Y-m-d', strtotime("-$i days"));
+                $dailyNewLive[] = (float)$this->getDailyLivestockQuantity($day);
+            }
+
+            $vaccSchedule = $this->getVaccination7DaySchedule();
+
+            return array(
+                'pur_points'       => $purPoints,
+                'exp_points'       => $expPoints,
+                'live_sale_points' => $liveSalePoints,
+                'prod_sale_points' => $prodSalePoints,
+                'pur_comp'         => $purComp,
+                'exp_comp'         => $expComp,
+                'sale_comp'        => $saleComp,
+                'prod_comp'        => $prodComp,
+                'daily_purchases'  => $dailyPurchases,
+                'daily_sales'      => $dailySales,
+                'daily_new_live'   => $dailyNewLive,
+                'vacc_schedule'    => $vaccSchedule
+            );
+        } catch (Throwable $e) {
+            log_message('error', 'Error in getModernKpiTrendsData: ' . $e->getMessage());
+            return array(
+                'pur_points'       => array(0,0,0,0,0,0),
+                'exp_points'       => array(0,0,0,0,0,0),
+                'live_sale_points' => array(0,0,0,0,0,0),
+                'prod_sale_points' => array(0,0,0,0,0,0),
+                'pur_comp'         => array('text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false),
+                'exp_comp'         => array('text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false),
+                'sale_comp'        => array('text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false),
+                'prod_comp'        => array('text' => 'No comparison data', 'badge_class' => 'badge-neutral', 'icon' => 'fa-clock', 'has_data' => false),
+                'daily_purchases'  => array(0,0,0,0,0,0,0),
+                'daily_sales'      => array(0,0,0,0,0,0,0),
+                'daily_new_live'   => array(0,0,0,0,0,0,0),
+                'vacc_schedule'    => array(0,0,0,0,0,0,0)
+            );
+        }
+    }
 }

@@ -1,11 +1,11 @@
 {
-    "timestamp": "2026-08-11 14:25:54",
+    "timestamp": "2026-10-15 21:56:40",
     "database": "livestock",
     "counts": {
         "tenants": 1,
-        "users": 2,
-        "groups": 5,
-        "users_groups": 5,
+        "users": 16,
+        "groups": 6,
+        "users_groups": 20,
         "client": 1,
         "supplier": 1,
         "expense": 0,

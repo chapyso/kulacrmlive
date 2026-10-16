@@ -48,8 +48,6 @@
      <link rel="stylesheet" href="<?php echo base_url('common/css/toastr.min.css'); ?>">
      <!-- 2026 Donezo Emerald Design System (LAST CSS LOADED) -->
      <link href="<?php echo base_url('common/css/custom.css'); ?>?v=<?php echo time(); ?>" rel="stylesheet">
-     <!-- Mobile Data Preview & Zero-Scroll Mobile Cards -->
-     <link href="<?php echo base_url('common/css/mobile-data-preview.css'); ?>?v=<?php echo time(); ?>" rel="stylesheet">
      <script>
        (function() {
          var theme = localStorage.getItem('kula_theme') || 'light';
